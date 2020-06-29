@@ -8,14 +8,14 @@ with open(os.path.join(dir_path, "README.md"), "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="utsp",
+    name="pylpg",
     version="0.1",
     author="Noah Pflugradt",
     author_email="n.pflugradt@fz-juelich.de",
-    description="Universal Time Series Provider",
+    description="Python Bindings for the LoadProfileGenerator",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/FZJ-IEK3-VSA/tsib",
+    url="https://github.com/FZJ-IEK3-VSA/pylgg",
     include_package_data=True,
     packages=setuptools.find_packages(),
     install_requires=required_packages,

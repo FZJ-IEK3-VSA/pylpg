@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 from dataclasses_json import dataclass_json  # type: ignore
-from typing import List, Optional
+from typing import List, Optional, Any
 from enum import Enum
 
 

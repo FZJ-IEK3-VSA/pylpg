@@ -1,15 +1,16 @@
-from lpgadapter import *
+from lpgpythonbindings import *
 
 
 # noinspection PyPep8,PyUnusedLocal
 class LoadTypes:
     Air_Conditioning_Load = "Air Conditioning Load"
     Apparent = "Apparent"
-    Car_Charging_Electricity = "Car Charging Electricity"
     Coal = "Coal"
     Cold_Water = "Cold Water"
     Direct_Solar_Radiation = "Direct Solar Radiation"
     Electricity = "Electricity"
+    Electricity_for_Car_Charging = "Electricity for Car Charging"
+    Electricity_for_Heating = "Electricity for Heating"
     Elevator_Distance = "Elevator Distance"
     Gas = "Gas"
     Gasoline = "Gasoline"
@@ -46,6 +47,7 @@ class HouseTypes:
     HT18_Normal_House_with_15_000_kWh_Gas_Heating_and_a_hot_water_storage_tank = "HT18 Normal House with 15.000 kWh Gas Heating and a hot water storage tank"
     HT19_Normal_House_with_15_000_kWh_Heat_Demand_Heat_Pump_with_COP3_and_Hot_Water_Storage_Tank = "HT19 Normal House with 15.000 kWh Heat Demand, Heat Pump with COP3 and Hot Water Storage Tank"
     HT20_Single_Family_House_no_heating_cooling = "HT20 Single Family House (no heating/cooling)"
+    HT21_Normal_House_with_15_000_kWh_Heat_Demand_Heat_Pump_with_COP3_and_Hot_Water_Storage_Tank_Heat_Pump_Electricity = "HT21 Normal House with 15.000 kWh Heat Demand, Heat Pump with COP3 and Hot Water Storage Tank, Heat Pump Electricity"
     HT22_Big_Multifamily_House_no_heating_cooling = "HT22 Big Multifamily House (no heating/cooling)"
     HT23_No_Infrastructure_at_all = "HT23 No Infrastructure at all"
 
@@ -153,8 +155,10 @@ class TemperatureProfiles:
 
 # noinspection PyPep8,PyUnusedLocal
 class TransportationDeviceSets:
-    Bus_and_one_slow_Car: JsonReference = JsonReference("Bus and one slow Car",  StrGuid("6ac74bd0-bacd-4b39-b84a-dc7ae16702c9"))
-    Bus_and_two_slow_Cars: JsonReference = JsonReference("Bus and two slow Cars",  StrGuid("f90fece2-901a-4419-8a6b-a0ed4ed6ceff"))
+    Bus_and_one_30_km_h_Car: JsonReference = JsonReference("Bus and one 30 km/h Car",  StrGuid("6ac74bd0-bacd-4b39-b84a-dc7ae16702c9"))
+    Bus_and_one_60_km_h_Car: JsonReference = JsonReference("Bus and one 60 km/h Car",  StrGuid("b7b80c60-3292-4d35-9ec2-81ecf1199ce9"))
+    Bus_and_two_30_km_h_Cars: JsonReference = JsonReference("Bus and two 30 km/h Cars",  StrGuid("f90fece2-901a-4419-8a6b-a0ed4ed6ceff"))
+    Bus_and_two_60_km_h_Cars: JsonReference = JsonReference("Bus and two 60 km/h Cars",  StrGuid("4bbcd8b8-ddd9-4592-8f4e-f1cf5579eb37"))
 
 
 # noinspection PyPep8,PyUnusedLocal
@@ -172,8 +176,12 @@ class ChargingStationSets:
 
 # noinspection PyPep8,PyUnusedLocal
 class TravelRouteSets:
-    Travel_Route_Set_for_30km_to_Work: JsonReference = JsonReference("Travel Route Set for 30km to Work",  StrGuid("0b217fce-ad99-4ef1-8540-c07081856d3c"))
-    Travel_Route_Set_for_5km_Difference: JsonReference = JsonReference("Travel Route Set for 5km Difference",  StrGuid("a60747ab-3427-43f8-9a61-3233f332075a"))
+    Travel_Route_Set_for_05km_Commuting_Distance: JsonReference = JsonReference("Travel Route Set for 05km Commuting Distance",  StrGuid("a60747ab-3427-43f8-9a61-3233f332075a"))
+    Travel_Route_Set_for_10km_Commuting_Distance: JsonReference = JsonReference("Travel Route Set for 10km Commuting Distance",  StrGuid("0b217fce-ad99-4ef1-8540-c07081856d3c"))
+    Travel_Route_Set_for_15km_Commuting_Distance: JsonReference = JsonReference("Travel Route Set for 15km Commuting Distance",  StrGuid("0b217fce-ad99-4ef1-8540-c07081856d3c"))
+    Travel_Route_Set_for_20km_Commuting_Distance: JsonReference = JsonReference("Travel Route Set for 20km Commuting Distance",  StrGuid("0b217fce-ad99-4ef1-8540-c07081856d3c"))
+    Travel_Route_Set_for_25km_Commuting_Distance: JsonReference = JsonReference("Travel Route Set for 25km Commuting Distance",  StrGuid("0b217fce-ad99-4ef1-8540-c07081856d3c"))
+    Travel_Route_Set_for_30km_Commuting_Distance: JsonReference = JsonReference("Travel Route Set for 30km Commuting Distance",  StrGuid("0b217fce-ad99-4ef1-8540-c07081856d3c"))
 
 
 # noinspection PyPep8,PyUnusedLocal
