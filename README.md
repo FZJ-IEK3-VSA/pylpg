@@ -6,14 +6,16 @@
 This package provides bindings to execute the LPG from python.
 
 Basically it converts your settings into a JSON file for the LPG that
-specifies what the LPG should calculate and then
+specifies what the LPG should calculate, starts the binary, 
+waits for the results and then returns the results as pandas dataframe.
 
 Look into the test_pylpg.py for examples on use.
 
 Note that this package contains the full LPG binaries and the database.
 
 If you want to use a different database than the one that comes with the package, you need to replace the files.
- 
+
+
 ## License
 
 MIT License
