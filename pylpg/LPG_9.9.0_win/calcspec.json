@@ -1,0 +1,81 @@
+{
+    "House": {
+        "Name": "House",
+        "HouseGuid": {
+            "StrVal": "houseguid"
+        },
+        "Households": [
+            {
+                "HouseholdDataPersonSpec": null,
+                "HouseholdTemplateSpec": null,
+                "HouseholdNameSpec": {
+                    "HouseholdReference": {
+                        "Name": "CHR04 Couple, 30 - 64 years, 1 at work, 1 at home",
+                        "Guid": {
+                            "StrVal": "5da74745-b625-4311-8f69-6ef3351207c5"
+                        }
+                    }
+                },
+                "UniqueHouseholdId": "hhid",
+                "Name": "hhname",
+                "ChargingStationSet": {
+                    "Name": "Charging At Home with 11 kW",
+                    "Guid": {
+                        "StrVal": "78dae308-24c4-45cc-8bdf-b001d61f45c2"
+                    }
+                },
+                "TransportationDeviceSet": {
+                    "Name": "Bus and two 30 km/h Cars",
+                    "Guid": {
+                        "StrVal": "f90fece2-901a-4419-8a6b-a0ed4ed6ceff"
+                    }
+                },
+                "TravelRouteSet": {
+                    "Name": "Travel Route Set for 15km Commuting Distance",
+                    "Guid": {
+                        "StrVal": "0b217fce-ad99-4ef1-8540-c07081856d3c"
+                    }
+                },
+                "TransportationDistanceModifiers": null,
+                "HouseholdDataSpecification": "ByHouseholdName"
+            }
+        ],
+        "HouseTypeCode": "HT02 House with a 5 kWh Battery and a 50 m2 Photovolatic Array, 5MWh space heating, gas heating",
+        "TargetCoolingDemand": 10000,
+        "TargetHeatDemand": 0
+    },
+    "CalcSpec": {
+        "LoadtypesForPostprocessing": [],
+        "CalculationName": "",
+        "CalcOptions": [
+            "JsonHouseholdSumFiles",
+            "BodilyActivityStatistics",
+            "TansportationDeviceJsons"
+        ],
+        "DefaultForOutputFiles": "NoFiles",
+        "DeleteAllButPDF": false,
+        "DeleteDAT": false,
+        "DeviceSelection": null,
+        "EndDate": "01.03.2020",
+        "EnergyIntensityType": "Random",
+        "ExternalTimeResolution": "",
+        "InternalTimeResolution": "",
+        "GeographicLocation": null,
+        "LoadTypePriority": "All",
+        "OutputDirectory": "results",
+        "RandomSeed": 0,
+        "ShowSettlingPeriod": false,
+        "SkipExisting": false,
+        "StartDate": "01.01.2020",
+        "TemperatureProfile": null,
+        "DeleteSqlite": false,
+        "IgnorePreviousActivitiesWhenNeeded": true,
+        "EnableTransportation": true
+    },
+    "HouseDefinitionType": "HouseData",
+    "HouseRef": null,
+    "Scenario": "S1",
+    "Year": "2020",
+    "DistrictName": "district",
+    "PathToDatabase": "C:\\Work\\fzj\\pylpg\\pylpg\\LPG_9.9.0_win\\profilegenerator.db3"
+}

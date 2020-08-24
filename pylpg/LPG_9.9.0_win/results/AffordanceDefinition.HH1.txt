@@ -1,0 +1,489 @@
+Kitchen:
+  bake bread (including transportation) (Time limit: )
+    Bread Baking Machine Unold 6595 Offset: 0 / 0
+    Bread Baking Machine Unold 6595 Offset: 0 / 0
+    Bread Baking Machine Unold 6595 Offset: 0 / 0
+    Bread Baking Machine Unold 6595 Offset: 0 / 0
+    Kitchen Sink (5L/min) Offset: 0 / 0
+    Kitchen Sink (5L/min) Offset: 70 / 70
+  eat small breakfast (25min) interruping subaff, no alarm (including transportation) (Time limit: Breakfast Times, On Workdays between 06:00 and 10:00, on the Weekend until 12)
+    Toaster / Tefal Vario Offset: 0 / 0
+    Toaster / Tefal Vario Offset: 0 / 0
+    Toaster / Tefal Vario Offset: 0 / 0
+    Toaster / Tefal Vario Offset: 0 / 0
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 1 / 1
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 1 / 1
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 1 / 1
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 1 / 1
+    Electric Kettle / Petra WK288 1.5L Offset: 1 / 1
+    Electric Kettle / Petra WK288 1.5L Offset: 1 / 1
+    Electric Kettle / Petra WK288 1.5L Offset: 1 / 1
+    Electric Kettle / Petra WK288 1.5L Offset: 1 / 1
+  eat brunch (including transportation) (Time limit: )
+    Egg Cooker / Russell Hobbs 14048-56 Stylo Offset: 0 / 0
+    Egg Cooker / Russell Hobbs 14048-56 Stylo Offset: 0 / 0
+    Egg Cooker / Russell Hobbs 14048-56 Stylo Offset: 0 / 0
+    Egg Cooker / Russell Hobbs 14048-56 Stylo Offset: 0 / 0
+    Kitchen radio / AEG KRC 4323 CD Offset: 0 / 0
+    Kitchen radio / AEG KRC 4323 CD Offset: 0 / 0
+    Kitchen radio / AEG KRC 4323 CD Offset: 0 / 0
+    Kitchen radio / AEG KRC 4323 CD Offset: 0 / 0
+    Food Slicer / DOMO Schneidemaschine DO521S Offset: 2 / 2
+    Food Slicer / DOMO Schneidemaschine DO521S Offset: 2 / 2
+    Food Slicer / DOMO Schneidemaschine DO521S Offset: 2 / 2
+    Food Slicer / DOMO Schneidemaschine DO521S Offset: 2 / 2
+    Nespresso Coffee Machine, Single Cup Offset: 3 / 3
+    Nespresso Coffee Machine, Single Cup Offset: 3 / 3
+    Nespresso Coffee Machine, Single Cup Offset: 3 / 3
+    Nespresso Coffee Machine, Single Cup Offset: 3 / 3
+    Toaster / Tefal Vario Offset: 5 / 5
+    Toaster / Tefal Vario Offset: 5 / 5
+    Toaster / Tefal Vario Offset: 5 / 5
+    Toaster / Tefal Vario Offset: 5 / 5
+    Electric Kettle / Petra WK288 1.5L Offset: 6 / 6
+    Electric Kettle / Petra WK288 1.5L Offset: 6 / 6
+    Electric Kettle / Petra WK288 1.5L Offset: 6 / 6
+    Electric Kettle / Petra WK288 1.5L Offset: 6 / 6
+    Kitchen Sink (5L/min) Offset: 20 / 20
+    Kitchen Sink (5L/min) Offset: 50 / 50
+    Kitchen Sink (5L/min) Offset: 80 / 80
+  bake a cake (including transportation) (Time limit: )
+    Miele H 5241 B Offset: 0 / 0
+    Miele H 5241 B Offset: 0 / 0
+    Miele H 5241 B Offset: 0 / 0
+    Miele H 5241 B Offset: 0 / 0
+    Handmixer / Phillips Robust HR 1581 Offset: 10 / 10
+    Handmixer / Phillips Robust HR 1581 Offset: 10 / 10
+    Handmixer / Phillips Robust HR 1581 Offset: 10 / 10
+    Handmixer / Phillips Robust HR 1581 Offset: 10 / 10
+  cook pasta and eat it (including transportation) (Time limit: Dinner Time (18:00-21:00))
+    Miele DA 249-2 Offset: 0 / 0
+    Miele DA 249-2 Offset: 0 / 0
+    Miele DA 249-2 Offset: 0 / 0
+    Miele DA 249-2 Offset: 0 / 0
+    Kitchen Sink (5L/min) Offset: 0 / 0
+    Kitchen radio / AEG KRC 4323 CD Offset: 0 / 0
+    Kitchen radio / AEG KRC 4323 CD Offset: 0 / 0
+    Kitchen radio / AEG KRC 4323 CD Offset: 0 / 0
+    Kitchen radio / AEG KRC 4323 CD Offset: 0 / 0
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 0 / 0
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 0 / 0
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 0 / 0
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 0 / 0
+  fry two eggs and eat them with toast (including transportation) (Time limit: Dinner Time (18:00-21:00))
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove left hind - full power Offset: 1 / 1
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove left hind - full power Offset: 1 / 1
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove left hind - full power Offset: 1 / 1
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove left hind - full power Offset: 1 / 1
+  heat up leftovers (including transportation) (Time limit: Dinner Time (18:00-21:00))
+    Microwave Panasonic (1991) Offset: 0 / 0
+    Microwave Panasonic (1991) Offset: 0 / 0
+    Microwave Panasonic (1991) Offset: 0 / 0
+    Microwave Panasonic (1991) Offset: 0 / 0
+  make frozen pizza and eat it (including transportation) (Time limit: Dinner Time (18:00-21:00))
+    Miele H 5241 B Offset: 0 / 0
+    Miele H 5241 B Offset: 0 / 0
+    Miele H 5241 B Offset: 0 / 0
+    Miele H 5241 B Offset: 0 / 0
+    Kitchen Sink (5L/min) Offset: 21 / 21
+  make soup (including transportation) (Time limit: Dinner Time (18:00-21:00))
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 0 / 0
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 0 / 0
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 0 / 0
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 0 / 0
+  cook lunch for the family every day with 2 plates (including transportation) (Time limit: Lunch Time (11:30-13:00))
+    Miele DA 61 Offset: 5 / 5
+    Miele DA 61 Offset: 5 / 5
+    Miele DA 61 Offset: 5 / 5
+    Miele DA 61 Offset: 5 / 5
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 15 / 15
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 15 / 15
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 15 / 15
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 15 / 15
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen-stove right hind Offset: 15 / 15
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen-stove right hind Offset: 15 / 15
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen-stove right hind Offset: 15 / 15
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen-stove right hind Offset: 15 / 15
+  run the dishwasher (triggered) (including transportation) (Time limit: )
+    Dishwashers / Bosch SGI 58M02 EU Offset: 5 / 5
+    Dishwashers / Bosch SGI 58M02 EU Offset: 5 / 5
+    Dishwashers / Bosch SGI 58M02 EU Offset: 5 / 5
+    Dishwashers / Bosch SGI 58M02 EU Offset: 5 / 5
+    Dishwashers / Bosch SGI 58M02 EU Offset: 5 / 5
+  hang up laundry outside (including transportation) (Time limit: )
+    Cloth Drying Rack Offset: 5 / 5
+  do laundry at 30°C (by variable) (including transportation) (Time limit: )
+    Washing Machine / Bosch WAE 28143 Offset: 10 / 10
+    Washing Machine / Bosch WAE 28143 Offset: 10 / 10
+    Washing Machine / Bosch WAE 28143 Offset: 10 / 10
+    Washing Machine / Bosch WAE 28143 Offset: 10 / 10
+    Washing Machine / Bosch WAE 28143 Offset: 10 / 10
+  do laundry at 60°C (by variable) (including transportation) (Time limit: )
+    Washing Machine / Bosch WAE 28143 Offset: 10 / 10
+    Washing Machine / Bosch WAE 28143 Offset: 10 / 10
+    Washing Machine / Bosch WAE 28143 Offset: 10 / 10
+    Washing Machine / Bosch WAE 28143 Offset: 10 / 10
+    Washing Machine / Bosch WAE 28143 Offset: 10 / 10
+  sew and repair clothes (including transportation) (Time limit: )
+    AEG NM 2701 Premium Offset: 0 / 0
+    AEG NM 2701 Premium Offset: 0 / 0
+    AEG NM 2701 Premium Offset: 0 / 0
+    AEG NM 2701 Premium Offset: 0 / 0
+  make and drink tea (15 min) (including transportation) (Time limit: )
+    Kitchen Sink (5L/min) Offset: 0 / 0
+    Electric Kettle / Petra WK288 1.5L Offset: 1 / 1
+    Electric Kettle / Petra WK288 1.5L Offset: 1 / 1
+    Electric Kettle / Petra WK288 1.5L Offset: 1 / 1
+    Electric Kettle / Petra WK288 1.5L Offset: 1 / 1
+  talk with friends on the phone (including transportation) (Time limit: )
+    Phone Siemens Gigaset C320 Offset: 0 / 0
+    Phone Siemens Gigaset C320 Offset: 0 / 0
+    Phone Siemens Gigaset C320 Offset: 0 / 0
+    Phone Siemens Gigaset C320 Offset: 0 / 0
+  run vacuum cleaner robot (including transportation) (Time limit: )
+    Vacuum Cleaner Robot / iRobot Roomba 555 Offset: 45 / 45
+    Vacuum Cleaner Robot / iRobot Roomba 555 Offset: 45 / 45
+    Vacuum Cleaner Robot / iRobot Roomba 555 Offset: 45 / 45
+    Vacuum Cleaner Robot / iRobot Roomba 555 Offset: 45 / 45
+  eat breakfast (1 h) (including transportation) (Time limit: Breakfast Times, On Workdays between 06:00 and 10:00, on the Weekend until 12)
+    Egg Cooker / Russell Hobbs 14048-56 Stylo Offset: 0 / 0
+    Egg Cooker / Russell Hobbs 14048-56 Stylo Offset: 0 / 0
+    Egg Cooker / Russell Hobbs 14048-56 Stylo Offset: 0 / 0
+    Egg Cooker / Russell Hobbs 14048-56 Stylo Offset: 0 / 0
+    Moulinex electronic 833 Offset: 0 / 0
+    Moulinex electronic 833 Offset: 0 / 0
+    Moulinex electronic 833 Offset: 0 / 0
+    Moulinex electronic 833 Offset: 0 / 0
+    Kitchen Sink (5L/min) Offset: 0 / 0
+    Kitchen radio / AEG KRC 4323 CD Offset: 0 / 0
+    Kitchen radio / AEG KRC 4323 CD Offset: 0 / 0
+    Kitchen radio / AEG KRC 4323 CD Offset: 0 / 0
+    Kitchen radio / AEG KRC 4323 CD Offset: 0 / 0
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 0 / 0
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 0 / 0
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 0 / 0
+    Kitchen Stove / Bauknecht Heko 750 PT Kitchen stove front left Offset: 0 / 0
+    Nespresso Coffee Machine, Single Cup Offset: 0 / 0
+    Nespresso Coffee Machine, Single Cup Offset: 0 / 0
+    Nespresso Coffee Machine, Single Cup Offset: 0 / 0
+    Nespresso Coffee Machine, Single Cup Offset: 0 / 0
+    Food Slicer / DOMO Schneidemaschine DO521S Offset: 7 / 7
+    Food Slicer / DOMO Schneidemaschine DO521S Offset: 7 / 7
+    Food Slicer / DOMO Schneidemaschine DO521S Offset: 7 / 7
+    Food Slicer / DOMO Schneidemaschine DO521S Offset: 7 / 7
+    Toaster / Tefal Vario Offset: 8 / 8
+    Toaster / Tefal Vario Offset: 8 / 8
+    Toaster / Tefal Vario Offset: 8 / 8
+    Toaster / Tefal Vario Offset: 8 / 8
+    Kitchen Sink (5L/min) Offset: 20 / 20
+    Kitchen Sink (5L/min) Offset: 40 / 40
+  make and eat sunday morning brunch (4 h) (including transportation) (Time limit: )
+    Egg Cooker / Russell Hobbs 14048-56 Stylo Offset: 0 / 0
+    Egg Cooker / Russell Hobbs 14048-56 Stylo Offset: 0 / 0
+    Egg Cooker / Russell Hobbs 14048-56 Stylo Offset: 0 / 0
+    Egg Cooker / Russell Hobbs 14048-56 Stylo Offset: 0 / 0
+    Kitchen radio / AEG KRC 4323 CD Offset: 0 / 0
+    Kitchen radio / AEG KRC 4323 CD Offset: 0 / 0
+    Kitchen radio / AEG KRC 4323 CD Offset: 0 / 0
+    Kitchen radio / AEG KRC 4323 CD Offset: 0 / 0
+    Nespresso Coffee Machine, Single Cup Offset: 0 / 0
+    Nespresso Coffee Machine, Single Cup Offset: 0 / 0
+    Nespresso Coffee Machine, Single Cup Offset: 0 / 0
+    Nespresso Coffee Machine, Single Cup Offset: 0 / 0
+    Food Slicer / DOMO Schneidemaschine DO521S Offset: 3 / 3
+    Food Slicer / DOMO Schneidemaschine DO521S Offset: 3 / 3
+    Food Slicer / DOMO Schneidemaschine DO521S Offset: 3 / 3
+    Food Slicer / DOMO Schneidemaschine DO521S Offset: 3 / 3
+    Moulinex electronic 833 Offset: 4 / 4
+    Moulinex electronic 833 Offset: 4 / 4
+    Moulinex electronic 833 Offset: 4 / 4
+    Moulinex electronic 833 Offset: 4 / 4
+    Toaster / Tefal Vario Offset: 5 / 5
+    Toaster / Tefal Vario Offset: 5 / 5
+    Toaster / Tefal Vario Offset: 5 / 5
+    Toaster / Tefal Vario Offset: 5 / 5
+    Kitchen Sink (5L/min) Offset: 20 / 20
+    Kitchen Sink (5L/min) Offset: 50 / 50
+    Nespresso Coffee Machine, Single Cup Offset: 60 / 60
+    Nespresso Coffee Machine, Single Cup Offset: 60 / 60
+    Nespresso Coffee Machine, Single Cup Offset: 60 / 60
+    Nespresso Coffee Machine, Single Cup Offset: 60 / 60
+    Kitchen Sink (5L/min) Offset: 80 / 80
+    Electric Kettle / Petra WK288 1.5L Offset: 80 / 80
+    Electric Kettle / Petra WK288 1.5L Offset: 80 / 80
+    Electric Kettle / Petra WK288 1.5L Offset: 80 / 80
+    Electric Kettle / Petra WK288 1.5L Offset: 80 / 80
+
+Bath:
+  clean the bath (including transportation) (Time limit: )
+    Cleanser Offset: 0 / 0
+  get ready in the morning (women) (including transportation) (Time limit: )
+    Bathroom Sink 15 L/Min Offset: 0 / 0
+    Bathroom Sink 15 L/Min Offset: 3 / 3
+    Bathroom Sink 15 L/Min Offset: 10 / 10
+  take a shower with hair washing (women) (20 min hair drying) (including transportation) (Time limit: )
+    Shower 5 L/min Offset: 0 / 0
+    Hair Dryer Babyliss 2000 Offset: 22 / 22
+    Hair Dryer Babyliss 2000 Offset: 22 / 22
+    Hair Dryer Babyliss 2000 Offset: 22 / 22
+    Hair Dryer Babyliss 2000 Offset: 22 / 22
+  take a shower with hair washing (women) (5 min hair drying) (including transportation) (Time limit: )
+    Shower 5 L/min Offset: 0 / 0
+    Hair Dryer Babyliss 2000 Offset: 22 / 22
+    Hair Dryer Babyliss 2000 Offset: 22 / 22
+    Hair Dryer Babyliss 2000 Offset: 22 / 22
+    Hair Dryer Babyliss 2000 Offset: 22 / 22
+  take a shower without hair washing (women) (including transportation) (Time limit: )
+    Shower 5 L/min Offset: 0 / 0
+  go to the toilet (including transportation) (Time limit: )
+    Toilet 6 L/min Offset: 0 / 0
+    Bathroom Sink 15 L/Min Offset: 1 / 1
+  get ready in the morning (men) (including transportation) (Time limit: )
+    Bathroom Sink 15 L/Min Offset: 0 / 0
+    Bathroom Sink 15 L/Min Offset: 5 / 5
+    Bathroom Sink 15 L/Min Offset: 9 / 9
+  take a shower (men) (including transportation) (Time limit: )
+    Shower 5 L/min Offset: 0 / 0
+    Bathroom Sink 15 L/Min Offset: 12 / 12
+
+Living room:
+  use the computer (1 h) (including transportation) (Time limit: )
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+    Epson Stylus Color 860 Offset: 20 / 20
+    Epson Stylus Color 860 Offset: 20 / 20
+    Epson Stylus Color 860 Offset: 20 / 20
+    Epson Stylus Color 860 Offset: 20 / 20
+    TASKalfa 180 Offset: 50 / 50
+    TASKalfa 180 Offset: 50 / 50
+    TASKalfa 180 Offset: 50 / 50
+    TASKalfa 180 Offset: 50 / 50
+  use the computer (1_5 h) (including transportation) (Time limit: )
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+  use the computer (2 h) (including transportation) (Time limit: )
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+    Epson Stylus Color 860 Offset: 20 / 20
+    Epson Stylus Color 860 Offset: 20 / 20
+    Epson Stylus Color 860 Offset: 20 / 20
+    Epson Stylus Color 860 Offset: 20 / 20
+    TASKalfa 180 Offset: 30 / 30
+    TASKalfa 180 Offset: 30 / 30
+    TASKalfa 180 Offset: 30 / 30
+    TASKalfa 180 Offset: 30 / 30
+    Canon CanoScan LIDE 110 Offset: 50 / 50
+    Canon CanoScan LIDE 110 Offset: 50 / 50
+    Canon CanoScan LIDE 110 Offset: 50 / 50
+    Canon CanoScan LIDE 110 Offset: 50 / 50
+  use the computer for recreation (2 h) (including transportation) (Time limit: )
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+  use the computer with external HD (1 h) (including transportation) (Time limit: )
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC / Acer Aspire T310 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+    PC Monitor / Fujitsu Siemens Scaleoview H19-1 Offset: 0 / 0
+    External Harddrive Iomega 3.5" Offset: 0 / 0
+    External Harddrive Iomega 3.5" Offset: 0 / 0
+    External Harddrive Iomega 3.5" Offset: 0 / 0
+    External Harddrive Iomega 3.5" Offset: 0 / 0
+    Epson Stylus Color 860 Offset: 20 / 20
+    Epson Stylus Color 860 Offset: 20 / 20
+    Epson Stylus Color 860 Offset: 20 / 20
+    Epson Stylus Color 860 Offset: 20 / 20
+    TASKalfa 180 Offset: 50 / 50
+    TASKalfa 180 Offset: 50 / 50
+    TASKalfa 180 Offset: 50 / 50
+    TASKalfa 180 Offset: 50 / 50
+  watch a movie for 1 h 30 min with home cinema system (including transportation) (Time limit: )
+    CD/DVD Player / Phillips HDR3810/31 Offset: 0 / 0
+    CD/DVD Player / Phillips HDR3810/31 Offset: 0 / 0
+    CD/DVD Player / Phillips HDR3810/31 Offset: 0 / 0
+    CD/DVD Player / Phillips HDR3810/31 Offset: 0 / 0
+    Home Cinema System / Samsung HT-D5550 Offset: 0 / 0
+    Home Cinema System / Samsung HT-D5550 Offset: 0 / 0
+    Home Cinema System / Samsung HT-D5550 Offset: 0 / 0
+    Home Cinema System / Samsung HT-D5550 Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+  watch a movie for 2 h with home cinema system (including transportation) (Time limit: )
+    Home Cinema System / Samsung HT-D5550 Offset: 0 / 0
+    Home Cinema System / Samsung HT-D5550 Offset: 0 / 0
+    Home Cinema System / Samsung HT-D5550 Offset: 0 / 0
+    Home Cinema System / Samsung HT-D5550 Offset: 0 / 0
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+  read a book (1 h) (including transportation) (Time limit: )
+    Book Offset: 0 / 0
+  read a book on the couch all the time (including transportation) (Time limit: )
+    Couch Offset: 0 / 0
+  read a book on the couch only 9:00 to 22:00 (including transportation) (Time limit: )
+    Couch Offset: 0 / 0
+  read a magazine (including transportation) (Time limit: )
+    Magazine Offset: 0 / 0
+    Osram Light Bulb Classic A 60W Offset: 0 / 0
+    Osram Light Bulb Classic A 60W Offset: 0 / 0
+    Osram Light Bulb Classic A 60W Offset: 0 / 0
+    Osram Light Bulb Classic A 60W Offset: 0 / 0
+  read a newspaper for 30min (including transportation) (Time limit: )
+    Newspaper Offset: 0 / 0
+  take a nap (including transportation) (Time limit: )
+    Couch Offset: 0 / 0
+  take nap on the weekend (2 h) (including transportation) (Time limit: )
+    Couch Offset: 0 / 0
+  watch a movie for 1 h 30 min (including transportation) (Time limit: )
+    CD/DVD Player / Phillips HDR3810/31 Offset: 0 / 0
+    CD/DVD Player / Phillips HDR3810/31 Offset: 0 / 0
+    CD/DVD Player / Phillips HDR3810/31 Offset: 0 / 0
+    CD/DVD Player / Phillips HDR3810/31 Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+  watch a movie for 2 h (including transportation) (Time limit: )
+    CD/DVD Player / Phillips HDR3810/31 Offset: 0 / 0
+    CD/DVD Player / Phillips HDR3810/31 Offset: 0 / 0
+    CD/DVD Player / Phillips HDR3810/31 Offset: 0 / 0
+    CD/DVD Player / Phillips HDR3810/31 Offset: 0 / 0
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+  watch sports on TV with SAT Reciever (2 h) (including transportation) (Time limit: )
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+  watch the news (including transportation) (Time limit: )
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+  watch TV (1 h) (including transportation) (Time limit: )
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    SAT Receiver / Kathrein UFS913 Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+    TV Medion MD20123_DE_A Offset: 0 / 0
+  change decorations (including transportation) (Time limit: )
+    Decorations Offset: 0 / 0
+
+Food Market:
+  go shopping for food on the market (2 h) (including transportation) (Time limit: )
+    Public Market Offset: 0 / 0
+
+Supermarket:
+  go shopping for food in the supermarket (1_5 h) (including transportation) (Time limit: )
+    Supermarket Offset: 0 / 0
+
+Garden:
+  do garden work every day (including transportation) (Time limit: )
+    Hedge Trimmer / Bosch AHS 550-24 ST Offset: 0 / 0
+    Hedge Trimmer / Bosch AHS 550-24 ST Offset: 0 / 0
+    Hedge Trimmer / Bosch AHS 550-24 ST Offset: 0 / 0
+    Hedge Trimmer / Bosch AHS 550-24 ST Offset: 0 / 0
+    Atika LH 2500 G Offset: 40 / 40
+    Atika LH 2500 G Offset: 40 / 40
+    Atika LH 2500 G Offset: 40 / 40
+    Atika LH 2500 G Offset: 40 / 40
+    Lawn Mower / Sabo 36-EL SA 752 Offset: 60 / 60
+    Lawn Mower / Sabo 36-EL SA 752 Offset: 60 / 60
+    Lawn Mower / Sabo 36-EL SA 752 Offset: 60 / 60
+    Lawn Mower / Sabo 36-EL SA 752 Offset: 60 / 60
+  relax in the garden (including transportation) (Time limit: )
+    Sunbed Offset: 0 / 0
+  relax in the garden 2 (including transportation) (Time limit: )
+    Sunbed 2 Offset: 0 / 0
+
+Bedroom:
+  take a nap (including transportation) (Time limit: )
+    Couch Offset: 0 / 0
+  Replacement Activity A (including transportation) (Time limit: )
+    Book Offset: 0 / 0
+  Replacement Activity B (including transportation) (Time limit: )
+    Book Offset: 0 / 0
+  Replacement Activity C (including transportation) (Time limit: )
+    Book Offset: 0 / 0
+  Replacement Activity D (including transportation) (Time limit: )
+    Book Offset: 0 / 0
+  read a book on the couch only 9:00 to 22:00 (including transportation) (Time limit: )
+    Couch Offset: 0 / 0
+  take nap on the weekend (2 h) (including transportation) (Time limit: )
+    Couch Offset: 0 / 0
+  sleep bed 02 (10 h) (including transportation) (Time limit: )
+    Bed 2 Offset: 0 / 0
+  sleep bed 01 (08 h) (including transportation) (Time limit: )
+    Bed 1 Offset: 0 / 0
+
+Shopping Mall:
+  go shopping (4 h) (including transportation) (Time limit: )
+    Shopping Cart Offset: 0 / 0
+
+Singing School:
+  take singing lessons (including transportation) (Time limit: )
+    Singing School Offset: 0 / 0
+
+Walking Location:
+  go for walk (1 h) (including transportation) (Time limit: )
+    Walking Shoes Offset: 0 / 0
+
+Bar Location:
+  go to a bar (4 h) (including transportation) (Time limit: )
+    Bar Offset: 0 / 0
+
+Office Workplace 1:
+  work at the office (09 h) (including transportation) (Time limit: Every workday between 08:00 and 10:00)
+    Office Offset: 0 / 0
+

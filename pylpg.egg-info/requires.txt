@@ -1,0 +1,5 @@
+setuptools
+dataclasses
+dataclasses_json
+pandas
+numpy

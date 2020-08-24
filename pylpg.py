@@ -126,7 +126,7 @@ def excute_lpg_single_household(year: int, householdref: JsonReference,
     return lpe.read_all_json_results_in_directory()
 
 
-def excute_lpg_single_household(year: int, householdref: JsonReference,
+def excute_lpg_with_householdata(year: int, householddata: List[HouseholdData],
                     housetype: str, startdate: str = None,
                     enddate: str = None,
                     simulate_transportation: bool = False,
@@ -140,10 +140,8 @@ def excute_lpg_single_household(year: int, householdref: JsonReference,
     request = lpe.make_default_lpg_settings(year)
 
     request.House.HouseTypeCode = housetype
-    hhn =  HouseholdData(None,None,householdref,"hhid","hhname",
-                         chargingset,transportation_device_set,travel_route_set,None,HouseholdDataSpecificationType.ByHouseholdName)
-    request.House.Households.append(hhn)
-
+    #hhn =  HouseholdData(None,None,householdref,"hhid","hhname",                         chargingset,transportation_device_set,travel_route_set,None,HouseholdDataSpecificationType.ByHouseholdName)
+    request.House.Households.append(householddata)
     if request.CalcSpec is None:
         raise Exception("Failed to initialize the calculation spec")
     if startdate is not None:

@@ -23,6 +23,24 @@ def test_single_household_function() -> None:
     df.to_csv(r'lpgexport.csv', index=True, sep=";")
     print("successfully exportet dataframe to lpgexport.csv")
 
+def test_householdata_function() -> None:
+    random.seed(2)
+    p1 = PersonData(24,"male")
+    p2 = PersonData(24, "female")
+    personspec = HouseholdDataPersonSpecification([p1,p2])
+    hhdata1 = HouseholdData(UniqueHouseholdId="uniq",Name="name",
+                            HouseholdDataPersonSpec=personspec,
+                            HouseholdDataSpecification=HouseholdDataSpecificationType.ByPersons,
+                            TransportationDeviceSet=TransportationDeviceSets.Bus_and_two_30_km_h_Cars,
+                            ChargingStationSet=ChargingStationSets.Charging_At_Home_with_11_kW,
+                            TravelRouteSet=TravelRouteSets.Travel_Route_Set_for_15km_Commuting_Distance)
+    df: pandas.DataFrame = pylpg.excute_lpg_with_householdata(year=2020, householddata=hhdata1,
+                                                             housetype=HouseTypes.HT23_No_Infrastructure_at_all,
+                                                             startdate="01.01.2020", enddate="01.03.2020",
+                                                             simulate_transportation=True)
+    df.to_csv(r'lpgexport.csv', index=True, sep=";")
+    print("successfully exportet dataframe to lpgexport.csv")
+
 def test_grid_profiles_function() -> None:
     random.seed(2)
     household_sizes = [2]
@@ -61,6 +79,6 @@ def personDataToString(pd: PersonData) -> str:
     return str(str(pd.Age) + " - " + pd.Gender)
 
 if __name__ == "__main__":
-    test_tsib_function()
-    test_single_household_function()
+    test_householdata_function()
+    #test_single_household_function()
     
