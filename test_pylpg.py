@@ -33,7 +33,7 @@ def test_householdata_function() -> None:
                             HouseholdDataSpecification=HouseholdDataSpecificationType.ByPersons,
                             TransportationDeviceSet=TransportationDeviceSets.Bus_and_two_30_km_h_Cars,
                             ChargingStationSet=ChargingStationSets.Charging_At_Home_with_11_kW,
-                            TravelRouteSet=TravelRouteSets.Travel_Route_Set_for_15km_Commuting_Distance)
+                            TravelRouteSet=TravelRouteSets.Travel_Route_Set_for_15km_Commuting_Distance                            )
     df: pandas.DataFrame = pylpg.excute_lpg_with_householdata(year=2020, householddata=hhdata1,
                                                              housetype=HouseTypes.HT23_No_Infrastructure_at_all,
                                                              startdate="01.01.2020", enddate="01.03.2020",

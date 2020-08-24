@@ -132,7 +132,9 @@ def excute_lpg_with_householdata(year: int, householddata: List[HouseholdData],
                     simulate_transportation: bool = False,
                     chargingset: JsonReference = None,
                     transportation_device_set: JsonReference= None,
-                    travel_route_set: JsonReference = None
+                    travel_route_set: JsonReference = None,
+                    targetHeatingDemand = None,
+                    targetCoolingDemand = None
                     ) -> pd.DataFrame:
     lpe: LPGExecutor = LPGExecutor()
 
@@ -140,6 +142,11 @@ def excute_lpg_with_householdata(year: int, householddata: List[HouseholdData],
     request = lpe.make_default_lpg_settings(year)
 
     request.House.HouseTypeCode = housetype
+    if(targetHeatingDemand != None):
+        request.House.TargetHeatDemand = targetHeatingDemand
+    if (targetCoolingDemand != None):
+        request.House.TargetCoolingDemand = targetCoolingDemand
+
     #hhn =  HouseholdData(None,None,householdref,"hhid","hhname",                         chargingset,transportation_device_set,travel_route_set,None,HouseholdDataSpecificationType.ByHouseholdName)
     request.House.Households.append(householddata)
     if request.CalcSpec is None:
