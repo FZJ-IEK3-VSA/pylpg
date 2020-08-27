@@ -1,6 +1,6 @@
 import json
 from concurrent.futures.thread import ThreadPoolExecutor
-
+import os
 import pylpg
 import lpgdata
 import lpgpythonbindings
@@ -16,6 +16,12 @@ def exec_lpg():
         hhname = x["LPG"]["HHName"]
         print(hhname)
         i += 1
+        #if i > 10:
+         #   break
+        resultfilename = "R" + str(i) + ".csv"
+        if(os.path.exists(resultfilename)):
+            print(resultfilename + " exists, skipping")
+            continue
         persons = []
         for person in x["LPG"]["Persons"]:
             pd = lpgdata.PersonData(person["Age"], person["Gender"])
@@ -36,8 +42,7 @@ def exec_lpg():
                        enddate="2020-12-31",
                        simulate_transportation=False,
                        calculation_index=i))
-        #if i > 10:
-         #   break
+
     print("finished submitting")
     executor.shutdown(wait=True)
 

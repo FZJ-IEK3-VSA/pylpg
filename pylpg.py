@@ -170,7 +170,13 @@ def excute_lpg_with_householdata(year: int, householddata: HouseholdData,
     lpe.execute_lpg_binaries()
 
     df = lpe.read_all_json_results_in_directory()
-    df.to_csv("R" + str(calculation_index) + ".csv")
+    df_electricity = df['Electricity_HH1']
+    df_electricity.to_csv("R" + str(calculation_index) + ".csv")
+    calcdir = "C" + str(calculation_index)
+    if os.path.exists(calcdir):
+        print("cleaning up " + calcdir)
+        shutil.rmtree(calcdir)
+        time.sleep(1)
 
 
 def execute_grid_calc(year: int, household_size_list: List[int],
