@@ -242,7 +242,7 @@ class LPGExecutor:
         # execute LPG
         pathname = Path(self.calculation_directory, self.simengine_src_filename)
         print("executing in " + str(self.calculation_directory))
-        subprocess.run([str(pathname), "processhousejob", "-j", "calcspec.json"], shell=True, cwd=str(self.calculation_directory))
+        subprocess.run([str(pathname), "processhousejob", "-j", "calcspec.json"], cwd=str(self.calculation_directory))
 
     def make_default_lpg_settings(self, year: int) -> HouseCreationAndCalculationJob:
         print("Creating")
