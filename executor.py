@@ -7,7 +7,7 @@ import lpgpythonbindings
 
 
 def exec_lpg():
-    with open('C:\\Work\\fzj\\Covid Paper\\PopulationStructure\\assignments.json') as f:
+    with open('assignments.json') as f:
         data = json.load(f)
     i = 0
     executor = ThreadPoolExecutor(max_workers=2)
