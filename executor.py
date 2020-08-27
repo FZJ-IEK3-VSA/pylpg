@@ -10,7 +10,7 @@ def exec_lpg():
     with open('assignments.json') as f:
         data = json.load(f)
     i = 0
-    executor = ThreadPoolExecutor(max_workers=3)
+    executor = ThreadPoolExecutor(max_workers=20)
     futures = []
     for x in data["Assigns"]:
         hhname = x["LPG"]["HHName"]
@@ -33,11 +33,11 @@ def exec_lpg():
         futures.append(executor.submit(pylpg.excute_lpg_with_householdata, year=2020, householddata=hd,
                        housetype=lpgdata.HouseTypes.HT23_No_Infrastructure_at_all,
                        startdate="01.01.2020",
-                       enddate="2020-01-31",
+                       enddate="2020-12-31",
                        simulate_transportation=False,
                        calculation_index=i))
-        if i > 10:
-            break
+        #if i > 10:
+         #   break
     print("finished submitting")
     executor.shutdown(wait=True)
 
