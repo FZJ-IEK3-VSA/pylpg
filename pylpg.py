@@ -1,3 +1,5 @@
+import time
+
 from lpgdata import *
 from lpgpythonbindings import *
 from typing import Any
@@ -10,18 +12,19 @@ from pathlib import Path
 from typing import List
 from sys import platform
 import pathlib
+import shutil
 
 
 def excute_lpg_tsib(year: int, number_of_households: int,
                     number_of_people_per_household: int, startdate: str = None,
                     enddate: str = None,
                     transportation: bool = False) -> pd.DataFrame:
-    lpe: LPGExecutor = LPGExecutor()
+    lpe: LPGExecutor = LPGExecutor(1)
     if number_of_households < 1:
         print("too few households")
         raise Exception("Need at least one household")
 
-    #basic default spec
+    # basic default spec
     request = lpe.make_default_lpg_settings(year)
 
     # create random households
@@ -33,7 +36,7 @@ def excute_lpg_tsib(year: int, number_of_households: int,
         hhd.ChargingStationSet = ChargingStationSets.Charging_At_Home_with_03_7_kW_output_results_to_Car_Electricity
         hhd.TravelRouteSet = TravelRouteSets.Travel_Route_Set_for_30km_Commuting_Distance
         hhd.TransportationDeviceSet = TransportationDeviceSets.Bus_and_two_30_km_h_Cars
-        hhd.HouseholdDataPersonSpec.Persons = makeReasonableFamily(number_of_people_per_household)
+        hhd.HouseholdDataPersonSpec.Persons = make_reasonable_family(number_of_people_per_household)
         request.House.Households.append(hhd)
 
     # set more parameters
@@ -48,36 +51,37 @@ def excute_lpg_tsib(year: int, number_of_households: int,
         request.CalcSpec.EnableTransportation = True
         request.CalcSpec.CalcOptions.append(CalcOption.TansportationDeviceJsons)
 
-    #write to json
+    # write to json
     with open(calcspecfilename, "w") as calcspecfile:
         jsonrequest = request.to_json(indent=4)  # type: ignore
         calcspecfile.write(jsonrequest)
 
-    #execute
+    # execute
     lpe.execute_lpg_binaries()
 
     # read the results and return as dataframe
     return lpe.read_all_json_results_in_directory()
 
-def makeReasonableFamily(personCount: int):
+
+def make_reasonable_family(person_count: int):
     previousage = 0
     persons = []
     g = 0
-    for person_idx in range(personCount):
+    for person_idx in range(person_count):
 
-        if(person_idx == 0): # first is an adult
-            age = random.randint(18,100)
+        if person_idx == 0:  # first is an adult
+            age = random.randint(18, 100)
             previousage = age
             g = random.randint(0, 1)
-        elif person_idx==1: # 2nd adult should be roughly similar age
-            diffage = random.randint(0,10)
-            age = previousage -5 + diffage
+        elif person_idx == 1:  # 2nd adult should be roughly similar age
+            diffage = random.randint(0, 10)
+            age = previousage - 5 + diffage
             if g == 0:
                 g = 1
             else:
                 g = 0
-        else: # other people are children
-            age = random.randint(0,20)
+        else:  # other people are children
+            age = random.randint(0, 20)
             if g == 0:
                 g = 1
             else:
@@ -86,26 +90,28 @@ def makeReasonableFamily(personCount: int):
             gender = Gender.Male
         else:
             gender = Gender.Female
-        pd = PersonData(age,gender)
+        pd = PersonData(age, gender)
         persons.append(pd)
     return persons
 
+
 def excute_lpg_single_household(year: int, householdref: JsonReference,
-                    housetype: str, startdate: str = None,
-                    enddate: str = None,
-                    simulate_transportation: bool = False,
-                    chargingset: JsonReference = None,
-                    transportation_device_set: JsonReference= None,
-                    travel_route_set: JsonReference = None
-                    ) -> pd.DataFrame:
-    lpe: LPGExecutor = LPGExecutor()
+                                housetype: str, startdate: str = None,
+                                enddate: str = None,
+                                simulate_transportation: bool = False,
+                                chargingset: JsonReference = None,
+                                transportation_device_set: JsonReference = None,
+                                travel_route_set: JsonReference = None
+                                ) -> pd.DataFrame:
+    lpe: LPGExecutor = LPGExecutor(1)
 
     # basic request
     request = lpe.make_default_lpg_settings(year)
 
     request.House.HouseTypeCode = housetype
-    hhn =  HouseholdData(None,None,householdref,"hhid","hhname",
-                         chargingset,transportation_device_set,travel_route_set,None,HouseholdDataSpecificationType.ByHouseholdName)
+    hhnamespec = HouseholdNameSpecification(householdref)
+    hhn = HouseholdData(None, None, hhnamespec, "hhid", "hhname",
+                        chargingset, transportation_device_set, travel_route_set, None, HouseholdDataSpecificationType.ByHouseholdName)
     request.House.Households.append(hhn)
 
     if request.CalcSpec is None:
@@ -126,28 +132,27 @@ def excute_lpg_single_household(year: int, householdref: JsonReference,
     return lpe.read_all_json_results_in_directory()
 
 
-def excute_lpg_with_householdata(year: int, householddata: List[HouseholdData],
-                    housetype: str, startdate: str = None,
-                    enddate: str = None,
-                    simulate_transportation: bool = False,
-                    chargingset: JsonReference = None,
-                    transportation_device_set: JsonReference= None,
-                    travel_route_set: JsonReference = None,
-                    targetHeatingDemand = None,
-                    targetCoolingDemand = None
-                    ) -> pd.DataFrame:
-    lpe: LPGExecutor = LPGExecutor()
+def excute_lpg_with_householdata(year: int, householddata: HouseholdData,
+                                 housetype: str, startdate: str = None,
+                                 enddate: str = None,
+                                 simulate_transportation: bool = False,
+                                 target_heating_demand: Optional[float] = None,
+                                 target_cooling_demand: Optional[float] = None,
+                                 calculation_index: int = 1
+                                 ):
+    print("Starting calc with " + str(calculation_index) + " for " + householddata.Name)
+    lpe: LPGExecutor = LPGExecutor(calculation_index)
 
     # basic request
     request = lpe.make_default_lpg_settings(year)
 
     request.House.HouseTypeCode = housetype
-    if(targetHeatingDemand != None):
-        request.House.TargetHeatDemand = targetHeatingDemand
-    if (targetCoolingDemand != None):
-        request.House.TargetCoolingDemand = targetCoolingDemand
+    if target_heating_demand is not None:
+        request.House.TargetHeatDemand = target_heating_demand
+    if target_cooling_demand is not None:
+        request.House.TargetCoolingDemand = target_cooling_demand
 
-    #hhn =  HouseholdData(None,None,householdref,"hhid","hhname",                         chargingset,transportation_device_set,travel_route_set,None,HouseholdDataSpecificationType.ByHouseholdName)
+    # hhn =  HouseholdData(None,None,householdref,"hhid","hhname",                         chargingset,transportation_device_set,travel_route_set,None,HouseholdDataSpecificationType.ByHouseholdName)
     request.House.Households.append(householddata)
     if request.CalcSpec is None:
         raise Exception("Failed to initialize the calculation spec")
@@ -164,32 +169,33 @@ def excute_lpg_with_householdata(year: int, householddata: List[HouseholdData],
         calcspecfile.write(jsonrequest)
     lpe.execute_lpg_binaries()
 
-    return lpe.read_all_json_results_in_directory()
+    df = lpe.read_all_json_results_in_directory()
+    df.to_csv("R" + str(calculation_index) + ".csv")
 
 
 def execute_grid_calc(year: int, household_size_list: List[int],
-                    housetype: str, startdate: str = None,
-                    enddate: str = None,
-                    simulate_transportation: bool = False,
-                    chargingset: JsonReference = None,
-                    transportation_device_set: JsonReference= None,
-                    travel_route_set: JsonReference = None
-                    ) -> pd.DataFrame:
-    lpe: LPGExecutor = LPGExecutor()
+                      housetype: str, startdate: str = None,
+                      enddate: str = None,
+                      simulate_transportation: bool = False,
+                      chargingset: JsonReference = None,
+                      transportation_device_set: JsonReference = None,
+                      travel_route_set: JsonReference = None
+                      ) -> pd.DataFrame:
+    lpe: LPGExecutor = LPGExecutor(1)
 
     # basic request
     request = lpe.make_default_lpg_settings(year)
     request.CalcSpec.CalcOptions.clear()
     request.CalcSpec.CalcOptions.append(CalcOption.JsonHouseSumFiles)
-    if(len(household_size_list)< 1):
+    if len(household_size_list) < 1:
         raise Exception("need at least one household.")
 
     request.House.HouseTypeCode = housetype
     count = 1
     for hs in household_size_list:
-        hhdps: HouseholdDataPersonSpecification = HouseholdDataPersonSpecification(makeReasonableFamily(hs))
-        hhn =  HouseholdData(hhdps,None,None,"hhid","hhname" + str(count),
-                         chargingset,transportation_device_set,travel_route_set,None,HouseholdDataSpecificationType.ByPersons)
+        hhdps: HouseholdDataPersonSpecification = HouseholdDataPersonSpecification(make_reasonable_family(hs))
+        hhn = HouseholdData(hhdps, None, None, "hhid", "hhname" + str(count),
+                            chargingset, transportation_device_set, travel_route_set, None, HouseholdDataSpecificationType.ByPersons)
         request.House.Households.append(hhn)
         count = count + 1
 
@@ -212,31 +218,34 @@ def execute_grid_calc(year: int, household_size_list: List[int],
 
 
 class LPGExecutor:
-    def __init__(self):
-        version = "_9.9.0_"
+    def __init__(self, calcidx: int):
+        version = "_"
         self.working_directory = pathlib.Path(__file__).parent.absolute()
         if platform == "linux" or platform == "linux2":
-            self.calculation_directory = Path(self.working_directory, "LPG" + version + "linux")
-            self.simengine_filename = "simengine2"
+            self.calculation_src_directory = Path(self.working_directory, "LPG" + version + "linux")
+            self.simengine_src_filename = "simengine2"
         elif platform == "win32":
-            self.calculation_directory = Path(self.working_directory, "LPG" + version + "win")
-            self.simengine_filename = "simulationengine.exe"
+            self.calculation_src_directory = Path(self.working_directory, "LPG" + version + "win")
+            self.simengine_src_filename = "simulationengine.exe"
         else:
             raise Exception("unknown operating system detected: " + platform)
 
+        self.calculation_directory = Path(self.working_directory, "C" + str(calcidx))
+        print("Working in directory: " + str(self.calculation_directory))
+        if os.path.exists(self.calculation_directory):
+            shutil.rmtree(self.calculation_directory)
+            time.sleep(1)
+        shutil.copytree(self.calculation_src_directory, self.calculation_directory)
+        print("copied to: " + str(self.calculation_directory))
+
     def execute_lpg_binaries(self) -> Any:
         # execute LPG
-        pathname = Path(self.calculation_directory, self.simengine_filename)
-        os.chdir(str(self.calculation_directory))
+        pathname = Path(self.calculation_directory, self.simengine_src_filename)
         print("executing in " + str(self.calculation_directory))
-        subprocess.run([str(pathname), "processhousejob", "-j", "calcspec.json"])
-
+        subprocess.run([str(pathname), "processhousejob", "-j", "calcspec.json"], shell=True, cwd=str(self.calculation_directory))
 
     def make_default_lpg_settings(self, year: int) -> HouseCreationAndCalculationJob:
-
-
         print("Creating")
-
         hj = HouseCreationAndCalculationJob()
         hj.set_Scenario("S1").set_Year(str(year)).set_DistrictName("district")
         hd = HouseData()
@@ -284,4 +293,3 @@ class LPGExecutor:
                 timestamps = pd.date_range(ts, periods=len(sumProfile.Values), freq='T')
                 df["Timestamp"] = timestamps
         return df
-

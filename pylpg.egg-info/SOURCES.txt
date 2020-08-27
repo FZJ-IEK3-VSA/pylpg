@@ -9,6 +9,18 @@ pylpg.py
 requirements.txt
 setup.py
 test_pylpg.py
+.eggs/README.txt
+.eggs/setuptools_git-1.2-py3.7.egg/EGG-INFO/DESCRIPTION.rst
+.eggs/setuptools_git-1.2-py3.7.egg/EGG-INFO/PKG-INFO
+.eggs/setuptools_git-1.2-py3.7.egg/EGG-INFO/RECORD
+.eggs/setuptools_git-1.2-py3.7.egg/EGG-INFO/WHEEL
+.eggs/setuptools_git-1.2-py3.7.egg/EGG-INFO/entry_points.txt
+.eggs/setuptools_git-1.2-py3.7.egg/EGG-INFO/metadata.json
+.eggs/setuptools_git-1.2-py3.7.egg/EGG-INFO/top_level.txt
+.eggs/setuptools_git-1.2-py3.7.egg/EGG-INFO/zip-safe
+.eggs/setuptools_git-1.2-py3.7.egg/setuptools_git/__init__.py
+.eggs/setuptools_git-1.2-py3.7.egg/setuptools_git/tests.py
+.eggs/setuptools_git-1.2-py3.7.egg/setuptools_git/utils.py
 LPG_9.9.0_linux/Autofac.dll
 LPG_9.9.0_linux/Automation.dll
 LPG_9.9.0_linux/Automation.pdb
@@ -251,6 +263,7 @@ LPG_9.9.0_win/EntityFramework.SqlServer.dll
 LPG_9.9.0_win/EntityFramework.dll
 LPG_9.9.0_win/JetBrains.Annotations.dll
 LPG_9.9.0_win/LPG9.9.0.zip
+LPG_9.9.0_win/LastDatabase.txt
 LPG_9.9.0_win/LoadProfileGenerator.exe
 LPG_9.9.0_win/LoadProfileGenerator.exe.config
 LPG_9.9.0_win/Microsoft.Bcl.AsyncInterfaces.dll
@@ -285,16 +298,73 @@ LPG_9.9.0_win/System.Runtime.CompilerServices.Unsafe.dll
 LPG_9.9.0_win/System.Threading.Tasks.Extensions.dll
 LPG_9.9.0_win/System.ValueTuple.dll
 LPG_9.9.0_win/Utf8Json.dll
-LPG_9.9.0_win/calcspec.json
 LPG_9.9.0_win/lpgdata.py
-LPG_9.9.0_win/lpgexport.csv
-LPG_9.9.0_win/lpgexport_grid.csv
 LPG_9.9.0_win/lpgpythonbindings.py
 LPG_9.9.0_win/lpgsetup.iss
 LPG_9.9.0_win/profilegenerator.db3
 LPG_9.9.0_win/xunit.abstractions.dll
+__pycache__/lpgdata.cpython-37.pyc
+__pycache__/lpgpythonbindings.cpython-37.pyc
+__pycache__/pylpg.cpython-37.pyc
 pylpg.egg-info/PKG-INFO
 pylpg.egg-info/SOURCES.txt
 pylpg.egg-info/dependency_links.txt
 pylpg.egg-info/requires.txt
 pylpg.egg-info/top_level.txt
+pylpg/LPG_9.9.0_win/LastDatabase.txt
+pylpg/LPG_9.9.0_win/__init__.py
+pylpg/LPG_9.9.0_win/calcspec.json
+pylpg/LPG_9.9.0_win/lpgexport.csv
+pylpg/LPG_9.9.0_win/results/AffordanceDefinition.HH1.txt
+pylpg/LPG_9.9.0_win/results/AffordanceTags.txt
+pylpg/LPG_9.9.0_win/results/HouseSpec.House.txt
+pylpg/LPG_9.9.0_win/results/HouseholdContents.HH1.txt
+pylpg/LPG_9.9.0_win/results/Log.CommandlineCalculation.txt
+pylpg/LPG_9.9.0_win/results/Persons.HH1.txt
+pylpg/LPG_9.9.0_win/results/Results.General.sqlite
+pylpg/LPG_9.9.0_win/results/Results.HH1.sqlite
+pylpg/LPG_9.9.0_win/results/Results.House.sqlite
+pylpg/LPG_9.9.0_win/results/finished.flag
+pylpg/LPG_9.9.0_win/results/profilegenerator.copy.db3
+pylpg/LPG_9.9.0_win/results/Results/BodilyActivityLevel.High.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/BodilyActivityLevel.Low.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/BodilyActivityLevel.Outside.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/BodilyActivityLevel.Unknown.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/CarLocation.Car 1, 22kW Charging Power, avg. Speed 30 km h.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/CarLocation.Car 2, 22kW Charging Power, avg. Speed 30 km h.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/Carstate.Car 1, 22kW Charging Power, avg. Speed 30 km h.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/Carstate.Car 2, 22kW Charging Power, avg. Speed 30 km h.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/DrivingDistance.Car 1, 22kW Charging Power, avg. Speed 30 km h.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/DrivingDistance.Car 2, 22kW Charging Power, avg. Speed 30 km h.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/Soc.Car 1, 22kW Charging Power, avg. Speed 30 km h.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/Soc.Car 2, 22kW Charging Power, avg. Speed 30 km h.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/Sum.Air Conditioning Load.House.json
+pylpg/LPG_9.9.0_win/results/Results/Sum.Apparent.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/Sum.Apparent.House.json
+pylpg/LPG_9.9.0_win/results/Results/Sum.Cold Water.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/Sum.Cold Water.House.json
+pylpg/LPG_9.9.0_win/results/Results/Sum.Electricity.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/Sum.Electricity.House.json
+pylpg/LPG_9.9.0_win/results/Results/Sum.Elevator Distance.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/Sum.Gas.House.json
+pylpg/LPG_9.9.0_win/results/Results/Sum.Hot water.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/Sum.Hot water.House.json
+pylpg/LPG_9.9.0_win/results/Results/Sum.Inner Device Heat Gains.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/Sum.Inner Device Heat Gains.House.json
+pylpg/LPG_9.9.0_win/results/Results/Sum.None.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/Sum.Reactive.HH1.json
+pylpg/LPG_9.9.0_win/results/Results/Sum.Reactive.House.json
+pylpg/LPG_9.9.0_win/results/Results/Sum.Space Heating.House.json
+pylpg/LPG_9.9.0_win/results/Results/Sum.Warm Water.HH1.json
+pylpg/LPG_9.9.0_win/results/Temporary Files/OnlineDeviceEnergyUsage.Air Conditioning Load.dat
+pylpg/LPG_9.9.0_win/results/Temporary Files/OnlineDeviceEnergyUsage.Apparent.dat
+pylpg/LPG_9.9.0_win/results/Temporary Files/OnlineDeviceEnergyUsage.Cold Water.dat
+pylpg/LPG_9.9.0_win/results/Temporary Files/OnlineDeviceEnergyUsage.Electricity.dat
+pylpg/LPG_9.9.0_win/results/Temporary Files/OnlineDeviceEnergyUsage.Elevator Distance.dat
+pylpg/LPG_9.9.0_win/results/Temporary Files/OnlineDeviceEnergyUsage.Gas.dat
+pylpg/LPG_9.9.0_win/results/Temporary Files/OnlineDeviceEnergyUsage.Hot water.dat
+pylpg/LPG_9.9.0_win/results/Temporary Files/OnlineDeviceEnergyUsage.Inner Device Heat Gains.dat
+pylpg/LPG_9.9.0_win/results/Temporary Files/OnlineDeviceEnergyUsage.None.dat
+pylpg/LPG_9.9.0_win/results/Temporary Files/OnlineDeviceEnergyUsage.Reactive.dat
+pylpg/LPG_9.9.0_win/results/Temporary Files/OnlineDeviceEnergyUsage.Space Heating.dat
+pylpg/LPG_9.9.0_win/results/Temporary Files/OnlineDeviceEnergyUsage.Warm Water.dat

@@ -90,6 +90,8 @@ class CalcOption(str, Enum):
     JsonHouseholdSumFiles = "JsonHouseholdSumFiles"
     JsonDeviceProfilesIndividualHouseholds = "JsonDeviceProfilesIndividualHouseholds"
     TansportationDeviceJsons = "TansportationDeviceJsons"
+    DeviceTaggingSets = "DeviceTaggingSets"
+    AffordanceDefinitions = "AffordanceDefinitions"
 
 
 class HouseDefinitionType(str, Enum):
@@ -139,6 +141,12 @@ class PersonData:
 
     def set_Gender(self, value: str) -> PersonData:
         self.Gender = value
+        return self
+
+    LivingPatternTag: Optional[str] = ""
+
+    def set_LivingPatternTag(self, value: str) -> PersonData:
+        self.LivingPatternTag = value
         return self
 
 
@@ -318,6 +326,12 @@ class JsonCalcSpecification:
         self.EnableTransportation = value
         return self
 
+    EnableIdlemode: bool = False
+
+    def set_EnableIdlemode(self, value: bool) -> JsonCalcSpecification:
+        self.EnableIdlemode = value
+        return self
+
 
 # noinspection PyPep8Naming, PyUnusedLocal
 @dataclass_json
@@ -340,11 +354,23 @@ class HouseholdDataPersonSpecification:
         self.Persons = value
         return self
 
+    HouseholdTags: List[str] = field(default_factory=list)
+
+    def set_HouseholdTags(self, value: List[str]) -> HouseholdDataPersonSpecification:
+        self.HouseholdTags = value
+        return self
+
 
 # noinspection PyPep8Naming, PyUnusedLocal
 @dataclass_json
 @dataclass
 class HouseholdTemplateSpecification:
+    Persons: List[PersonData] = field(default_factory=list)
+
+    def set_Persons(self, value: List[PersonData]) -> HouseholdTemplateSpecification:
+        self.Persons = value
+        return self
+
     HouseholdTemplateName: Optional[str] = ""
 
     def set_HouseholdTemplateName(self, value: str) -> HouseholdTemplateSpecification:
@@ -415,7 +441,7 @@ class HouseholdData:
         self.TravelRouteSet = value
         return self
 
-    TransportationDistanceModifiers: List[TransportationDistanceModifier] = field(default_factory=list)
+    TransportationDistanceModifiers: Optional[List[TransportationDistanceModifier]] = field(default_factory=list)
 
     def set_TransportationDistanceModifiers(self, value: List[TransportationDistanceModifier]) -> HouseholdData:
         self.TransportationDistanceModifiers = value
@@ -532,10 +558,22 @@ class SingleDeviceProfile:
         self.Name = value
         return self
 
-    Values: List[float] = field(default_factory=list)
+    Guid: Optional[str] = ""
 
-    def set_Values(self, value: List[float]) -> SingleDeviceProfile:
-        self.Values = value
+    def set_Guid(self, value: str) -> SingleDeviceProfile:
+        self.Guid = value
+        return self
+
+    TagsBySet: Dict[str,str] = field(default_factory=dict)
+
+    def set_TagsBySet(self, value: Dict[str,str]) -> SingleDeviceProfile:
+        self.TagsBySet = value
+        return self
+
+    DeviceType: Optional[str] = ""
+
+    def set_DeviceType(self, value: str) -> SingleDeviceProfile:
+        self.DeviceType = value
         return self
 
 
@@ -697,7 +735,7 @@ class JsonSumProfile:
 class JsonDeviceProfiles:
     DeviceProfiles: List[SingleDeviceProfile] = field(default_factory=list)
 
-    def set_DeviceProfiles(self, value: List[SingleDeviceProfile]) -> JsonDeviceProfiles:
+    def set_DeviceProfiles(self, value: List[float]) -> JsonDeviceProfiles:
         self.DeviceProfiles = value
         return self
 
