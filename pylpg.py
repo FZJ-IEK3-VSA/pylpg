@@ -151,7 +151,8 @@ def excute_lpg_with_householdata(year: int, householddata: HouseholdData,
         request.House.TargetHeatDemand = target_heating_demand
     if target_cooling_demand is not None:
         request.House.TargetCoolingDemand = target_cooling_demand
-
+    request.CalcSpec.CalcOptions.append(CalcOption.ActionCarpetPlot)
+    request.CalcSpec.DefaultForOutputFiles = OutputFileDefault.All
     # hhn =  HouseholdData(None,None,householdref,"hhid","hhname",                         chargingset,transportation_device_set,travel_route_set,None,HouseholdDataSpecificationType.ByHouseholdName)
     request.House.Households.append(householddata)
     if request.CalcSpec is None:
@@ -173,10 +174,10 @@ def excute_lpg_with_householdata(year: int, householddata: HouseholdData,
     df_electricity = df['Electricity_HH1']
     df_electricity.to_csv("R" + str(calculation_index) + ".csv")
     calcdir = "C" + str(calculation_index)
-    if os.path.exists(calcdir):
-        print("cleaning up " + calcdir)
-        shutil.rmtree(calcdir)
-        time.sleep(1)
+    #if os.path.exists(calcdir):
+    #    print("cleaning up " + calcdir)
+    #    shutil.rmtree(calcdir)
+    #    time.sleep(1)
 
 
 def execute_grid_calc(year: int, household_size_list: List[int],
@@ -239,10 +240,22 @@ class LPGExecutor:
         self.calculation_directory = Path(self.working_directory, "C" + str(calcidx))
         print("Working in directory: " + str(self.calculation_directory))
         if os.path.exists(self.calculation_directory):
+            self.error_tolerating_directory_clean(self.calculation_directory)
             shutil.rmtree(self.calculation_directory)
             time.sleep(1)
         shutil.copytree(self.calculation_src_directory, self.calculation_directory)
         print("copied to: " + str(self.calculation_directory))
+
+    def error_tolerating_directory_clean(self, path: str):
+        mypath = str(path)
+        if(len(str(mypath))< 10):
+            raise Exception("Path too short. This is suspicious. Trying to delete more than you meant to?")
+        print ("cleaning " + mypath)
+        files = glob.glob(mypath +"/*" , recursive=True)
+        for file in files :
+            if(os.path.isfile(file)):
+                print("Removing " + file)
+                os.remove(file)
 
     def execute_lpg_binaries(self) -> Any:
         # execute LPG
@@ -279,7 +292,7 @@ class LPGExecutor:
         results_directory = Path(self.calculation_directory, "results", "Results")
         if not os.path.exists(str(results_directory)):
             return None
-        potential_files = glob.glob(str(results_directory) + "/*.json")
+        potential_files = glob.glob(str(results_directory) + "/Sum.*.json")
         isFirst = True
         for file in potential_files:
             #                self.print("Reading json file " + str(file))

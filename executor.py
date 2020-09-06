@@ -4,20 +4,20 @@ import os
 import pylpg
 import lpgdata
 import lpgpythonbindings
+import sys
 
-
-def exec_lpg():
-    with open('assignments.json') as f:
+def exec_lpg(filename):
+    with open(filename) as f:
         data = json.load(f)
     i = 0
-    executor = ThreadPoolExecutor(max_workers=20)
+    executor = ThreadPoolExecutor(max_workers=4)
     futures = []
     for x in data["Assigns"]:
         hhname = x["LPG"]["HHName"]
         print(hhname)
         i += 1
-        #if i > 10:
-         #   break
+        if i > 10:
+            break
         resultfilename = "R" + str(i) + ".csv"
         if(os.path.exists(resultfilename)):
             print(resultfilename + " exists, skipping")
@@ -28,6 +28,7 @@ def exec_lpg():
             pd.LivingPatternTag = person["LivingPatternTag"]
             persons.append(pd)
         templatespec = lpgdata.HouseholdTemplateSpecification(persons, hhname)
+        templatespec.ForbiddenTraitTags.append(lpgdata.TraitTags.Food_Brunching)
         hd = lpgdata.HouseholdData(HouseholdTemplateSpec=templatespec, UniqueHouseholdId="HH"+str(i),
                                    TravelRouteSet=lpgdata.TravelRouteSets.Travel_Route_Set_for_15km_Commuting_Distance,
                                    ChargingStationSet=lpgdata.ChargingStationSets.Charging_At_Home_with_03_7_kW,
@@ -48,4 +49,6 @@ def exec_lpg():
 
 
 if __name__ == "__main__":
-    exec_lpg()
+    fn = sys.argv[1]
+    print(fn)
+    exec_lpg(fn)

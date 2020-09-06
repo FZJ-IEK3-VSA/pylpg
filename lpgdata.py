@@ -269,7 +269,352 @@ class LivingPatternTags:
     Living_Pattern_University_Student_Independent = "Living Pattern / University / Student Independent"
     Living_Pattern_University_Student_Living_at_Home = "Living Pattern / University / Student Living at Home"
     Living_Pattern_Work_From_Home = "Living Pattern / Work From Home"
-    Living_Pattern_Work_From_Home_Full_Time_3_Days = "Living Pattern / Work From Home / Full Time 3 Days"
     Living_Pattern_Work_From_Home_Full_Time_5_days = "Living Pattern / Work From Home / Full Time 5 days"
     Living_Pattern_Work_From_Home_Part_Time = "Living Pattern / Work From Home / Part Time"
+
+
+# noinspection PyPep8,PyUnusedLocal
+class HouseholdTemplates:
+    CHR01_Couple_both_at_Work = "CHR01 Couple both at Work"
+    CHR01_Couple_both_Working_from_Home = "CHR01 Couple both Working from Home"
+    CHR02_Couple_30_64_age_with_work = "CHR02 Couple, 30 - 64 age, with work"
+    CHR03_Family_1_child_both_at_work = "CHR03 Family, 1 child, both at work"
+    CHR04_Couple_30_64_years_1_at_work_1_at_home = "CHR04 Couple, 30 - 64 years, 1 at work, 1 at home"
+    CHR05_Family_3_children_both_with_work = "CHR05 Family, 3 children, both with work"
+    CHR06_Jak_Jobless = "CHR06 Jak Jobless"
+    CHR07_Single_with_work = "CHR07 Single with work"
+    CHR08_Single_woman_2_children_with_work = "CHR08 Single woman, 2 children, with work"
+    CHR09_Single_woman_30_64_years_with_work = "CHR09 Single woman, 30 - 64 years, with work"
+    CHR10_Single_man_30_64_age_shift_worker = "CHR10 Single man, 30 - 64 age, shift worker"
+    CHR11_Student_Female_Philosophy = "CHR11 Student, Female, Philosophy"
+    CHR12_Student_2_Male_Philosophy = "CHR12 Student 2, Male, Philosophy"
+    CHR13_Student_with_Work = "CHR13 Student with Work"
+    CHR14_3_adults_Couple_30_64_years_both_at_work_Senior_at_home = "CHR14 3 adults: Couple, 30- 64 years, both at work + Senior at home"
+    CHR15_Multigenerational_Home_working_couple_2_children_2_seniors = "CHR15 Multigenerational Home: working couple, 2 children, 2 seniors"
+    CHR16_Couple_over_65_years = "CHR16 Couple over 65 years"
+    CHR17_Shiftworker_Couple = "CHR17 Shiftworker Couple"
+    CHR18_Family_2_children_parents_without_work = "CHR18 Family, 2 children, parents without work"
+    CHR19_Couple_30_64_years_both_at_work_with_homehelp = "CHR19 Couple, 30 - 64 years, both at work, with homehelp"
+    CHR20_one_at_work_one_work_home_3_children = "CHR20 one at work, one work home, 3 children"
+    CHR21_Couple_30_64_years_shift_worker = "CHR21 Couple, 30 - 64 years, shift worker"
+    CHR22_Single_woman_1_child_with_work = "CHR22 Single woman, 1 child, with work"
+    CHR23_Single_man_over_65_years = "CHR23 Single man over 65 years"
+    CHR24_Single_woman_over_65_years = "CHR24 Single woman over 65 years"
+    CHR25_Single_woman_under_30_years_with_work = "CHR25 Single woman under 30 years with work"
+    CHR26_Single_woman_under_30_years_without_work = "CHR26 Single woman under 30 years without work"
+    CHR27_Family_both_at_work_2_children = "CHR27 Family both at work, 2 children"
+    CHR28_Single_man_under_30_years_without_work = "CHR28 Single man under 30 years without work"
+    CHR29_Single_man_under_30_years_with_work = "CHR29 Single man under 30 years with work"
+    CHR30_Single_Retired_Man = "CHR30 Single, Retired Man"
+    CHR31_Single_Retired_Woman = "CHR31 Single, Retired Woman"
+    CHR32_Couple_under_30_years_without_work = "CHR32 Couple under 30 years without work"
+    CHR33_Couple_under_30_years_with_work = "CHR33 Couple under 30 years with work"
+    CHR34_Couple_under_30_years_one_at_work_one_at_home = "CHR34 Couple under 30 years, one at work, one at home"
+    CHR35_Single_woman_30_64_years_with_work = "CHR35 Single woman, 30 - 64 years, with work"
+    CHR36_Single_woman_30_64_years_without_work = "CHR36 Single woman, 30 - 64 years, without work"
+    CHR37_Single_man_30_64_years_with_work = "CHR37 Single man, 30 - 64 years, with work"
+    CHR38_Single_man_30_64_years_without_work = "CHR38 Single man, 30 - 64 years, without work"
+    CHR39_Couple_30_64_years_with_work = "CHR39 Couple, 30 - 64 years, with work"
+    CHR40_Couple_30_64_years_without_work = "CHR40 Couple, 30 - 64 years, without work"
+    CHR41_Family_with_3_children_both_at_work = "CHR41 Family with 3 children, both at work"
+    CHR42_Single_man_with_2_children_with_work = "CHR42 Single man with 2 children, with work"
+    CHR43_Single_man_with_1_child_with_work = "CHR43 Single man with 1 child, with work"
+    CHR44_Family_with_2_children_1_at_work_1_at_home = "CHR44 Family with 2 children, 1 at work, 1 at home"
+    CHR45_Family_with_1_child_1_at_work_1_at_home = "CHR45 Family with 1 child, 1 at work, 1 at home"
+    CHR46_Single_woman_1_child_without_work = "CHR46 Single woman, 1 child, without work"
+    CHR47_Single_woman_2_children_without_work = "CHR47 Single woman, 2 children, without work"
+    CHR48_Family_with_2_children_without_work = "CHR48 Family with 2 children, without work"
+    CHR49_Family_with_1_child_without_work = "CHR49 Family with 1 child, without work"
+    CHR50_Single_woman_with_3_children_without_work = "CHR50 Single woman with 3 children, without work"
+    CHR51_Couple_over_65_years_II = "CHR51 Couple over 65 years II"
+    CHR52_Student_Flatsharing = "CHR52 Student Flatsharing"
+    CHR53_2_Parents_1_Working_2_Children = "CHR53 2 Parents, 1 Working, 2 Children"
+    CHR54_Retired_Couple_no_work = "CHR54 Retired Couple, no work"
+    CHR55_Couple_with_work_around_40 = "CHR55 Couple with work around 40"
+    CHR56_Couple_with_2_children_husband_at_work = "CHR56 Couple with 2 children, husband at work"
+    CHR57_Family_with_2_Children_Man_at_work = "CHR57 Family with 2 Children, Man at work"
+    CHR58_Retired_Couple_no_work_no_cooking = "CHR58 Retired Couple, no work, no cooking"
+    CHR59_Family_3_children_parents_without_work = "CHR59 Family, 3 children, parents without work"
+    CHR60_Family_1_toddler_one_at_work_one_at_home = "CHR60 Family, 1 toddler, one at work, one at home"
+    CHR61_Family_1_child_both_at_work_early_living_pattern = "CHR61 Family, 1 child, both at work, early living pattern"
+    CHS01_Couple_with_2_Children_Dad_Employed = "CHS01 Couple with 2 Children, Dad Employed"
+    CHS04_Retired_Couple_no_work = "CHS04 Retired Couple, no work"
+    CHS12_Shiftworker_Couple = "CHS12 Shiftworker Couple"
+    OR01_Single_Person_Office = "OR01 Single Person Office"
+
+
+# noinspection PyPep8,PyUnusedLocal
+class TraitTags:
+    Child_Children_Entertainment = "Child / Children Entertainment"
+    Child_Garden_Play = "Child / Garden Play"
+    Child_Getting_Ready = "Child / Getting Ready"
+    Child_Kindergarden = "Child / Kindergarden"
+    Child_School = "Child / School"
+    Child_School_related_Activities = "Child / School related Activities"
+    Cleaning_All_Kinds_Cleaning = "Cleaning / All Kinds Cleaning"
+    Cleaning_Bathroom_Cleaning = "Cleaning / Bathroom Cleaning"
+    Cleaning_Dishwasher = "Cleaning / Dishwasher"
+    Cleaning_Dry_Laundry = "Cleaning / Dry Laundry"
+    Cleaning_Floor_Cleaning = "Cleaning / Floor Cleaning"
+    Cleaning_House_Dusting = "Cleaning / House Dusting"
+    Cleaning_Ironing = "Cleaning / Ironing"
+    Cleaning_Laundry = "Cleaning / Laundry"
+    Cleaning_Vacuuming = "Cleaning / Vacuuming"
+    Cleaning_Window_Cleaning = "Cleaning / Window Cleaning"
+    Entertainment_Home_Server = "Entertainment / Home Server"
+    Food_Baking = "Food / Baking"
+    Food_Bread_Baking = "Food / Bread Baking"
+    Food_Breakfast = "Food / Breakfast"
+    Food_Brunching = "Food / Brunching"
+    Food_Cooking = "Food / Cooking"
+    Food_Cooking_Every_Day = "Food / Cooking Every Day"
+    Food_Cooking_Together = "Food / Cooking Together"
+    Food_Dishes = "Food / Dishes"
+    Food_Grilling = "Food / Grilling"
+    Food_Lunch = "Food / Lunch"
+    Food_Smoothie_Making = "Food / Smoothie Making"
+    Food_Tea = "Food / Tea"
+    Food_Unhungry = "Food / Unhungry"
+    Hygiene_Bathing = "Hygiene / Bathing"
+    Hygiene_Beautification = "Hygiene / Beautification"
+    Hygiene_Foot_Bathing = "Hygiene / Foot Bathing"
+    Hygiene_Getting_Ready_for_Women = "Hygiene / Getting Ready for Women"
+    Hygiene_Getting_Ready_Men = "Hygiene / Getting Ready Men"
+    Hygiene_Hygiene_Women = "Hygiene / Hygiene Women"
+    Hygiene_Showering = "Hygiene / Showering"
+    Hygiene_Showering_Men_1 = "Hygiene / Showering Men 1"
+    Hygiene_Toilet = "Hygiene / Toilet"
+    Hygiene_Various = "Hygiene / Various"
+    Office_Leave = "Office / Leave"
+    Office_Meeting = "Office / Meeting"
+    Office_Phone = "Office / Phone"
+    Office_Sickness = "Office / Sickness"
+    Office_Start = "Office / Start"
+    Office_Use_Computer = "Office / Use Computer"
+    Sleep_Sleep_Bed_01 = "Sleep / Sleep Bed 01"
+    Sleep_Sleep_Bed_02 = "Sleep / Sleep Bed 02"
+    Sleep_Sleep_Bed_03 = "Sleep / Sleep Bed 03"
+    Sleep_Sleep_Bed_04 = "Sleep / Sleep Bed 04"
+    Sleep_Sleep_Bed_05 = "Sleep / Sleep Bed 05"
+    Sleep_Sleep_Bed_08 = "Sleep / Sleep Bed 08"
+    Sleep_Sleep_Bed_09 = "Sleep / Sleep Bed 09"
+    Sleep_Sleep_Shiftworker_1 = "Sleep / Sleep Shiftworker 1"
+    Sleep_Sleep_Shiftworker_2 = "Sleep / Sleep Shiftworker 2"
+    Spare_Time_Car_Activities = "Spare Time / Car Activities"
+    Spare_Time_Exercise = "Spare Time / Exercise"
+    Spare_Time_Garden_Activities = "Spare Time / Garden Activities"
+    Spare_Time_Hobby = "Spare Time / Hobby"
+    Spare_Time_Indoor_Entertainment = "Spare Time / Indoor Entertainment"
+    Spare_Time_Outside_Afternoon_Entertainment = "Spare Time / Outside Afternoon Entertainment"
+    Spare_Time_Outside_Evening_Entertainment = "Spare Time / Outside Evening Entertainment"
+    Spare_Time_Weekend_Activity = "Spare Time / Weekend Activity"
+    Special_Alarm = "Special / Alarm"
+    Special_Child_Care = "Special / Child Care"
+    Special_Christmas_Cooking = "Special / Christmas Cooking"
+    Special_Doctor_Visit = "Special / Doctor Visit"
+    Special_Enviromental_Improvement = "Special / Enviromental Improvement"
+    Special_Food_Shopping = "Special / Food Shopping"
+    Special_Maid_Service = "Special / Maid Service"
+    Special_Napping = "Special / Napping"
+    Special_Shovel_Snow = "Special / Shovel Snow"
+    Special_Sickness_Activities = "Special / Sickness Activities"
+    Special_Sickness_Activities_Children = "Special / Sickness Activities Children"
+    Special_Summer_Camp = "Special / Summer Camp"
+    Special_Various_small_Activities = "Special / Various small Activities"
+    Technical_Equipment_Cell_Phone = "Technical Equipment / Cell Phone"
+    Technical_Equipment_Deep_Freezer = "Technical Equipment / Deep Freezer"
+    Technical_Equipment_Fridge = "Technical Equipment / Fridge"
+    Technical_Equipment_Mini_Fridge = "Technical Equipment / Mini Fridge"
+    Technical_Equipment_Mini_Washing_Machine = "Technical Equipment / Mini Washing Machine"
+    Web_Mandatory_Food = "Web / Mandatory / Food"
+    Web_Mandatory_Sleep = "Web / Mandatory / Sleep"
+    Web_Mandatory_Work = "Web / Mandatory / Work"
+    Web_Optional_Alarm_Clock = "Web / Optional / Alarm Clock"
+    Web_Optional_Entertainment = "Web / Optional / Entertainment"
+    Web_Optional_Humidification = "Web / Optional / Humidification"
+    Web_Optional_Laundry = "Web / Optional / Laundry"
+    Web_Optional_Special = "Web / Optional / Special"
+    Web_Optional_Toilet = "Web / Optional / Toilet"
+    Web_Recommended_Additional_Food = "Web / Recommended / Additional Food"
+    Web_Recommended_Entertainment = "Web / Recommended / Entertainment"
+    Web_Recommended_Exercise = "Web / Recommended / Exercise"
+    Web_Recommended_Gardening = "Web / Recommended / Gardening"
+    Web_Recommended_Hobby = "Web / Recommended / Hobby"
+    Web_Recommended_Housework = "Web / Recommended / Housework"
+    Web_Recommended_Hygiene_Children = "Web / Recommended / Hygiene Children"
+    Web_Recommended_Hygiene_for_Women = "Web / Recommended / Hygiene for Women"
+    Web_Recommended_Hygiene_Men = "Web / Recommended / Hygiene Men"
+    Web_Recommended_Hygine_General = "Web / Recommended / Hygine General"
+    Web_Recommended_Outside_Afternoon_Entertainment = "Web / Recommended / Outside Afternoon Entertainment"
+    Web_Recommended_Outside_Evening_Entertainment = "Web / Recommended / Outside Evening Entertainment"
+    Web_Recommended_Special = "Web / Recommended / Special"
+    Web_Recommended_Toddler_Care = "Web / Recommended / Toddler Care"
+    Web_Recommended_Weekend_Activity = "Web / Recommended / Weekend Activity"
+    Work_Home_Office = "Work / Home Office"
+    Work_University = "Work / University"
+    Work_University_related = "Work / University related"
+    Work_Work = "Work / Work"
+    Work_Work_in_Shifts_1 = "Work / Work in Shifts 1"
+    Work_Work_in_Shifts_2 = "Work / Work in Shifts 2"
+
+
+# noinspection PyPep8,PyUnusedLocal
+class TemplatePersons:
+    CHR01_0_23F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR01_0_23F",  Age=23, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR01 Couple both at Work", PersonName="CHR01 Rubi")
+    CHR01_1_25M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR01_1_25M",  Age=25, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR01 Couple both at Work", PersonName="CHR01 Sami")
+    CHR01_0_23F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR01_0_23F",  Age=23, Gender=Gender.Female, LivingPattern="Living Pattern / Work From Home / Full Time 5 days", TemplateName="CHR01 Couple both Working from Home", PersonName="CHR01 Rubi")
+    CHR01_1_25M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR01_1_25M",  Age=25, Gender=Gender.Male, LivingPattern="Living Pattern / Work From Home / Full Time 5 days", TemplateName="CHR01 Couple both Working from Home", PersonName="CHR01 Sami")
+    CHR02_0_37F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR02_0_37F",  Age=37, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR02 Couple, 30 - 64 age, with work", PersonName="CHR02 Katee")
+    CHR02_1_38M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR02_1_38M",  Age=38, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR02 Couple, 30 - 64 age, with work", PersonName="CHR02 Tomi")
+    CHR03_0_40F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR03_0_40F",  Age=40, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR03 Family, 1 child, both at work", PersonName="CHR03 Ava")
+    CHR03_1_43M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR03_1_43M",  Age=43, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Early (5-7am)", TemplateName="CHR03 Family, 1 child, both at work", PersonName="CHR03 Fin")
+    CHR03_2_10M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR03_2_10M",  Age=10, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR03 Family, 1 child, both at work", PersonName="CHR03 Luka")
+    CHR04_0_45F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR04_0_45F",  Age=45, Gender=Gender.Female, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR04 Couple, 30 - 64 years, 1 at work, 1 at home", PersonName="CHR04 Amy")
+    CHR04_1_50M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR04_1_50M",  Age=50, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR04 Couple, 30 - 64 years, 1 at work, 1 at home", PersonName="CHR04 Jim")
+    CHR05_0_35F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR05_0_35F",  Age=35, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR05 Family, 3 children, both with work", PersonName="CHR05 Liz")
+    CHR05_1_13M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR05_1_13M",  Age=13, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR05 Family, 3 children, both with work", PersonName="CHR05 Mark")
+    CHR05_2_40M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR05_2_40M",  Age=40, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR05 Family, 3 children, both with work", PersonName="CHR05 Nate")
+    CHR05_3_6M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR05_3_6M",  Age=6, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR05 Family, 3 children, both with work", PersonName="CHR05 Will")
+    CHR05_4_4F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR05_4_4F",  Age=4, Gender=Gender.Female, LivingPattern="Living Pattern / Kindergarden", TemplateName="CHR05 Family, 3 children, both with work", PersonName="CHR05 Zoe")
+    CHR06_0_30M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR06_0_30M",  Age=30, Gender=Gender.Male, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR06 Jak Jobless", PersonName="CHR06 Jak")
+    CHR07_0_23M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR07_0_23M",  Age=23, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR07 Single with work", PersonName="CHR07 Christian")
+    CHR08_0_11M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR08_0_11M",  Age=11, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR08 Single woman, 2 children, with work", PersonName="CHR08 Adrian")
+    CHR08_1_7M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR08_1_7M",  Age=7, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR08 Single woman, 2 children, with work", PersonName="CHR08 Ben")
+    CHR08_2_30F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR08_2_30F",  Age=30, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR08 Single woman, 2 children, with work", PersonName="CHR08 Erin")
+    CHR09_0_34F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR09_0_34F",  Age=34, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR09 Single woman, 30 - 64 years, with work", PersonName="CHR09 Lilly")
+    CHR10_0_40M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR10_0_40M",  Age=40, Gender=Gender.Male, LivingPattern="Living Pattern / Shift work / 3 Shifts A", TemplateName="CHR10 Single man, 30 - 64 age, shift worker", PersonName="CHR10 Alvin")
+    CHR11_0_23F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR11_0_23F",  Age=23, Gender=Gender.Female, LivingPattern="Living Pattern / University / Student Independent", TemplateName="CHR11 Student, Female, Philosophy", PersonName="CHR11 Maddy")
+    CHR12_0_22M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR12_0_22M",  Age=22, Gender=Gender.Male, LivingPattern="Living Pattern / University / Student Independent", TemplateName="CHR12 Student 2, Male, Philosophy", PersonName="CHR12 Chris")
+    CHR13_0_22F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR13_0_22F",  Age=22, Gender=Gender.Female, LivingPattern="Living Pattern / University / Student Independent", TemplateName="CHR13 Student with Work", PersonName="CHR13 Iris")
+    CHR14_0_45F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR14_0_45F",  Age=45, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR14 3 adults: Couple, 30- 64 years, both at work + Senior at home", PersonName="CHR14 Hanna")
+    CHR14_1_46M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR14_1_46M",  Age=46, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR14 3 adults: Couple, 30- 64 years, both at work + Senior at home", PersonName="CHR14 Michael")
+    CHR14_2_80F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR14_2_80F",  Age=80, Gender=Gender.Female, LivingPattern="Living Pattern / Retiree", TemplateName="CHR14 3 adults: Couple, 30- 64 years, both at work + Senior at home", PersonName="CHR14 Wilma")
+    CHR15_0_15F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR15_0_15F",  Age=15, Gender=Gender.Female, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR15 Multigenerational Home: working couple, 2 children, 2 seniors", PersonName="CHR15 Abby")
+    CHR15_1_4M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR15_1_4M",  Age=4, Gender=Gender.Male, LivingPattern="Living Pattern / Kindergarden", TemplateName="CHR15 Multigenerational Home: working couple, 2 children, 2 seniors", PersonName="CHR15 Adam")
+    CHR15_2_70M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR15_2_70M",  Age=70, Gender=Gender.Male, LivingPattern="Living Pattern / Retiree", TemplateName="CHR15 Multigenerational Home: working couple, 2 children, 2 seniors", PersonName="CHR15 Eddie")
+    CHR15_3_68F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR15_3_68F",  Age=68, Gender=Gender.Female, LivingPattern="Living Pattern / Retiree", TemplateName="CHR15 Multigenerational Home: working couple, 2 children, 2 seniors", PersonName="CHR15 Myra")
+    CHR15_4_40M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR15_4_40M",  Age=40, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR15 Multigenerational Home: working couple, 2 children, 2 seniors", PersonName="CHR15 Nick")
+    CHR15_5_32F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR15_5_32F",  Age=32, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR15 Multigenerational Home: working couple, 2 children, 2 seniors", PersonName="CHR15 Rebekah")
+    CHR16_0_75F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR16_0_75F",  Age=75, Gender=Gender.Female, LivingPattern="Living Pattern / Retiree", TemplateName="CHR16 Couple over 65 years", PersonName="CHR16 Cordelia")
+    CHR16_1_80M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR16_1_80M",  Age=80, Gender=Gender.Male, LivingPattern="Living Pattern / Retiree", TemplateName="CHR16 Couple over 65 years", PersonName="CHR16 Edgar")
+    CHR17_0_31M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR17_0_31M",  Age=31, Gender=Gender.Male, LivingPattern="Living Pattern / Shift work / 3 Shifts A", TemplateName="CHR17 Shiftworker Couple", PersonName="CHR17 Joachim")
+    CHR17_1_29F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR17_1_29F",  Age=29, Gender=Gender.Female, LivingPattern="Living Pattern / Shift work / 3 Shifts B", TemplateName="CHR17 Shiftworker Couple", PersonName="CHR17 Maya")
+    CHR18_0_37M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR18_0_37M",  Age=37, Gender=Gender.Male, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR18 Family, 2 children, parents without work", PersonName="CHR18 Dan")
+    CHR18_1_35F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR18_1_35F",  Age=35, Gender=Gender.Female, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR18 Family, 2 children, parents without work", PersonName="CHR18 Rachel")
+    CHR18_2_8M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR18_2_8M",  Age=8, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR18 Family, 2 children, parents without work", PersonName="CHR18 Simon")
+    CHR18_3_12F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR18_3_12F",  Age=12, Gender=Gender.Female, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR18 Family, 2 children, parents without work", PersonName="CHR18 Sora")
+    CHR19_0_50F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR19_0_50F",  Age=50, Gender=Gender.Female, LivingPattern="Living Pattern / Maid / Day Maid", TemplateName="CHR19 Couple, 30 - 64 years, both at work, with homehelp", PersonName="CHR19 Jenny")
+    CHR19_1_38F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR19_1_38F",  Age=38, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR19 Couple, 30 - 64 years, both at work, with homehelp", PersonName="CHR19 Molly")
+    CHR19_2_42M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR19_2_42M",  Age=42, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR19 Couple, 30 - 64 years, both at work, with homehelp", PersonName="CHR19 Richard")
+    CHR20_0_45M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR20_0_45M",  Age=45, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR20 one at work, one work home, 3 children", PersonName="CHR20 Arthur")
+    CHR20_1_40F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR20_1_40F",  Age=40, Gender=Gender.Female, LivingPattern="Living Pattern / Work From Home / Part Time", TemplateName="CHR20 one at work, one work home, 3 children", PersonName="CHR20 Cassie")
+    CHR20_2_8M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR20_2_8M",  Age=8, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR20 one at work, one work home, 3 children", PersonName="CHR20 Garreth")
+    CHR20_3_12M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR20_3_12M",  Age=12, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR20 one at work, one work home, 3 children", PersonName="CHR20 George")
+    CHR20_4_4M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR20_4_4M",  Age=4, Gender=Gender.Male, LivingPattern="Living Pattern / Kindergarden", TemplateName="CHR20 one at work, one work home, 3 children", PersonName="CHR20 Gregor")
+    CHR21_0_36F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR21_0_36F",  Age=36, Gender=Gender.Female, LivingPattern="Living Pattern / Shift work / 3 Shifts B", TemplateName="CHR21 Couple, 30 - 64 years, shift worker", PersonName="CHR21 Emily")
+    CHR21_1_40M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR21_1_40M",  Age=40, Gender=Gender.Male, LivingPattern="Living Pattern / Shift work / 3 Shifts A", TemplateName="CHR21 Couple, 30 - 64 years, shift worker", PersonName="CHR21 John")
+    CHR22_0_7F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR22_0_7F",  Age=7, Gender=Gender.Female, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR22 Single woman, 1 child, with work", PersonName="CHR22 Anja")
+    CHR22_1_28F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR22_1_28F",  Age=28, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR22 Single woman, 1 child, with work", PersonName="CHR22 Fiona")
+    CHR23_0_68M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR23_0_68M",  Age=68, Gender=Gender.Male, LivingPattern="Living Pattern / Retiree", TemplateName="CHR23 Single man over 65 years", PersonName="CHR23 James")
+    CHR24_0_68F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR24_0_68F",  Age=68, Gender=Gender.Female, LivingPattern="Living Pattern / Retiree", TemplateName="CHR24 Single woman over 65 years", PersonName="CHR24 Martha")
+    CHR25_0_28F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR25_0_28F",  Age=28, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR25 Single woman under 30 years with work", PersonName="CHR25 Marlene")
+    CHR26_0_27F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR26_0_27F",  Age=27, Gender=Gender.Female, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR26 Single woman under 30 years without work", PersonName="CHR26 Florence")
+    CHR27_0_43M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR27_0_43M",  Age=43, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR27 Family both at work, 2 children", PersonName="CHR27 Emil")
+    CHR27_1_9F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR27_1_9F",  Age=9, Gender=Gender.Female, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR27 Family both at work, 2 children", PersonName="CHR27 Laura")
+    CHR27_2_39F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR27_2_39F",  Age=39, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR27 Family both at work, 2 children", PersonName="CHR27 Melanie")
+    CHR27_3_13M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR27_3_13M",  Age=13, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR27 Family both at work, 2 children", PersonName="CHR27 Tobias")
+    CHR28_0_24M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR28_0_24M",  Age=24, Gender=Gender.Male, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR28 Single man under 30 years without work", PersonName="CHR28 Patrick")
+    CHR29_0_26M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR29_0_26M",  Age=26, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR29 Single man under 30 years with work", PersonName="CHR29 Benjamin")
+    CHR30_0_70M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR30_0_70M",  Age=70, Gender=Gender.Male, LivingPattern="Living Pattern / Retiree", TemplateName="CHR30 Single, Retired Man", PersonName="CHR30 Horsti")
+    CHR31_0_68F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR31_0_68F",  Age=68, Gender=Gender.Female, LivingPattern="Living Pattern / Retiree", TemplateName="CHR31 Single, Retired Woman", PersonName="CHR31 Monika")
+    CHR32_0_23F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR32_0_23F",  Age=23, Gender=Gender.Female, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR32 Couple under 30 years without work", PersonName="CHR32 Christin")
+    CHR32_1_25M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR32_1_25M",  Age=25, Gender=Gender.Male, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR32 Couple under 30 years without work", PersonName="CHR32 Jona")
+    CHR33_0_28M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR33_0_28M",  Age=28, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR33 Couple under 30 years with work", PersonName="CHR33 Florian")
+    CHR33_1_27F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR33_1_27F",  Age=27, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR33 Couple under 30 years with work", PersonName="CHR33 Vicky")
+    CHR34_0_25F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR34_0_25F",  Age=25, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR34 Couple under 30 years, one at work, one at home", PersonName="CHR34 Julia")
+    CHR34_1_26M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR34_1_26M",  Age=26, Gender=Gender.Male, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR34 Couple under 30 years, one at work, one at home", PersonName="CHR34 Romeo")
+    CHR35_0_42F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR35_0_42F",  Age=42, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR35 Single woman, 30 - 64 years, with work", PersonName="CHR35 Heike")
+    CHR36_0_51F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR36_0_51F",  Age=51, Gender=Gender.Female, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR36 Single woman, 30 - 64 years, without work", PersonName="CHR36 Anne")
+    CHR37_0_48M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR37_0_48M",  Age=48, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR37 Single man, 30 - 64 years, with work", PersonName="CHR37 Johannes")
+    CHR38_0_55M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR38_0_55M",  Age=55, Gender=Gender.Male, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR38 Single man, 30 - 64 years, without work", PersonName="CHR38 David")
+    CHR39_0_44M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR39_0_44M",  Age=44, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR39 Couple, 30 - 64 years, with work", PersonName="CHR39 Normen")
+    CHR39_1_38F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR39_1_38F",  Age=38, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR39 Couple, 30 - 64 years, with work", PersonName="CHR39 Tina")
+    CHR40_0_48F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR40_0_48F",  Age=48, Gender=Gender.Female, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR40 Couple, 30 - 64 years, without work", PersonName="CHR40 Antje")
+    CHR40_1_51M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR40_1_51M",  Age=51, Gender=Gender.Male, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR40 Couple, 30 - 64 years, without work", PersonName="CHR40 Marcus")
+    CHR41_0_9M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR41_0_9M",  Age=9, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR41 Family with 3 children, both at work", PersonName="CHR41 Felix")
+    CHR41_1_7M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR41_1_7M",  Age=7, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR41 Family with 3 children, both at work", PersonName="CHR41 Justin")
+    CHR41_2_12F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR41_2_12F",  Age=12, Gender=Gender.Female, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR41 Family with 3 children, both at work", PersonName="CHR41 Lucy")
+    CHR41_3_38F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR41_3_38F",  Age=38, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR41 Family with 3 children, both at work", PersonName="CHR41 Maria")
+    CHR41_4_42M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR41_4_42M",  Age=42, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR41 Family with 3 children, both at work", PersonName="CHR41 Peter")
+    CHR42_0_7F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR42_0_7F",  Age=7, Gender=Gender.Female, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR42 Single man with 2 children, with work", PersonName="CHR42 Jessica")
+    CHR42_1_42M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR42_1_42M",  Age=42, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR42 Single man with 2 children, with work", PersonName="CHR42 Max")
+    CHR42_2_10M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR42_2_10M",  Age=10, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR42 Single man with 2 children, with work", PersonName="CHR42 Moritz")
+    CHR43_0_43M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR43_0_43M",  Age=43, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR43 Single man with 1 child, with work", PersonName="CHR43 Lutz")
+    CHR43_1_16M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR43_1_16M",  Age=16, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR43 Single man with 1 child, with work", PersonName="CHR43 Maik")
+    CHR44_0_43F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR44_0_43F",  Age=43, Gender=Gender.Female, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR44 Family with 2 children, 1 at work, 1 at home", PersonName="CHR44 Barbara")
+    CHR44_1_16M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR44_1_16M",  Age=16, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR44 Family with 2 children, 1 at work, 1 at home", PersonName="CHR44 Christopher")
+    CHR44_2_45M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR44_2_45M",  Age=45, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR44 Family with 2 children, 1 at work, 1 at home", PersonName="CHR44 Rainer")
+    CHR44_3_14F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR44_3_14F",  Age=14, Gender=Gender.Female, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR44 Family with 2 children, 1 at work, 1 at home", PersonName="CHR44 Sandy")
+    CHR45_0_48M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR45_0_48M",  Age=48, Gender=Gender.Male, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR45 Family with 1 child, 1 at work, 1 at home", PersonName="CHR45 Alexander")
+    CHR45_1_16F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR45_1_16F",  Age=16, Gender=Gender.Female, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR45 Family with 1 child, 1 at work, 1 at home", PersonName="CHR45 Claudia")
+    CHR45_2_45F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR45_2_45F",  Age=45, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR45 Family with 1 child, 1 at work, 1 at home", PersonName="CHR45 Susann")
+    CHR46_0_8M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR46_0_8M",  Age=8, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR46 Single woman, 1 child, without work", PersonName="CHR46 Kevin")
+    CHR46_1_38F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR46_1_38F",  Age=38, Gender=Gender.Female, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR46 Single woman, 1 child, without work", PersonName="CHR46 Marita")
+    CHR47_0_39F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR47_0_39F",  Age=39, Gender=Gender.Female, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR47 Single woman, 2 children, without work", PersonName="CHR47 Diana")
+    CHR47_1_7F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR47_1_7F",  Age=7, Gender=Gender.Female, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR47 Single woman, 2 children, without work", PersonName="CHR47 Katrin")
+    CHR47_2_10M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR47_2_10M",  Age=10, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR47 Single woman, 2 children, without work", PersonName="CHR47 Sven")
+    CHR48_0_51F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR48_0_51F",  Age=51, Gender=Gender.Female, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR48 Family with 2 children, without work", PersonName="CHR48 Lisa")
+    CHR48_1_13F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR48_1_13F",  Age=13, Gender=Gender.Female, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR48 Family with 2 children, without work", PersonName="CHR48 Maggie")
+    CHR48_2_7M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR48_2_7M",  Age=7, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR48 Family with 2 children, without work", PersonName="CHR48 Martin")
+    CHR48_3_51M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR48_3_51M",  Age=51, Gender=Gender.Male, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR48 Family with 2 children, without work", PersonName="CHR48 Stefan")
+    CHR49_0_37F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR49_0_37F",  Age=37, Gender=Gender.Female, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR49 Family with 1 child, without work", PersonName="CHR49 March")
+    CHR49_1_13F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR49_1_13F",  Age=13, Gender=Gender.Female, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR49 Family with 1 child, without work", PersonName="CHR49 Michelle")
+    CHR49_2_45M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR49_2_45M",  Age=45, Gender=Gender.Male, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR49 Family with 1 child, without work", PersonName="CHR49 Wilhelm")
+    CHR50_0_5M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR50_0_5M",  Age=5, Gender=Gender.Male, LivingPattern="Living Pattern / Kindergarden", TemplateName="CHR50 Single woman with 3 children, without work", PersonName="CHR50 Hans")
+    CHR50_1_13F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR50_1_13F",  Age=13, Gender=Gender.Female, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR50 Single woman with 3 children, without work", PersonName="CHR50 Isabella")
+    CHR50_2_9M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR50_2_9M",  Age=9, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR50 Single woman with 3 children, without work", PersonName="CHR50 Pascal")
+    CHR50_3_38F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR50_3_38F",  Age=38, Gender=Gender.Female, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR50 Single woman with 3 children, without work", PersonName="CHR50 Rita")
+    CHR51_0_69M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR51_0_69M",  Age=69, Gender=Gender.Male, LivingPattern="Living Pattern / Retiree", TemplateName="CHR51 Couple over 65 years II", PersonName="CHR51 Gustav")
+    CHR51_1_67F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR51_1_67F",  Age=67, Gender=Gender.Female, LivingPattern="Living Pattern / Retiree", TemplateName="CHR51 Couple over 65 years II", PersonName="CHR51 Maren")
+    CHR52_0_22M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR52_0_22M",  Age=22, Gender=Gender.Male, LivingPattern="Living Pattern / University / Student Independent", TemplateName="CHR52 Student Flatsharing", PersonName="CHR52 Chris")
+    CHR52_1_22F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR52_1_22F",  Age=22, Gender=Gender.Female, LivingPattern="Living Pattern / University / Student Independent", TemplateName="CHR52 Student Flatsharing", PersonName="CHR52 Iris")
+    CHR52_2_23F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR52_2_23F",  Age=23, Gender=Gender.Female, LivingPattern="Living Pattern / University / Student Independent", TemplateName="CHR52 Student Flatsharing", PersonName="CHR52 Maddy")
+    CHR53_0_45M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR53_0_45M",  Age=45, Gender=Gender.Male, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR53 2 Parents, 1 Working, 2 Children", PersonName="CHR53 Franz")
+    CHR53_1_11F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR53_1_11F",  Age=11, Gender=Gender.Female, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR53 2 Parents, 1 Working, 2 Children", PersonName="CHR53 Linda")
+    CHR53_2_15M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR53_2_15M",  Age=15, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR53 2 Parents, 1 Working, 2 Children", PersonName="CHR53 Robert")
+    CHR53_3_40F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR53_3_40F",  Age=40, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR53 2 Parents, 1 Working, 2 Children", PersonName="CHR53 Rosemarie")
+    CHR54_0_68F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR54_0_68F",  Age=68, Gender=Gender.Female, LivingPattern="Living Pattern / Retiree", TemplateName="CHR54 Retired Couple, no work", PersonName="CHR54 Emma")
+    CHR54_1_71M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR54_1_71M",  Age=71, Gender=Gender.Male, LivingPattern="Living Pattern / Retiree", TemplateName="CHR54 Retired Couple, no work", PersonName="CHR54 Nils")
+    CHR55_0_40F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR55_0_40F",  Age=40, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR55 Couple with work around 40", PersonName="CHR55 Nicole")
+    CHR55_1_45M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR55_1_45M",  Age=45, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR55 Couple with work around 40", PersonName="CHR55 Stephan")
+    CHR56_0_50M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR56_0_50M",  Age=50, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR56 Couple with 2 children, husband at work", PersonName="CHR56 Andreas")
+    CHR56_1_16M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR56_1_16M",  Age=16, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR56 Couple with 2 children, husband at work", PersonName="CHR56 Anton")
+    CHR56_2_45F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR56_2_45F",  Age=45, Gender=Gender.Female, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR56 Couple with 2 children, husband at work", PersonName="CHR56 Sabine")
+    CHR56_3_14F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR56_3_14F",  Age=14, Gender=Gender.Female, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR56 Couple with 2 children, husband at work", PersonName="CHR56 Sandi")
+    CHR57_0_43F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR57_0_43F",  Age=43, Gender=Gender.Female, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR57 Family with 2 Children, Man at work", PersonName="CHR57 Babs")
+    CHR57_1_20M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR57_1_20M",  Age=20, Gender=Gender.Male, LivingPattern="Living Pattern / University / Student Living at Home", TemplateName="CHR57 Family with 2 Children, Man at work", PersonName="CHR57 Christoph")
+    CHR57_2_45M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR57_2_45M",  Age=45, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR57 Family with 2 Children, Man at work", PersonName="CHR57 Reiner")
+    CHR57_3_14F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR57_3_14F",  Age=14, Gender=Gender.Female, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR57 Family with 2 Children, Man at work", PersonName="CHR57 Sarah")
+    CHR58_0_68F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR58_0_68F",  Age=68, Gender=Gender.Female, LivingPattern="Living Pattern / Retiree", TemplateName="CHR58 Retired Couple, no work, no cooking", PersonName="CHR58 Ema")
+    CHR58_1_71M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR58_1_71M",  Age=71, Gender=Gender.Male, LivingPattern="Living Pattern / Retiree", TemplateName="CHR58 Retired Couple, no work, no cooking", PersonName="CHR58 Nil")
+    CHR59_0_37M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR59_0_37M",  Age=37, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR59 Family, 3 children, parents without work", PersonName="CHR59 Dani")
+    CHR59_1_35F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR59_1_35F",  Age=35, Gender=Gender.Female, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR59 Family, 3 children, parents without work", PersonName="CHR59 Rachela")
+    CHR59_2_8M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR59_2_8M",  Age=8, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR59 Family, 3 children, parents without work", PersonName="CHR59 Simo")
+    CHR59_3_12F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR59_3_12F",  Age=12, Gender=Gender.Female, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR59 Family, 3 children, parents without work", PersonName="CHR59 Sonea")
+    CHR59_4_12F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR59_4_12F",  Age=12, Gender=Gender.Female, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR59 Family, 3 children, parents without work", PersonName="CHR59 Sorra")
+    CHR60_0_32M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR60_0_32M",  Age=32, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHR60 Family, 1 toddler, one at work, one at home", PersonName="CHR60 Alexander")
+    CHR60_1_30F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR60_1_30F",  Age=30, Gender=Gender.Female, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHR60 Family, 1 toddler, one at work, one at home", PersonName="CHR60 Julia")
+    CHR60_2_2F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR60_2_2F",  Age=2, Gender=Gender.Female, LivingPattern="Living Pattern / Kindergarden", TemplateName="CHR60 Family, 1 toddler, one at work, one at home", PersonName="CHR60 Lea")
+    CHR61_0_40F: TemplatePersonEntry = TemplatePersonEntry(Name="CHR61_0_40F",  Age=40, Gender=Gender.Female, LivingPattern="Living Pattern / Office Job / Early (5-7am)", TemplateName="CHR61 Family, 1 child, both at work, early living pattern", PersonName="CHR61 Avva")
+    CHR61_1_43M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR61_1_43M",  Age=43, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Early (5-7am)", TemplateName="CHR61 Family, 1 child, both at work, early living pattern", PersonName="CHR61 Fina")
+    CHR61_2_10M: TemplatePersonEntry = TemplatePersonEntry(Name="CHR61_2_10M",  Age=10, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHR61 Family, 1 child, both at work, early living pattern", PersonName="CHR61 Lukas")
+    CHS01_0_45M: TemplatePersonEntry = TemplatePersonEntry(Name="CHS01_0_45M",  Age=45, Gender=Gender.Male, LivingPattern="Living Pattern / Office Job / Medium (7-9am)", TemplateName="CHS01 Couple with 2 Children, Dad Employed", PersonName="CHS01 Egon")
+    CHS01_1_40F: TemplatePersonEntry = TemplatePersonEntry(Name="CHS01_1_40F",  Age=40, Gender=Gender.Female, LivingPattern="Living Pattern / Stay at Home / Regular", TemplateName="CHS01 Couple with 2 Children, Dad Employed", PersonName="CHS01 Hella")
+    CHS01_2_15M: TemplatePersonEntry = TemplatePersonEntry(Name="CHS01_2_15M",  Age=15, Gender=Gender.Male, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHS01 Couple with 2 Children, Dad Employed", PersonName="CHS01 Justus")
+    CHS01_3_11F: TemplatePersonEntry = TemplatePersonEntry(Name="CHS01_3_11F",  Age=11, Gender=Gender.Female, LivingPattern="Living Pattern / School / Medium (7-9am)", TemplateName="CHS01 Couple with 2 Children, Dad Employed", PersonName="CHS01 Lucia")
+    CHS04_0_71M: TemplatePersonEntry = TemplatePersonEntry(Name="CHS04_0_71M",  Age=71, Gender=Gender.Male, LivingPattern="Living Pattern / Retiree", TemplateName="CHS04 Retired Couple, no work", PersonName="CHS04 August")
+    CHS04_1_68F: TemplatePersonEntry = TemplatePersonEntry(Name="CHS04_1_68F",  Age=68, Gender=Gender.Female, LivingPattern="Living Pattern / Retiree", TemplateName="CHS04 Retired Couple, no work", PersonName="CHS04 Margot")
+    CHS12_0_31M: TemplatePersonEntry = TemplatePersonEntry(Name="CHS12_0_31M",  Age=31, Gender=Gender.Male, LivingPattern="Living Pattern / Shift work / 3 Shifts A", TemplateName="CHS12 Shiftworker Couple", PersonName="CHS12 Falk")
+    CHS12_1_29F: TemplatePersonEntry = TemplatePersonEntry(Name="CHS12_1_29F",  Age=29, Gender=Gender.Female, LivingPattern="Living Pattern / Shift work / 3 Shifts B", TemplateName="CHS12 Shiftworker Couple", PersonName="CHS12 Regina")
+    OR01_0_26F: TemplatePersonEntry = TemplatePersonEntry(Name="OR01_0_26F",  Age=26, Gender=Gender.Female, LivingPattern="Living Pattern / Office Worker", TemplateName="OR01 Single Person Office", PersonName="OR01 Ellen")
 

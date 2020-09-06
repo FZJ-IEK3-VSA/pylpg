@@ -364,10 +364,27 @@ class HouseholdDataPersonSpecification:
 # noinspection PyPep8Naming, PyUnusedLocal
 @dataclass_json
 @dataclass
-class HouseholdTemplateSpecification:
-    Persons: List[PersonData] = field(default_factory=list)
+class PersonLivingTag:
+    LivingPatternTag: Optional[str] = ""
 
-    def set_Persons(self, value: List[PersonData]) -> HouseholdTemplateSpecification:
+    def set_LivingPatternTag(self, value: str) -> PersonLivingTag:
+        self.LivingPatternTag = value
+        return self
+
+    PersonName: Optional[str] = ""
+
+    def set_PersonName(self, value: str) -> PersonLivingTag:
+        self.PersonName = value
+        return self
+
+
+# noinspection PyPep8Naming, PyUnusedLocal
+@dataclass_json
+@dataclass
+class HouseholdTemplateSpecification:
+    Persons: List[PersonLivingTag] = field(default_factory=list)
+
+    def set_Persons(self, value: List[PersonLivingTag]) -> HouseholdTemplateSpecification:
         self.Persons = value
         return self
 
@@ -375,6 +392,12 @@ class HouseholdTemplateSpecification:
 
     def set_HouseholdTemplateName(self, value: str) -> HouseholdTemplateSpecification:
         self.HouseholdTemplateName = value
+        return self
+
+    ForbiddenTraitTags: List[str] = field(default_factory=list)
+
+    def set_ForbiddenTraitTags(self, value: List[str]) -> HouseholdTemplateSpecification:
+        self.ForbiddenTraitTags = value
         return self
 
 
@@ -574,6 +597,47 @@ class SingleDeviceProfile:
 
     def set_DeviceType(self, value: str) -> SingleDeviceProfile:
         self.DeviceType = value
+        return self
+
+
+# noinspection PyPep8Naming, PyUnusedLocal
+@dataclass_json
+@dataclass
+class TemplatePersonEntry:
+    Age: int = 0
+
+    def set_Age(self, value: int) -> TemplatePersonEntry:
+        self.Age = value
+        return self
+
+    Gender: Optional[str] = ""
+
+    def set_Gender(self, value: str) -> TemplatePersonEntry:
+        self.Gender = value
+        return self
+
+    LivingPattern: Optional[str] = ""
+
+    def set_LivingPattern(self, value: str) -> TemplatePersonEntry:
+        self.LivingPattern = value
+        return self
+
+    TemplateName: Optional[str] = ""
+
+    def set_TemplateName(self, value: str) -> TemplatePersonEntry:
+        self.TemplateName = value
+        return self
+
+    PersonName: Optional[str] = ""
+
+    def set_PersonName(self, value: str) -> TemplatePersonEntry:
+        self.PersonName = value
+        return self
+
+    Name: Optional[str] = ""
+
+    def set_Name(self, value: str) -> TemplatePersonEntry:
+        self.Name = value
         return self
 
 
