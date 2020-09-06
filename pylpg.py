@@ -151,8 +151,8 @@ def excute_lpg_with_householdata(year: int, householddata: HouseholdData,
         request.House.TargetHeatDemand = target_heating_demand
     if target_cooling_demand is not None:
         request.House.TargetCoolingDemand = target_cooling_demand
-    request.CalcSpec.CalcOptions.append(CalcOption.ActionCarpetPlot)
-    request.CalcSpec.DefaultForOutputFiles = OutputFileDefault.All
+    #request.CalcSpec.CalcOptions.append(CalcOption.ActionCarpetPlot)
+    #request.CalcSpec.DefaultForOutputFiles = OutputFileDefault.All
     # hhn =  HouseholdData(None,None,householdref,"hhid","hhname",                         chargingset,transportation_device_set,travel_route_set,None,HouseholdDataSpecificationType.ByHouseholdName)
     request.House.Households.append(householddata)
     if request.CalcSpec is None:
