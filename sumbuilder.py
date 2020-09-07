@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 maindfs = None
-os.chdir("C:\\Work\\settlementresults\\result")
+#os.chdir("C:\\Work\\settlementresults\\result")
 for file in os.listdir("."):
 
     if file.endswith(".csv"):
@@ -22,6 +22,6 @@ for file in os.listdir("."):
 
 maindfs = maindfs.drop(maindfs.columns[0], axis=1)
 maindfs = maindfs.mul(60000)
-os.chdir("C:\\Work\\pylpg")
+#os.chdir("C:\\Work\\pylpg")
 maindfs.to_csv("summed_up_t1.csv")
 print("saved as summed_up_t1.csv")
