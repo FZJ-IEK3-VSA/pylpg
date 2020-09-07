@@ -180,9 +180,13 @@ def excute_lpg_with_householdata(year: int, householddata: HouseholdData,
         #    print("cleaning up " + calcdir)
         #    shutil.rmtree(calcdir)
         #    time.sleep(1)
+    except OSError as why:
+        print("Exception: " + str(why))
+        traceback.print_stack()
+        raise
     except:  # catch *all* exceptions
         e = sys.exc_info()[0]
-        print("Exception: %s" % e)
+        print("Exception: " +str(e))
         traceback.print_stack()
         raise
 
