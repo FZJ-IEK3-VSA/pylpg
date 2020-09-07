@@ -243,7 +243,7 @@ class LPGExecutor:
             os.chmod(str(fullname), stat.S_IEXEC)
             os.chmod(str(fullname), stat.S_IXOTH)
             os.chmod(str(fullname), stat.S_IXUSR)
-            print("Permissions:" + str(oct(os.stat("test.txt")[stat.ST_MODE])[-3:]))
+            print("Permissions:" + str(oct(os.stat(str(fullname))[stat.ST_MODE])[-3:]))
         elif platform == "win32":
             self.calculation_src_directory = Path(self.working_directory, "LPG" + version + "win")
             self.simengine_src_filename = "simulationengine.exe"
