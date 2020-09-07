@@ -1,3 +1,4 @@
+import sys
 import time
 import stat
 from lpgdata import *
@@ -140,44 +141,49 @@ def excute_lpg_with_householdata(year: int, householddata: HouseholdData,
                                  target_cooling_demand: Optional[float] = None,
                                  calculation_index: int = 1
                                  ):
-    print("Starting calc with " + str(calculation_index) + " for " + householddata.Name)
-    lpe: LPGExecutor = LPGExecutor(calculation_index)
+    try:
+        print("Starting calc with " + str(calculation_index) + " for " + householddata.Name)
+        lpe: LPGExecutor = LPGExecutor(calculation_index)
 
-    # basic request
-    request = lpe.make_default_lpg_settings(year)
+        # basic request
+        request = lpe.make_default_lpg_settings(year)
 
-    request.House.HouseTypeCode = housetype
-    if target_heating_demand is not None:
-        request.House.TargetHeatDemand = target_heating_demand
-    if target_cooling_demand is not None:
-        request.House.TargetCoolingDemand = target_cooling_demand
-    #request.CalcSpec.CalcOptions.append(CalcOption.ActionCarpetPlot)
-    #request.CalcSpec.DefaultForOutputFiles = OutputFileDefault.All
-    # hhn =  HouseholdData(None,None,householdref,"hhid","hhname",                         chargingset,transportation_device_set,travel_route_set,None,HouseholdDataSpecificationType.ByHouseholdName)
-    request.House.Households.append(householddata)
-    if request.CalcSpec is None:
-        raise Exception("Failed to initialize the calculation spec")
-    if startdate is not None:
-        request.CalcSpec.set_StartDate(startdate)
-    if enddate is not None:
-        request.CalcSpec.set_EndDate(enddate)
-    calcspecfilename = Path(lpe.calculation_directory, "calcspec.json")
-    if simulate_transportation:
-        request.CalcSpec.EnableTransportation = True
-        request.CalcSpec.CalcOptions.append(CalcOption.TansportationDeviceJsons)
-    with open(calcspecfilename, "w") as calcspecfile:
-        jsonrequest = request.to_json(indent=4)  # type: ignore
-        calcspecfile.write(jsonrequest)
-    lpe.execute_lpg_binaries()
+        request.House.HouseTypeCode = housetype
+        if target_heating_demand is not None:
+            request.House.TargetHeatDemand = target_heating_demand
+        if target_cooling_demand is not None:
+            request.House.TargetCoolingDemand = target_cooling_demand
+        #request.CalcSpec.CalcOptions.append(CalcOption.ActionCarpetPlot)
+        #request.CalcSpec.DefaultForOutputFiles = OutputFileDefault.All
+        # hhn =  HouseholdData(None,None,householdref,"hhid","hhname",                         chargingset,transportation_device_set,travel_route_set,None,HouseholdDataSpecificationType.ByHouseholdName)
+        request.House.Households.append(householddata)
+        if request.CalcSpec is None:
+            raise Exception("Failed to initialize the calculation spec")
+        if startdate is not None:
+            request.CalcSpec.set_StartDate(startdate)
+        if enddate is not None:
+            request.CalcSpec.set_EndDate(enddate)
+        calcspecfilename = Path(lpe.calculation_directory, "calcspec.json")
+        if simulate_transportation:
+            request.CalcSpec.EnableTransportation = True
+            request.CalcSpec.CalcOptions.append(CalcOption.TansportationDeviceJsons)
+        with open(calcspecfilename, "w") as calcspecfile:
+            jsonrequest = request.to_json(indent=4)  # type: ignore
+            calcspecfile.write(jsonrequest)
+        lpe.execute_lpg_binaries()
 
-    df = lpe.read_all_json_results_in_directory()
-    df_electricity = df['Electricity_HH1']
-    df_electricity.to_csv("R" + str(calculation_index) + ".csv")
-    calcdir = "C" + str(calculation_index)
-    #if os.path.exists(calcdir):
-    #    print("cleaning up " + calcdir)
-    #    shutil.rmtree(calcdir)
-    #    time.sleep(1)
+        df = lpe.read_all_json_results_in_directory()
+        df_electricity = df['Electricity_HH1']
+        df_electricity.to_csv("R" + str(calculation_index) + ".csv")
+        calcdir = "C" + str(calculation_index)
+        #if os.path.exists(calcdir):
+        #    print("cleaning up " + calcdir)
+        #    shutil.rmtree(calcdir)
+        #    time.sleep(1)
+    except:  # catch *all* exceptions
+        e = sys.exc_info()[0]
+        print("Exception: %s" % e)
+        raise
 
 
 def execute_grid_calc(year: int, household_size_list: List[int],
@@ -232,10 +238,12 @@ class LPGExecutor:
             self.calculation_src_directory = Path(self.working_directory, "LPG" + version + "linux")
             self.simengine_src_filename = "simengine2"
             fullname = Path(self.calculation_src_directory, self.simengine_src_filename)
+            print("starting to execute " + str(fullname))
             os.chmod(str(fullname), stat.S_IXGRP)
             os.chmod(str(fullname), stat.S_IEXEC)
             os.chmod(str(fullname), stat.S_IXOTH)
             os.chmod(str(fullname), stat.S_IXUSR)
+            print("Permissions:" + str(oct(os.stat("test.txt")[stat.ST_MODE])[-3:]))
         elif platform == "win32":
             self.calculation_src_directory = Path(self.working_directory, "LPG" + version + "win")
             self.simengine_src_filename = "simulationengine.exe"
