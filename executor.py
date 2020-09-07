@@ -6,28 +6,30 @@ import lpgdata
 import lpgpythonbindings
 import sys
 
+
 def exec_lpg(filename):
     with open(filename) as f:
         data = json.load(f)
     i = 0
     executor = ThreadPoolExecutor(max_workers=18)
-    print("Total: " +str( len(data["Assigns"])))
+    print("Total: " + str(len(data["Assigns"])))
     futures = []
     for x in data["Assigns"]:
         hhname = x["LPG"]["HHName"]
         print(hhname)
         i += 1
-        #if i > 10:
-         #   print("Reached maximum count, quitting")
-          #  break
+        if i > 100:
+            print("Reached maximum count, quitting")
+            break
         resultfilename = "R" + str(i) + ".csv"
-        if(os.path.exists(resultfilename)):
+        if os.path.exists(resultfilename):
             print(resultfilename + " exists, skipping")
             continue
         persons = []
-        for person in x["LPG"]["Persons"]:
-            pd = lpgdata.PersonData(person["Age"], person["Gender"])
-            pd.LivingPatternTag = person["LivingPatternTag"]
+        lpgPersons = x["LPG"]["Persons"]
+        for person in lpgPersons:
+            pd = lpgdata.PersonLivingTag(person["LivingPatternTag"], person["PersonName"])
+            print(person["PersonName"] + " - " + person["LivingPatternTag"])
             persons.append(pd)
         templatespec = lpgdata.HouseholdTemplateSpecification(persons, hhname)
         templatespec.ForbiddenTraitTags.append(lpgdata.TraitTags.Food_Brunching)

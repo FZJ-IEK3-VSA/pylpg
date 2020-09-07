@@ -1,5 +1,5 @@
 import time
-
+import stat
 from lpgdata import *
 from lpgpythonbindings import *
 from typing import Any
@@ -231,6 +231,11 @@ class LPGExecutor:
         if platform == "linux" or platform == "linux2":
             self.calculation_src_directory = Path(self.working_directory, "LPG" + version + "linux")
             self.simengine_src_filename = "simengine2"
+            fullname = Path(self.calculation_src_directory, self.simengine_src_filename)
+            os.chmod(str(fullname), stat.S_IXGRP)
+            os.chmod(str(fullname), stat.S_IEXEC)
+            os.chmod(str(fullname), stat.S_IXOTH)
+            os.chmod(str(fullname), stat.S_IXUSR)
         elif platform == "win32":
             self.calculation_src_directory = Path(self.working_directory, "LPG" + version + "win")
             self.simengine_src_filename = "simulationengine.exe"

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 from dataclasses_json import dataclass_json  # type: ignore
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Dict
 from enum import Enum
 
 
@@ -147,6 +147,12 @@ class PersonData:
 
     def set_LivingPatternTag(self, value: str) -> PersonData:
         self.LivingPatternTag = value
+        return self
+
+    PersonName: Optional[str] = ""
+
+    def set_PersonName(self, value: str) -> PersonData:
+        self.PersonName = value
         return self
 
 
@@ -587,9 +593,9 @@ class SingleDeviceProfile:
         self.Guid = value
         return self
 
-    TagsBySet: Dict[str,str] = field(default_factory=dict)
+    TagsBySet: Dict[str, str] = field(default_factory=dict)
 
-    def set_TagsBySet(self, value: Dict[str,str]) -> SingleDeviceProfile:
+    def set_TagsBySet(self, value: Dict[str, str]) -> SingleDeviceProfile:
         self.TagsBySet = value
         return self
 
@@ -799,7 +805,7 @@ class JsonSumProfile:
 class JsonDeviceProfiles:
     DeviceProfiles: List[SingleDeviceProfile] = field(default_factory=list)
 
-    def set_DeviceProfiles(self, value: List[float]) -> JsonDeviceProfiles:
+    def set_DeviceProfiles(self, value: List[SingleDeviceProfile]) -> JsonDeviceProfiles:
         self.DeviceProfiles = value
         return self
 
