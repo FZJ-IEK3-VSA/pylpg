@@ -18,9 +18,9 @@ def exec_lpg(filename):
         hhname = x["LPG"]["HHName"]
         print(hhname)
         i += 1
-        if i > 3:
-            print("Reached maximum count, quitting")
-            break
+        #if i > 3:
+         #   print("Reached maximum count, quitting")
+          #  break
         resultfilename = "R" + str(i) + ".csv"
         if os.path.exists(resultfilename):
             print(resultfilename + " exists, skipping")
