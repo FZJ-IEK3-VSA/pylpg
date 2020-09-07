@@ -11,14 +11,15 @@ def exec_lpg(filename):
         data = json.load(f)
     i = 0
     executor = ThreadPoolExecutor(max_workers=18)
-    print("Total: " +str( len(data)))
+    print("Total: " +str( len(data["Assigns"])))
     futures = []
     for x in data["Assigns"]:
         hhname = x["LPG"]["HHName"]
         print(hhname)
         i += 1
-        if i > 10:
-            break
+        #if i > 10:
+         #   print("Reached maximum count, quitting")
+          #  break
         resultfilename = "R" + str(i) + ".csv"
         if(os.path.exists(resultfilename)):
             print(resultfilename + " exists, skipping")
