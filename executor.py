@@ -10,7 +10,8 @@ def exec_lpg(filename):
     with open(filename) as f:
         data = json.load(f)
     i = 0
-    executor = ThreadPoolExecutor(max_workers=4)
+    executor = ThreadPoolExecutor(max_workers=18)
+    print("Total: " +str( len(data)))
     futures = []
     for x in data["Assigns"]:
         hhname = x["LPG"]["HHName"]
@@ -36,7 +37,7 @@ def exec_lpg(filename):
                                    )
         hd.Name = "HH"+str(i)
         hd.HouseholdDataSpecification = lpgpythonbindings.HouseholdDataSpecificationType.ByTemplateName
-        print("submitting")
+        print("submitting job #" + hd.Name)
         futures.append(executor.submit(pylpg.excute_lpg_with_householdata, year=2020, householddata=hd,
                        housetype=lpgdata.HouseTypes.HT23_No_Infrastructure_at_all,
                        startdate="01.01.2020",
