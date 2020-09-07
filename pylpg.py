@@ -14,7 +14,7 @@ from typing import List
 from sys import platform
 import pathlib
 import shutil
-
+import traceback
 
 def excute_lpg_tsib(year: int, number_of_households: int,
                     number_of_people_per_household: int, startdate: str = None,
@@ -183,6 +183,7 @@ def excute_lpg_with_householdata(year: int, householddata: HouseholdData,
     except:  # catch *all* exceptions
         e = sys.exc_info()[0]
         print("Exception: %s" % e)
+        traceback.print_stack()
         raise
 
 
