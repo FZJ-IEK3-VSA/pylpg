@@ -176,10 +176,10 @@ def excute_lpg_with_householdata(year: int, householddata: HouseholdData,
         df_electricity = df['Electricity_HH1']
         df_electricity.to_csv("R" + str(calculation_index) + ".csv")
         calcdir = "C" + str(calculation_index)
-        #if os.path.exists(calcdir):
-        #    print("cleaning up " + calcdir)
-        #    shutil.rmtree(calcdir)
-        #    time.sleep(1)
+        if os.path.exists(calcdir):
+            print("cleaning up " + calcdir)
+            shutil.rmtree(calcdir)
+            time.sleep(1)
     except OSError as why:
         print("Exception: " + str(why))
         traceback.print_stack()
