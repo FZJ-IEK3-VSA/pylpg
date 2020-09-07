@@ -255,8 +255,10 @@ class LPGExecutor:
         print("Working in directory: " + str(self.calculation_directory))
         if os.path.exists(self.calculation_directory):
             self.error_tolerating_directory_clean(self.calculation_directory)
+            print("Removing " + str(self.calculation_directory))
             shutil.rmtree(self.calculation_directory)
             time.sleep(1)
+        print("copying from  " + str(self.calculation_src_directory) + " to " + str(self.calculation_directory))
         shutil.copytree(self.calculation_src_directory, self.calculation_directory)
         print("copied to: " + str(self.calculation_directory))
 
