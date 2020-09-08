@@ -5,3 +5,4 @@ C*/
 # Created by pytest automatically.
 LPG_9.9.0_win/results/
 __pycache__/
+*.csv

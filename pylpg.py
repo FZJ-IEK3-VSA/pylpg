@@ -16,11 +16,12 @@ import pathlib
 import shutil
 import traceback
 
+
 def excute_lpg_tsib(year: int, number_of_households: int,
                     number_of_people_per_household: int, startdate: str = None,
                     enddate: str = None,
                     transportation: bool = False) -> pd.DataFrame:
-    lpe: LPGExecutor = LPGExecutor(1)
+    lpe: LPGExecutor = LPGExecutor(1, False)
     if number_of_households < 1:
         print("too few households")
         raise Exception("Need at least one household")
@@ -104,7 +105,7 @@ def excute_lpg_single_household(year: int, householdref: JsonReference,
                                 transportation_device_set: JsonReference = None,
                                 travel_route_set: JsonReference = None
                                 ) -> pd.DataFrame:
-    lpe: LPGExecutor = LPGExecutor(1)
+    lpe: LPGExecutor = LPGExecutor(1, False)
 
     # basic request
     request = lpe.make_default_lpg_settings(year)
@@ -139,23 +140,20 @@ def excute_lpg_with_householdata(year: int, householddata: HouseholdData,
                                  simulate_transportation: bool = False,
                                  target_heating_demand: Optional[float] = None,
                                  target_cooling_demand: Optional[float] = None,
-                                 calculation_index: int = 1
+                                 calculation_index: int = 1,
+                                 clear_previous_calc: bool = False
                                  ):
     try:
         print("Starting calc with " + str(calculation_index) + " for " + householddata.Name)
-        lpe: LPGExecutor = LPGExecutor(calculation_index)
+        lpe: LPGExecutor = LPGExecutor(calculation_index, clear_previous_calc)
 
         # basic request
         request = lpe.make_default_lpg_settings(year)
-
         request.House.HouseTypeCode = housetype
         if target_heating_demand is not None:
             request.House.TargetHeatDemand = target_heating_demand
         if target_cooling_demand is not None:
             request.House.TargetCoolingDemand = target_cooling_demand
-        #request.CalcSpec.CalcOptions.append(CalcOption.ActionCarpetPlot)
-        #request.CalcSpec.DefaultForOutputFiles = OutputFileDefault.All
-        # hhn =  HouseholdData(None,None,householdref,"hhid","hhname",                         chargingset,transportation_device_set,travel_route_set,None,HouseholdDataSpecificationType.ByHouseholdName)
         request.House.Households.append(householddata)
         if request.CalcSpec is None:
             raise Exception("Failed to initialize the calculation spec")
@@ -173,6 +171,29 @@ def excute_lpg_with_householdata(year: int, householddata: HouseholdData,
         lpe.execute_lpg_binaries()
 
         df = lpe.read_all_json_results_in_directory()
+
+        return df
+    except OSError as why:
+        print("Exception: " + str(why))
+        traceback.print_stack()
+        raise
+    except:  # catch *all* exceptions
+        e = sys.exc_info()[0]
+        print("Exception: " + str(e))
+        traceback.print_stack()
+        raise
+
+
+def excute_lpg_with_householdata_with_csv_save(year: int, householddata: HouseholdData,
+                                               housetype: str, startdate: str = None,
+                                               enddate: str = None,
+                                               simulate_transportation: bool = False,
+                                               target_heating_demand: Optional[float] = None,
+                                               target_cooling_demand: Optional[float] = None,
+                                               calculation_index: int = 1):
+    try:
+        df = excute_lpg_with_householdata(year, householddata, housetype, startdate, enddate, simulate_transportation, target_heating_demand,
+                                          target_cooling_demand, calculation_index, True)
         df_electricity = df['Electricity_HH1']
         df_electricity.to_csv("R" + str(calculation_index) + ".csv")
         calcdir = "C" + str(calculation_index)
@@ -186,7 +207,7 @@ def excute_lpg_with_householdata(year: int, householddata: HouseholdData,
         raise
     except:  # catch *all* exceptions
         e = sys.exc_info()[0]
-        print("Exception: " +str(e))
+        print("Exception: " + str(e))
         traceback.print_stack()
         raise
 
@@ -199,7 +220,7 @@ def execute_grid_calc(year: int, household_size_list: List[int],
                       transportation_device_set: JsonReference = None,
                       travel_route_set: JsonReference = None
                       ) -> pd.DataFrame:
-    lpe: LPGExecutor = LPGExecutor(1)
+    lpe: LPGExecutor = LPGExecutor(1, True)
 
     # basic request
     request = lpe.make_default_lpg_settings(year)
@@ -236,7 +257,7 @@ def execute_grid_calc(year: int, household_size_list: List[int],
 
 
 class LPGExecutor:
-    def __init__(self, calcidx: int):
+    def __init__(self, calcidx: int, clear_previous_calc: bool):
         version = "_"
         self.working_directory = pathlib.Path(__file__).parent.absolute()
         if platform == "linux" or platform == "linux2":
@@ -254,23 +275,24 @@ class LPGExecutor:
 
         self.calculation_directory = Path(self.working_directory, "C" + str(calcidx))
         print("Working in directory: " + str(self.calculation_directory))
-        if os.path.exists(self.calculation_directory):
+        if clear_previous_calc and os.path.exists(self.calculation_directory):
             self.error_tolerating_directory_clean(self.calculation_directory)
             print("Removing " + str(self.calculation_directory))
             shutil.rmtree(self.calculation_directory)
             time.sleep(1)
-        print("copying from  " + str(self.calculation_src_directory) + " to " + str(self.calculation_directory))
-        shutil.copytree(self.calculation_src_directory, self.calculation_directory)
-        print("copied to: " + str(self.calculation_directory))
+        if not os.path.exists(self.calculation_directory):
+            print("copying from  " + str(self.calculation_src_directory) + " to " + str(self.calculation_directory))
+            shutil.copytree(self.calculation_src_directory, self.calculation_directory)
+            print("copied to: " + str(self.calculation_directory))
 
     def error_tolerating_directory_clean(self, path: str):
         mypath = str(path)
-        if(len(str(mypath))< 10):
+        if len(str(mypath)) < 10:
             raise Exception("Path too short. This is suspicious. Trying to delete more than you meant to?")
-        print ("cleaning " + mypath)
-        files = glob.glob(mypath +"/*" , recursive=True)
-        for file in files :
-            if(os.path.isfile(file)):
+        print("cleaning " + mypath)
+        files = glob.glob(mypath + "/*", recursive=True)
+        for file in files:
+            if os.path.isfile(file):
                 print("Removing " + file)
                 os.remove(file)
 
@@ -309,16 +331,31 @@ class LPGExecutor:
         results_directory = Path(self.calculation_directory, "results", "Results")
         if not os.path.exists(str(results_directory)):
             return None
-        potential_files = glob.glob(str(results_directory) + "/Sum.*.json")
+        potential_sum_files = glob.glob(str(results_directory) + "/Sum.*.json")
+
+        bodilyActivity_files = glob.glob(str(results_directory) + "/BodilyActivityLevel.*.json")
+        potential_sum_files.extend(bodilyActivity_files)
+
+        carlocs = glob.glob(str(results_directory) + "/CarLocation.*.json")
+        potential_sum_files.extend(carlocs)
+
+        carstate = glob.glob(str(results_directory) + "/Carstate.*.json")
+        potential_sum_files.extend(carstate)
+
+        driving = glob.glob(str(results_directory) + "/DrivingDistance.*.json")
+        potential_sum_files.extend(driving)
+
+        soc = glob.glob(str(results_directory) + "/Soc.*.json")
+        potential_sum_files.extend(soc)
         isFirst = True
-        for file in potential_files:
+        for file in potential_sum_files:
             #                self.print("Reading json file " + str(file))
             print("Reading file " + str(file))
-            with open(file) as json_file:
+            with open(str(file)) as json_file:
                 filecontent: str = json_file.read()  # type: ignore
                 sumProfile: JsonSumProfile = JsonSumProfile.from_json(filecontent)  # type: ignore
             if sumProfile.LoadTypeName is None:
-                raise Exception("Empty load type name on " + file)
+                raise Exception("Empty load type name on " + str(file))
             if sumProfile is None or sumProfile.HouseKey is None or sumProfile.HouseKey.HHKey is None:
                 raise Exception("empty housekey")
             key: str = sumProfile.LoadTypeName + "_" + str(sumProfile.HouseKey.HHKey.Key)

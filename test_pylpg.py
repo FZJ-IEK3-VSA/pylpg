@@ -106,6 +106,7 @@ def person_data_to_string(pd: PersonData) -> str:
 
 
 if __name__ == "__main__":
-    test_householdata_function_with_livingpatterns()
+    #test_householdata_function_with_livingpatterns()
+    test_householdata_function()
     # test_single_household_function()
     

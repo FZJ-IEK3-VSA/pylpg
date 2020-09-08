@@ -41,7 +41,7 @@ def exec_lpg(filename):
         hd.Name = "HH"+str(i)
         hd.HouseholdDataSpecification = lpgpythonbindings.HouseholdDataSpecificationType.ByTemplateName
         print("submitting job #" + hd.Name)
-        futures.append(executor.submit(pylpg.excute_lpg_with_householdata, year=2020, householddata=hd,
+        futures.append(executor.submit(pylpg.excute_lpg_with_householdata_with_csv_save, year=2020, householddata=hd,
                        housetype=lpgdata.HouseTypes.HT23_No_Infrastructure_at_all,
                        startdate="01.01.2020",
                        enddate="2020-12-31",
