@@ -103,13 +103,14 @@ def excute_lpg_single_household(year: int, householdref: JsonReference,
                                 simulate_transportation: bool = False,
                                 chargingset: JsonReference = None,
                                 transportation_device_set: JsonReference = None,
-                                travel_route_set: JsonReference = None
+                                travel_route_set: JsonReference = None,
+                                random_seed: int
                                 ) -> pd.DataFrame:
     lpe: LPGExecutor = LPGExecutor(1, False)
 
     # basic request
     request = lpe.make_default_lpg_settings(year)
-
+    request.CalcSpec.RandomSeed = random_seed
     request.House.HouseTypeCode = housetype
     hhnamespec = HouseholdNameSpecification(householdref)
     hhn = HouseholdData(None, None, hhnamespec, "hhid", "hhname",
