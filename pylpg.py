@@ -143,7 +143,8 @@ def excute_lpg_with_householdata(year: int, householddata: HouseholdData,
                                  target_heating_demand: Optional[float] = None,
                                  target_cooling_demand: Optional[float] = None,
                                  calculation_index: int = 1,
-                                 clear_previous_calc: bool = False
+                                 clear_previous_calc: bool = False,
+                                 random_seed: int = None
                                  ):
     try:
         print("Starting calc with " + str(calculation_index) + " for " + householddata.Name)
@@ -152,11 +153,67 @@ def excute_lpg_with_householdata(year: int, householddata: HouseholdData,
         # basic request
         request = lpe.make_default_lpg_settings(year)
         request.House.HouseTypeCode = housetype
+        if random_seed is not None:
+            request.CalcSpec.RandomSeed = random_seed
         if target_heating_demand is not None:
             request.House.TargetHeatDemand = target_heating_demand
         if target_cooling_demand is not None:
             request.House.TargetCoolingDemand = target_cooling_demand
         request.House.Households.append(householddata)
+        if request.CalcSpec is None:
+            raise Exception("Failed to initialize the calculation spec")
+        if startdate is not None:
+            request.CalcSpec.set_StartDate(startdate)
+        if enddate is not None:
+            request.CalcSpec.set_EndDate(enddate)
+        calcspecfilename = Path(lpe.calculation_directory, "calcspec.json")
+        if simulate_transportation:
+            request.CalcSpec.EnableTransportation = True
+            request.CalcSpec.CalcOptions.append(CalcOption.TansportationDeviceJsons)
+        with open(calcspecfilename, "w") as calcspecfile:
+            jsonrequest = request.to_json(indent=4)  # type: ignore
+            calcspecfile.write(jsonrequest)
+        lpe.execute_lpg_binaries()
+
+        df = lpe.read_all_json_results_in_directory()
+
+        return df
+    except OSError as why:
+        print("Exception: " + str(why))
+        traceback.print_stack()
+        raise
+    except:  # catch *all* exceptions
+        e = sys.exc_info()[0]
+        print("Exception: " + str(e))
+        traceback.print_stack()
+        raise
+
+
+
+def excute_lpg_with_many_householdata(year: int, householddata: List[HouseholdData],
+                                 housetype: str, startdate: str = None,
+                                 enddate: str = None,
+                                 simulate_transportation: bool = False,
+                                 target_heating_demand: Optional[float] = None,
+                                 target_cooling_demand: Optional[float] = None,
+                                 calculation_index: int = 1,
+                                 clear_previous_calc: bool = False,
+                                random_seed: int = None
+                                 ):
+    try:
+        print("Starting calc with " + str(calculation_index) + " for " + str(len(householddata)) + " households")
+        lpe: LPGExecutor = LPGExecutor(calculation_index, clear_previous_calc)
+
+        # basic request
+        request = lpe.make_default_lpg_settings(year)
+        request.House.HouseTypeCode = housetype
+        if random_seed is not None:
+            request.CalcSpec.RandomSeed = random_seed
+        if target_heating_demand is not None:
+            request.House.TargetHeatDemand = target_heating_demand
+        if target_cooling_demand is not None:
+            request.House.TargetCoolingDemand = target_cooling_demand
+        request.House.Households =  request.House.Households + householddata
         if request.CalcSpec is None:
             raise Exception("Failed to initialize the calculation spec")
         if startdate is not None:
