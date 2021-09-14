@@ -41,7 +41,6 @@ class CalcOption(str, Enum):
     OverallSum = "OverallSum"
     DetailedDatFiles = "DetailedDatFiles"
     ActionCarpetPlot = "ActionCarpetPlot"
-    EnergyCarpetPlot = "EnergyCarpetPlot"
     TimeOfUsePlot = "TimeOfUsePlot"
     VariableLogFile = "VariableLogFile"
     ActivationsPerHour = "ActivationsPerHour"
@@ -92,6 +91,9 @@ class CalcOption(str, Enum):
     TansportationDeviceJsons = "TansportationDeviceJsons"
     DeviceTaggingSets = "DeviceTaggingSets"
     AffordanceDefinitions = "AffordanceDefinitions"
+    JsonHouseholdSumFilesNoFlex = "JsonHouseholdSumFilesNoFlex"
+    HouseholdSumProfilesCsvNoFlex = "HouseholdSumProfilesCsvNoFlex"
+    FlexibilityEvents = "FlexibilityEvents"
 
 
 class HouseDefinitionType(str, Enum):
@@ -130,6 +132,41 @@ class StrGuid:
 # noinspection PyPep8Naming, PyUnusedLocal
 @dataclass_json
 @dataclass
+class TransportationPreference:
+    DestinationSite: Optional[JsonReference] = None
+
+    def set_DestinationSite(self, value: JsonReference) -> TransportationPreference:
+        self.DestinationSite = value
+        return self
+
+    DistanceFromHome: float = 0
+
+    def set_DistanceFromHome(self, value: float) -> TransportationPreference:
+        self.DistanceFromHome = value
+        return self
+
+    Angle: float = 0
+
+    def set_Angle(self, value: float) -> TransportationPreference:
+        self.Angle = value
+        return self
+
+    TransportationDeviceCategories: List[JsonReference] = field(default_factory=list)
+
+    def set_TransportationDeviceCategories(self, value: List[JsonReference]) -> TransportationPreference:
+        self.TransportationDeviceCategories = value
+        return self
+
+    Weights: List[float] = field(default_factory=list)
+
+    def set_Weights(self, value: List[float]) -> TransportationPreference:
+        self.Weights = value
+        return self
+
+
+# noinspection PyPep8Naming, PyUnusedLocal
+@dataclass_json
+@dataclass
 class PersonData:
     Age: int = 0
 
@@ -153,6 +190,12 @@ class PersonData:
 
     def set_PersonName(self, value: str) -> PersonData:
         self.PersonName = value
+        return self
+
+    TransportationPreferences: List[TransportationPreference] = field(default_factory=list)
+
+    def set_TransportationPreferences(self, value: List[TransportationPreference]) -> PersonData:
+        self.TransportationPreferences = value
         return self
 
 
@@ -294,6 +337,12 @@ class JsonCalcSpecification:
 
     def set_ShowSettlingPeriod(self, value: bool) -> JsonCalcSpecification:
         self.ShowSettlingPeriod = value
+        return self
+
+    EnableFlexibility: bool = False
+
+    def set_EnableFlexibility(self, value: bool) -> JsonCalcSpecification:
+        self.EnableFlexibility = value
         return self
 
     SkipExisting: bool = False
