@@ -127,6 +127,7 @@ class GeographicLocations:
     France_Carpentras: JsonReference = JsonReference("(France) Carpentras",  StrGuid("9d92f84e-4f71-4476-a307-3480cc2c1530"))
     France_Limoges: JsonReference = JsonReference("(France) Limoges",  StrGuid("2a16d9bd-87b5-4ddb-8810-6c9a6120455e"))
     France_Palaiseau: JsonReference = JsonReference("(France) Palaiseau",  StrGuid("45b3899c-2c0d-43d1-b83d-5c3f8ae878b8"))
+    Germany_Aachen: JsonReference = JsonReference("(Germany) Aachen",  StrGuid("9ce37356-4381-488f-8420-1ea5dd64c40c"))
     Germany_Berlin: JsonReference = JsonReference("(Germany) Berlin",  StrGuid("484ea885-45de-4967-8d52-9d765f886692"))
     Germany_ChemLowLight: JsonReference = JsonReference("(Germany) ChemLowLight",  StrGuid("596a7f65-c154-4554-b6b4-84c43c161af8"))
     Germany_Chemnitz: JsonReference = JsonReference("(Germany) Chemnitz",  StrGuid("eddeb22c-fbd4-44c1-bf2d-fbde3342f1bd"))
