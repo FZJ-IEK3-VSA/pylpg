@@ -94,6 +94,7 @@ class CalcOption(str, Enum):
     JsonHouseholdSumFilesNoFlex = "JsonHouseholdSumFilesNoFlex"
     HouseholdSumProfilesCsvNoFlex = "HouseholdSumProfilesCsvNoFlex"
     FlexibilityEvents = "FlexibilityEvents"
+    DeleteDatFiles = "DeleteDatFiles"
 
 
 class HouseDefinitionType(str, Enum):
@@ -271,12 +272,6 @@ class JsonCalcSpecification:
 
     def set_DeleteAllButPDF(self, value: bool) -> JsonCalcSpecification:
         self.DeleteAllButPDF = value
-        return self
-
-    DeleteDAT: bool = False
-
-    def set_DeleteDAT(self, value: bool) -> JsonCalcSpecification:
-        self.DeleteDAT = value
         return self
 
     DeviceSelection: Optional[JsonReference] = None
