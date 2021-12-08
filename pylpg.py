@@ -20,7 +20,8 @@ import traceback
 def excute_lpg_tsib(year: int, number_of_households: int,
                     number_of_people_per_household: int, startdate: str = None,
                     enddate: str = None,
-                    transportation: bool = False) -> pd.DataFrame:
+                    transportation: bool = False,
+                    energy_intensity: str = "Random") -> pd.DataFrame:
     lpe: LPGExecutor = LPGExecutor(1, False)
     if number_of_households < 1:
         print("too few households")
@@ -48,6 +49,7 @@ def excute_lpg_tsib(year: int, number_of_households: int,
         request.CalcSpec.set_StartDate(startdate)
     if enddate is not None:
         request.CalcSpec.set_EndDate(enddate)
+    request.CalcSpec.EnergyIntensityType = energy_intensity
     calcspecfilename = Path(lpe.calculation_directory, "calcspec.json")
     if transportation:
         request.CalcSpec.EnableTransportation = True
@@ -104,7 +106,8 @@ def excute_lpg_single_household(year: int, householdref: JsonReference,
                                 chargingset: JsonReference = None,
                                 transportation_device_set: JsonReference = None,
                                 travel_route_set: JsonReference = None,
-                                random_seed: int = None
+                                random_seed: int = None,
+                                energy_intensity: str = "Random"
                                 ) -> pd.DataFrame:
     lpe: LPGExecutor = LPGExecutor(1, False)
 
@@ -124,6 +127,7 @@ def excute_lpg_single_household(year: int, householdref: JsonReference,
         request.CalcSpec.set_StartDate(startdate)
     if enddate is not None:
         request.CalcSpec.set_EndDate(enddate)
+    request.CalcSpec.EnergyIntensityType = energy_intensity
     calcspecfilename = Path(lpe.calculation_directory, "calcspec.json")
     if simulate_transportation:
         request.CalcSpec.EnableTransportation = True
@@ -144,7 +148,8 @@ def excute_lpg_with_householdata(year: int, householddata: HouseholdData,
                                  target_cooling_demand: Optional[float] = None,
                                  calculation_index: int = 1,
                                  clear_previous_calc: bool = False,
-                                 random_seed: int = None
+                                 random_seed: int = None,
+                                 energy_intensity: str = "Random"
                                  ):
     try:
         print("Starting calc with " + str(calculation_index) + " for " + householddata.Name)
@@ -166,6 +171,7 @@ def excute_lpg_with_householdata(year: int, householddata: HouseholdData,
             request.CalcSpec.set_StartDate(startdate)
         if enddate is not None:
             request.CalcSpec.set_EndDate(enddate)
+        request.CalcSpec.EnergyIntensityType = energy_intensity
         calcspecfilename = Path(lpe.calculation_directory, "calcspec.json")
         if simulate_transportation:
             request.CalcSpec.EnableTransportation = True
@@ -198,7 +204,8 @@ def excute_lpg_with_many_householdata(year: int, householddata: List[HouseholdDa
                                  target_cooling_demand: Optional[float] = None,
                                  calculation_index: int = 1,
                                  clear_previous_calc: bool = False,
-                                random_seed: int = None
+                                 random_seed: int = None,
+                                 energy_intensity: str = "Random"
                                  ):
     try:
         print("Starting calc with " + str(calculation_index) + " for " + str(len(householddata)) + " households")
@@ -220,6 +227,7 @@ def excute_lpg_with_many_householdata(year: int, householddata: List[HouseholdDa
             request.CalcSpec.set_StartDate(startdate)
         if enddate is not None:
             request.CalcSpec.set_EndDate(enddate)
+        request.CalcSpec.EnergyIntensityType = energy_intensity
         calcspecfilename = Path(lpe.calculation_directory, "calcspec.json")
         if simulate_transportation:
             request.CalcSpec.EnableTransportation = True
