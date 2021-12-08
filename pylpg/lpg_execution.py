@@ -1,8 +1,6 @@
 import sys
 import time
 import stat
-from lpgdata import *
-from lpgpythonbindings import *
 from typing import Any
 import random
 import subprocess
@@ -15,6 +13,8 @@ from sys import platform
 import pathlib
 import shutil
 import traceback
+from pylpg.lpgdata import *
+from pylpg.lpgpythonbindings import *
 
 
 def excute_lpg_tsib(
