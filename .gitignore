@@ -22,4 +22,7 @@ __pycache__/
 *.glp
 *.mps
 .coverage
+.dmypy.json
+
+# generated result files
 *.csv
