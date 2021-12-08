@@ -144,7 +144,7 @@ def test_grid_profiles_function() -> None:
         household_size_list=household_sizes,
         housetype=HouseTypes.HT21_Normal_House_with_15_000_kWh_Heat_Demand_Heat_Pump_with_COP3_and_Hot_Water_Storage_Tank_Heat_Pump_Electricity,
         startdate="01.01.2020",
-        enddate="05.01.2020",
+        enddate="01.03.2020",
         simulate_transportation=True,
         chargingset=ChargingStationSets.Charging_At_Home_with_11_kW,
         transportation_device_set=TransportationDeviceSets.Bus_and_two_30_km_h_Cars,
