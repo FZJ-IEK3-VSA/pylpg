@@ -17,7 +17,7 @@ from pylpg.lpgdata import *
 from pylpg.lpgpythonbindings import *
 
 
-def excute_lpg_tsib(
+def execute_lpg_tsib(
     year: int,
     number_of_households: int,
     number_of_people_per_household: int,
@@ -109,7 +109,7 @@ def make_reasonable_family(person_count: int):
     return persons
 
 
-def excute_lpg_single_household(
+def execute_lpg_single_household(
     year: int,
     householdref: JsonReference,
     housetype: str,
@@ -165,7 +165,7 @@ def excute_lpg_single_household(
     return lpe.read_all_json_results_in_directory()
 
 
-def excute_lpg_with_householdata(
+def execute_lpg_with_householdata(
     year: int,
     householddata: HouseholdData,
     housetype: str,
@@ -228,7 +228,7 @@ def excute_lpg_with_householdata(
         raise
 
 
-def excute_lpg_with_many_householdata(
+def execute_lpg_with_many_householdata(
     year: int,
     householddata: List[HouseholdData],
     housetype: str,
@@ -292,7 +292,7 @@ def excute_lpg_with_many_householdata(
         raise
 
 
-def excute_lpg_with_householdata_with_csv_save(
+def execute_lpg_with_householdata_with_csv_save(
     year: int,
     householddata: HouseholdData,
     housetype: str,
@@ -304,7 +304,7 @@ def excute_lpg_with_householdata_with_csv_save(
     calculation_index: int = 1,
 ):
     try:
-        df = excute_lpg_with_householdata(
+        df = execute_lpg_with_householdata(
             year,
             householddata,
             housetype,

@@ -6,7 +6,7 @@ from pylpg.lpgdata import *
 
 def test_tsib_function() -> None:
     random.seed(2)
-    df: pandas.DataFrame = lpg_execution.excute_lpg_tsib(
+    df: pandas.DataFrame = lpg_execution.execute_lpg_tsib(
         year=2020,
         number_of_households=2,
         number_of_people_per_household=2,
@@ -20,7 +20,7 @@ def test_tsib_function() -> None:
 
 def test_single_household_function() -> None:
     random.seed(2)
-    df: pandas.DataFrame = lpg_execution.excute_lpg_single_household(
+    df: pandas.DataFrame = lpg_execution.execute_lpg_single_household(
         year=2020,
         householdref=Households.CHR04_Couple_30_64_years_1_at_work_1_at_home,
         housetype=HouseTypes.HT02_House_with_a_5_kWh_Battery_and_a_50_m2_Photovolatic_Array_5MWh_space_heating_gas_heating,
@@ -49,7 +49,7 @@ def test_householdata_function() -> None:
         ChargingStationSet=ChargingStationSets.Charging_At_Home_with_11_kW,
         TravelRouteSet=TravelRouteSets.Travel_Route_Set_for_15km_Commuting_Distance,
     )
-    df: pandas.DataFrame = lpg_execution.excute_lpg_with_householdata(
+    df: pandas.DataFrame = lpg_execution.execute_lpg_with_householdata(
         year=2020,
         householddata=hhdata1,
         housetype=HouseTypes.HT23_No_Infrastructure_at_all,
@@ -89,7 +89,7 @@ def test_many_householdata_function() -> None:
         TravelRouteSet=TravelRouteSets.Travel_Route_Set_for_15km_Commuting_Distance,
     )
 
-    df: pandas.DataFrame = lpg_execution.excute_lpg_with_many_householdata(
+    df: pandas.DataFrame = lpg_execution.execute_lpg_with_many_householdata(
         year=2020,
         householddata=[hhdata1, hhdata2],
         housetype=HouseTypes.HT23_No_Infrastructure_at_all,
@@ -125,7 +125,7 @@ def test_householdata_function_with_livingpatterns() -> None:
         ChargingStationSet=ChargingStationSets.Charging_At_Home_with_11_kW,
         TravelRouteSet=TravelRouteSets.Travel_Route_Set_for_15km_Commuting_Distance,
     )
-    df: pandas.DataFrame = lpg_execution.excute_lpg_with_householdata(
+    df: pandas.DataFrame = lpg_execution.execute_lpg_with_householdata(
         year=2020,
         householddata=hhdata1,
         housetype=HouseTypes.HT23_No_Infrastructure_at_all,

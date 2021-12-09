@@ -47,7 +47,7 @@ def exec_lpg(filename):
         print("submitting job #" + hd.Name)
         futures.append(
             executor.submit(
-                lpg_execution.excute_lpg_with_householdata_with_csv_save,
+                lpg_execution.execute_lpg_with_householdata_with_csv_save,
                 year=2020,
                 householddata=hd,
                 housetype=lpgdata.HouseTypes.HT23_No_Infrastructure_at_all,

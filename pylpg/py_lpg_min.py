@@ -17,7 +17,7 @@ from pylpg.lpgdata import *
 from pylpg.lpgpythonbindings import *
 
 
-def excute_lpg_with_householdata(
+def execute_lpg_with_householdata(
     year: int,
     householddata: HouseholdData,
     housetype: str,
@@ -230,7 +230,7 @@ def test_householdata_function() -> None:
         ChargingStationSet=ChargingStationSets.Charging_At_Home_with_11_kW,
         TravelRouteSet=TravelRouteSets.Travel_Route_Set_for_15km_Commuting_Distance,
     )
-    df: pandas.DataFrame = excute_lpg_with_householdata(
+    df: pandas.DataFrame = execute_lpg_with_householdata(
         year=2020,
         householddata=hhdata1,
         housetype=HouseTypes.HT23_No_Infrastructure_at_all,
