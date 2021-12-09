@@ -24,6 +24,7 @@ def excute_lpg_tsib(
     startdate: str = None,
     enddate: str = None,
     transportation: bool = False,
+    energy_intensity: str = "Random",
 ) -> pd.DataFrame:
     lpe: LPGExecutor = LPGExecutor(1, False)
     if number_of_households < 1:
@@ -58,6 +59,7 @@ def excute_lpg_tsib(
         request.CalcSpec.set_StartDate(startdate)
     if enddate is not None:
         request.CalcSpec.set_EndDate(enddate)
+    request.CalcSpec.EnergyIntensityType = energy_intensity
     calcspecfilename = Path(lpe.calculation_directory, "calcspec.json")
     if transportation:
         request.CalcSpec.EnableTransportation = True
@@ -119,6 +121,7 @@ def excute_lpg_single_household(
     transportation_device_set: JsonReference = None,
     travel_route_set: JsonReference = None,
     random_seed: int = None,
+    energy_intensity: str = "Random",
 ) -> pd.DataFrame:
     lpe: LPGExecutor = LPGExecutor(1, False)
 
@@ -148,6 +151,7 @@ def excute_lpg_single_household(
         request.CalcSpec.set_StartDate(startdate)
     if enddate is not None:
         request.CalcSpec.set_EndDate(enddate)
+    request.CalcSpec.EnergyIntensityType = energy_intensity
     calcspecfilename = Path(lpe.calculation_directory, "calcspec.json")
     request.CalcSpec.GeographicLocation = geographic_location
     if simulate_transportation:
@@ -173,6 +177,7 @@ def excute_lpg_with_householdata(
     calculation_index: int = 1,
     clear_previous_calc: bool = False,
     random_seed: int = None,
+    energy_intensity: str = "Random",
 ):
     try:
         print(
@@ -199,6 +204,7 @@ def excute_lpg_with_householdata(
             request.CalcSpec.set_StartDate(startdate)
         if enddate is not None:
             request.CalcSpec.set_EndDate(enddate)
+        request.CalcSpec.EnergyIntensityType = energy_intensity
         calcspecfilename = Path(lpe.calculation_directory, "calcspec.json")
         if simulate_transportation:
             request.CalcSpec.EnableTransportation = True
@@ -234,6 +240,7 @@ def excute_lpg_with_many_householdata(
     calculation_index: int = 1,
     clear_previous_calc: bool = False,
     random_seed: int = None,
+    energy_intensity: str = "Random",
 ):
     try:
         print(
@@ -261,6 +268,7 @@ def excute_lpg_with_many_householdata(
             request.CalcSpec.set_StartDate(startdate)
         if enddate is not None:
             request.CalcSpec.set_EndDate(enddate)
+        request.CalcSpec.EnergyIntensityType = energy_intensity
         calcspecfilename = Path(lpe.calculation_directory, "calcspec.json")
         if simulate_transportation:
             request.CalcSpec.EnableTransportation = True
