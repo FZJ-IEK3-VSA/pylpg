@@ -1,8 +1,6 @@
 import sys
 import time
 import stat
-from lpgdata import *
-from lpgpythonbindings import *
 from typing import Any
 import random
 import subprocess
@@ -15,19 +13,29 @@ import pathlib
 import shutil
 import traceback
 import pandas
+from pylpg.lpgdata import *
+from pylpg.lpgpythonbindings import *
 
 
-def excute_lpg_with_householdata(year: int, householddata: HouseholdData,
-                                 housetype: str, startdate: str = None,
-                                 enddate: str = None,
-                                 simulate_transportation: bool = False,
-                                 target_heating_demand: Optional[float] = None,
-                                 target_cooling_demand: Optional[float] = None,
-                                 calculation_index: int = 1,
-                                 clear_previous_calc: bool = False
-                                 ):
+def execute_lpg_with_householdata(
+    year: int,
+    householddata: HouseholdData,
+    housetype: str,
+    startdate: str = None,
+    enddate: str = None,
+    simulate_transportation: bool = False,
+    target_heating_demand: Optional[float] = None,
+    target_cooling_demand: Optional[float] = None,
+    calculation_index: int = 1,
+    clear_previous_calc: bool = False,
+):
     try:
-        print("Starting calc with " + str(calculation_index) + " for " + householddata.Name)
+        print(
+            "Starting calc with "
+            + str(calculation_index)
+            + " for "
+            + householddata.Name
+        )
         lpe: LPGExecutor = LPGExecutor(calculation_index, clear_previous_calc)
 
         # basic request
@@ -72,14 +80,18 @@ class LPGExecutor:
         version = "_"
         self.working_directory = pathlib.Path(__file__).parent.absolute()
         if platform == "linux" or platform == "linux2":
-            self.calculation_src_directory = Path(self.working_directory, "LPG" + version + "linux")
+            self.calculation_src_directory = Path(
+                self.working_directory, "LPG" + version + "linux"
+            )
             self.simengine_src_filename = "simengine2"
             fullname = Path(self.calculation_src_directory, self.simengine_src_filename)
             print("starting to execute " + str(fullname))
             os.chmod(str(fullname), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
             print("Permissions:" + str(oct(os.stat(str(fullname))[stat.ST_MODE])[-3:]))
         elif platform == "win32":
-            self.calculation_src_directory = Path(self.working_directory, "LPG" + version + "win")
+            self.calculation_src_directory = Path(
+                self.working_directory, "LPG" + version + "win"
+            )
             self.simengine_src_filename = "simulationengine.exe"
         else:
             raise Exception("unknown operating system detected: " + platform)
@@ -92,14 +104,21 @@ class LPGExecutor:
             shutil.rmtree(self.calculation_directory)
             time.sleep(1)
         if not os.path.exists(self.calculation_directory):
-            print("copying from  " + str(self.calculation_src_directory) + " to " + str(self.calculation_directory))
+            print(
+                "copying from  "
+                + str(self.calculation_src_directory)
+                + " to "
+                + str(self.calculation_directory)
+            )
             shutil.copytree(self.calculation_src_directory, self.calculation_directory)
             print("copied to: " + str(self.calculation_directory))
 
     def error_tolerating_directory_clean(self, path: str):
         mypath = str(path)
         if len(str(mypath)) < 10:
-            raise Exception("Path too short. This is suspicious. Trying to delete more than you meant to?")
+            raise Exception(
+                "Path too short. This is suspicious. Trying to delete more than you meant to?"
+            )
         print("cleaning " + mypath)
         files = glob.glob(mypath + "/*", recursive=True)
         for file in files:
@@ -111,7 +130,10 @@ class LPGExecutor:
         # execute LPG
         pathname = Path(self.calculation_directory, self.simengine_src_filename)
         print("executing in " + str(self.calculation_directory))
-        subprocess.run([str(pathname), "processhousejob", "-j", "calcspec.json"], cwd=str(self.calculation_directory))
+        subprocess.run(
+            [str(pathname), "processhousejob", "-j", "calcspec.json"],
+            cwd=str(self.calculation_directory),
+        )
 
     def make_default_lpg_settings(self, year: int) -> HouseCreationAndCalculationJob:
         print("Creating")
@@ -121,7 +143,9 @@ class LPGExecutor:
         hj.House = hd
         hd.Name = "House"
         hd.HouseGuid = StrGuid("houseguid")
-        hd.HouseTypeCode = HouseTypes.HT01_House_with_a_10kWh_Battery_and_a_fuel_cell_battery_charger_5_MWh_yearly_space_heating_gas_heating
+        hd.HouseTypeCode = (
+            HouseTypes.HT01_House_with_a_10kWh_Battery_and_a_fuel_cell_battery_charger_5_MWh_yearly_space_heating_gas_heating
+        )
         hd.TargetCoolingDemand = 10000
         hd.TargetHeatDemand = 0
         hd.Households = []
@@ -131,10 +155,15 @@ class LPGExecutor:
         cs.IgnorePreviousActivitiesWhenNeeded = True
         cs.LoadTypePriority = LoadTypePriority.All
         cs.DefaultForOutputFiles = OutputFileDefault.NoFiles
-        cs.CalcOptions = [CalcOption.JsonHouseholdSumFiles, CalcOption.BodilyActivityStatistics]
+        cs.CalcOptions = [
+            CalcOption.JsonHouseholdSumFiles,
+            CalcOption.BodilyActivityStatistics,
+        ]
         cs.EnergyIntensityType = EnergyIntensityType.Random
         cs.OutputDirectory = "results"
-        hj.PathToDatabase = str(Path(self.calculation_directory, "profilegenerator.db3"))
+        hj.PathToDatabase = str(
+            Path(self.calculation_directory, "profilegenerator.db3")
+        )
         return hj
 
     def read_all_json_results_in_directory(self) -> Optional[pd.DataFrame]:
@@ -144,7 +173,9 @@ class LPGExecutor:
             return None
         potential_sum_files = glob.glob(str(results_directory) + "/Sum.*.json")
 
-        bodilyActivity_files = glob.glob(str(results_directory) + "/BodilyActivityLevel.*.json")
+        bodilyActivity_files = glob.glob(
+            str(results_directory) + "/BodilyActivityLevel.*.json"
+        )
         potential_sum_files.extend(bodilyActivity_files)
 
         carlocs = glob.glob(str(results_directory) + "/CarLocation.*.json")
@@ -167,14 +198,20 @@ class LPGExecutor:
                 sumProfile: JsonSumProfile = JsonSumProfile.from_json(filecontent)  # type: ignore
             if sumProfile.LoadTypeName is None:
                 raise Exception("Empty load type name on " + str(file))
-            if sumProfile is None or sumProfile.HouseKey is None or sumProfile.HouseKey.HHKey is None:
+            if (
+                sumProfile is None
+                or sumProfile.HouseKey is None
+                or sumProfile.HouseKey.HHKey is None
+            ):
                 raise Exception("empty housekey")
-            key: str = sumProfile.LoadTypeName + "_" + str(sumProfile.HouseKey.HHKey.Key)
+            key: str = (
+                sumProfile.LoadTypeName + "_" + str(sumProfile.HouseKey.HHKey.Key)
+            )
             df[key] = sumProfile.Values
             if isFirst:
                 isFirst = False
                 ts = sumProfile.StartTime
-                timestamps = pd.date_range(ts, periods=len(sumProfile.Values), freq='T')
+                timestamps = pd.date_range(ts, periods=len(sumProfile.Values), freq="T")
                 df["Timestamp"] = timestamps
         return df
 
@@ -184,17 +221,24 @@ def test_householdata_function() -> None:
     p1 = PersonData(24, "male")
     p2 = PersonData(24, "female")
     personspec = HouseholdDataPersonSpecification([p1, p2])
-    hhdata1 = HouseholdData(UniqueHouseholdId="uniq", Name="name",
-                            HouseholdDataPersonSpec=personspec,
-                            HouseholdDataSpecification=HouseholdDataSpecificationType.ByPersons,
-                            TransportationDeviceSet=TransportationDeviceSets.Bus_and_two_30_km_h_Cars,
-                            ChargingStationSet=ChargingStationSets.Charging_At_Home_with_11_kW,
-                            TravelRouteSet=TravelRouteSets.Travel_Route_Set_for_15km_Commuting_Distance)
-    df: pandas.DataFrame = excute_lpg_with_householdata(year=2020, householddata=hhdata1,
-                                                              housetype=HouseTypes.HT23_No_Infrastructure_at_all,
-                                                              startdate="01.01.2020", enddate="01.03.2020",
-                                                              simulate_transportation=True)
-    df.to_csv(r'lpgexport.csv', index=True, sep=";")
+    hhdata1 = HouseholdData(
+        UniqueHouseholdId="uniq",
+        Name="name",
+        HouseholdDataPersonSpec=personspec,
+        HouseholdDataSpecification=HouseholdDataSpecificationType.ByPersons,
+        TransportationDeviceSet=TransportationDeviceSets.Bus_and_two_30_km_h_Cars,
+        ChargingStationSet=ChargingStationSets.Charging_At_Home_with_11_kW,
+        TravelRouteSet=TravelRouteSets.Travel_Route_Set_for_15km_Commuting_Distance,
+    )
+    df: pandas.DataFrame = execute_lpg_with_householdata(
+        year=2020,
+        householddata=hhdata1,
+        housetype=HouseTypes.HT23_No_Infrastructure_at_all,
+        startdate="01.01.2020",
+        enddate="01.03.2020",
+        simulate_transportation=True,
+    )
+    df.to_csv(r"lpgexport.csv", index=True, sep=";")
     print("successfully exportet dataframe to lpgexport.csv")
 
 

@@ -1,8 +1,28 @@
-.idea
-.ipynb_checkpoints
-R*.csv
 C*/
-# Created by pytest automatically.
-LPG_9.9.0_win/results/
+
+# directories
+.vscode/
+pylpg.egg-info/
+.idea/
 __pycache__/
+.ipynb_checkpoints/
+*.local/
+*.eggs/
+*.testing/
+*.examples/
+*.build/
+*.dist/
+*.docs/build/
+
+# file types to ignore
+*.pyc
+*.egg-info
+*.log
+*.lp
+*.glp
+*.mps
+.coverage
+.dmypy.json
+
+# generated result files
 *.csv
