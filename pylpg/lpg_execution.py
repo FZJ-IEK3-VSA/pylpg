@@ -418,6 +418,13 @@ class LPGExecutor:
                 self.working_directory, "LPG" + version + "win"
             )
             self.simengine_src_filename = "simulationengine.exe"
+            # check for alternative executable file name
+            if not os.path.isfile(
+                os.path.join(
+                    self.calculation_src_directory, self.simengine_src_filename
+                )
+            ):
+                self.simengine_src_filename = "simengine2.exe"
         else:
             raise Exception("unknown operating system detected: " + platform)
 
