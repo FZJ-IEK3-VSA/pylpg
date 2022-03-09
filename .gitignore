@@ -6,6 +6,8 @@ pylpg.egg-info/
 .idea/
 __pycache__/
 .ipynb_checkpoints/
+build/
+dist/
 *.local/
 *.eggs/
 *.testing/
