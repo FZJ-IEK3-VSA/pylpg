@@ -1,18 +1,19 @@
-import sys
-import time
-import stat
-from typing import Any
-import random
-import subprocess
 import glob
 import os
-import pandas as pd  # type: ignore
-from pathlib import Path
-from typing import List
-from sys import platform
 import pathlib
+import random
 import shutil
+import stat
+import subprocess
+import sys
+import time
 import traceback
+from pathlib import Path
+from sys import platform
+from typing import Any, List, Union
+
+import pandas as pd  # type: ignore
+
 from pylpg.lpgdata import *
 from pylpg.lpgpythonbindings import *
 
@@ -50,6 +51,7 @@ def execute_lpg_tsib(
         hhd.HouseholdDataPersonSpec.Persons = make_reasonable_family(
             number_of_people_per_household
         )
+        assert request.House is not None, "HouseData was None"
         request.House.Households.append(hhd)
 
     # set more parameters
@@ -127,8 +129,9 @@ def execute_lpg_single_household(
 
     # basic request
     request = lpe.make_default_lpg_settings(year)
-    if random_seed is not None:
+    if random_seed is not None and request.CalcSpec is not None:
         request.CalcSpec.RandomSeed = random_seed
+    assert request.House is not None, "HouseData was None"
     request.House.HouseTypeCode = housetype
     hhnamespec = HouseholdNameSpecification(householdref)
     hhn = HouseholdData(
@@ -184,14 +187,15 @@ def execute_lpg_with_householdata(
             "Starting calc with "
             + str(calculation_index)
             + " for "
-            + householddata.Name
+            + (householddata.Name or "nameless household")
         )
         lpe: LPGExecutor = LPGExecutor(calculation_index, clear_previous_calc)
 
         # basic request
         request = lpe.make_default_lpg_settings(year)
+        assert request.House is not None, "Housedata was None"
         request.House.HouseTypeCode = housetype
-        if random_seed is not None:
+        if random_seed is not None and request.CalcSpec is not None:
             request.CalcSpec.RandomSeed = random_seed
         if target_heating_demand is not None:
             request.House.TargetHeatDemand = target_heating_demand
@@ -254,8 +258,9 @@ def execute_lpg_with_many_householdata(
 
         # basic request
         request = lpe.make_default_lpg_settings(year)
+        assert request.House is not None, "Housedata was None"
         request.House.HouseTypeCode = housetype
-        if random_seed is not None:
+        if random_seed is not None and request.CalcSpec is not None:
             request.CalcSpec.RandomSeed = random_seed
         if target_heating_demand is not None:
             request.House.TargetHeatDemand = target_heating_demand
@@ -349,11 +354,13 @@ def execute_grid_calc(
 
     # basic request
     request = lpe.make_default_lpg_settings(year)
+    assert request.CalcSpec is not None, "Calcspec was None"
     request.CalcSpec.CalcOptions.clear()
     request.CalcSpec.CalcOptions.append(CalcOption.JsonHouseSumFiles)
     if len(household_size_list) < 1:
         raise Exception("need at least one household.")
 
+    assert request.House is not None, "Housedata was None"
     request.House.HouseTypeCode = housetype
     count = 1
     for hs in household_size_list:
@@ -431,7 +438,7 @@ class LPGExecutor:
             shutil.copytree(self.calculation_src_directory, self.calculation_directory)
             print("copied to: " + str(self.calculation_directory))
 
-    def error_tolerating_directory_clean(self, path: str):
+    def error_tolerating_directory_clean(self, path: Union[Path, str]):
         mypath = str(path)
         if len(str(mypath)) < 10:
             raise Exception(
