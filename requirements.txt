@@ -1,4 +1,5 @@
 setuptools
+requests
 dataclasses
 dataclasses_json
 pandas

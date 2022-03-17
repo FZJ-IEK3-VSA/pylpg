@@ -1,22 +1,12 @@
 import os
-import sys
 
 import setuptools  # type: ignore
-
-
-def load_lpg_binaries():
-    platform = sys.platform
-    pass  # Todo: load simulationengine as zip from LoadProfileGenerator.de, depending on platform
-
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 with open(os.path.join(dir_path, "requirements.txt")) as f:
     required_packages = f.read().splitlines()
 with open(os.path.join(dir_path, "README.md"), "r") as fh:
     long_description = fh.read()
-
-
-load_lpg_binaries()
 
 setuptools.setup(
     name="pylpg",

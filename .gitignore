@@ -1,4 +1,6 @@
 C*/
+pylpg/LPG_win/
+pylpg/LPG_linux/
 
 # directories
 .vscode/
