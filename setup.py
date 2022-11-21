@@ -10,7 +10,7 @@ with open(os.path.join(dir_path, "README.md"), "r") as fh:
 
 setuptools.setup(
     name="pylpg",
-    version="0.1",
+    version="0.1.0",
     author="Noah Pflugradt",
     author_email="n.pflugradt@fz-juelich.de",
     description="Python Bindings for the LoadProfileGenerator",
