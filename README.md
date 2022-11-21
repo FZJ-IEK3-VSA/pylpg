@@ -11,9 +11,9 @@ Basically it
 * waits for the results,
 * and then returns the results as pandas dataframe.
 
-Look into the [Python test file](test/test_pylpg.py) for examples on use.
+Look into the [single household example](examples/single_household.py) for a simple example on use.
 
-Note that this package downloads the full LPG binaries and the database.
+Note that this package downloads the full LPG binaries and the database on first use.
 
 If you want to use a different database than the one that comes with the package, you need to replace the files.
 
