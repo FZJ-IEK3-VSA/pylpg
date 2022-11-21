@@ -1,5 +1,7 @@
+ <!-- [![PyPI Version](https://img.shields.io/pypi/v/pylpg.svg)](https://pypi.python.org/pypi/pylpg) -->
  [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
  <!-- [![PyPI - License](https://img.shields.io/pypi/l/pylpg)](LICENSE) -->
+ <!-- [![codecov](https://codecov.io/gh/FZJ-IEK3-VSA/pylpg/branch/main/graph/badge.svg)](https://codecov.io/gh/FZJ-IEK3-VSA/pylpg) -->
 
 # pyLPG
 
