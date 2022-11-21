@@ -1,5 +1,5 @@
-<a href="https://www.fz-juelich.de/en/iek/iek-3"><img src="https://www.fz-juelich.de/static/media/Logo.2ceb35fc.svg" alt="Forschungszentrum Juelich Logo" width="230px"></a> 
-
+ [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+ <!-- [![PyPI - License](https://img.shields.io/pypi/l/pylpg)](LICENSE) -->
 
 # pyLPG
 
@@ -41,3 +41,5 @@ The package is mainted by the [Institute of Energy and Climate Research – Tech
 ## Contributing
 
 We need your help to make pyLPG an even better tool than it is. Please raise an issue, if it is not clear how to use the package, if you find a bug, or if you have an idea how to improve. If you have implemented a solution, you are invited to contribute with a pull request.
+
+<a href="https://www.fz-juelich.de/en/iek/iek-3"><img src="https://www.fz-juelich.de/static/media/Logo.2ceb35fc.svg" alt="Forschungszentrum Juelich Logo" width="230px"></a> 
