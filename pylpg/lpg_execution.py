@@ -27,7 +27,7 @@ def execute_lpg_tsib(
     startdate: str = None,
     enddate: str = None,
     transportation: bool = False,
-    energy_intensity: str = "Random",
+    energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
 ) -> pd.DataFrame:
     lpe: LPGExecutor = LPGExecutor(1, False)
     if number_of_households < 1:
@@ -125,7 +125,9 @@ def execute_lpg_single_household(
     transportation_device_set: JsonReference = None,
     travel_route_set: JsonReference = None,
     random_seed: int = None,
-    energy_intensity: str = "Random",
+    energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
+    resolution: str = "00:01:00",
+    calc_options: List[CalcOption] = None,
 ) -> pd.DataFrame:
     lpe: LPGExecutor = LPGExecutor(1, False)
 
@@ -162,6 +164,9 @@ def execute_lpg_single_household(
     if simulate_transportation:
         request.CalcSpec.EnableTransportation = True
         request.CalcSpec.CalcOptions.append(CalcOption.TansportationDeviceJsons)
+    request.CalcSpec.ExternalTimeResolution = resolution
+    if calc_options:
+        request.CalcSpec.CalcOptions = calc_options
     with open(calcspecfilename, "w") as calcspecfile:
         jsonrequest = request.to_json(indent=4)  # type: ignore
         calcspecfile.write(jsonrequest)
@@ -182,7 +187,7 @@ def execute_lpg_with_householdata(
     calculation_index: int = 1,
     clear_previous_calc: bool = False,
     random_seed: int = None,
-    energy_intensity: str = "Random",
+    energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
 ):
     try:
         print(
@@ -246,7 +251,7 @@ def execute_lpg_with_many_householdata(
     calculation_index: int = 1,
     clear_previous_calc: bool = False,
     random_seed: int = None,
-    energy_intensity: str = "Random",
+    energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
 ):
     try:
         print(
@@ -578,5 +583,5 @@ class LPGExecutor:
                 isFirst = False
                 ts = sumProfile.StartTime
                 timestamps = pd.date_range(ts, periods=len(sumProfile.Values), freq="T")
-                df["Timestamp"] = timestamps
+                df.index = timestamps
         return df
