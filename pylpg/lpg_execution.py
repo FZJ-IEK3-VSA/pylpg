@@ -126,6 +126,8 @@ def execute_lpg_single_household(
     travel_route_set: JsonReference = None,
     random_seed: int = None,
     energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
+    resolution: str = "00:01:00",
+    calc_options: List[CalcOption] = None,
 ) -> pd.DataFrame:
     lpe: LPGExecutor = LPGExecutor(1, False)
 
@@ -162,6 +164,9 @@ def execute_lpg_single_household(
     if simulate_transportation:
         request.CalcSpec.EnableTransportation = True
         request.CalcSpec.CalcOptions.append(CalcOption.TansportationDeviceJsons)
+    request.CalcSpec.ExternalTimeResolution = resolution
+    if calc_options:
+        request.CalcSpec.CalcOptions = calc_options
     with open(calcspecfilename, "w") as calcspecfile:
         jsonrequest = request.to_json(indent=4)  # type: ignore
         calcspecfile.write(jsonrequest)
