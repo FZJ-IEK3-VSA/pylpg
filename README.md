@@ -15,6 +15,10 @@ Basically it
 
 Look into the [single household example](examples/single_household.py) for a simple example on use.
 
+Example of a generated electricity load profile as a carpet plot:
+
+<a href=examples/example_carpet_plot.png><img src="examples/example_carpet_plot.png" alt="electric load carpet plot" width="500px"></a> 
+
 Note that this package downloads the full LPG binaries and the database on first use.
 
 If you want to use a different database than the one that comes with the package, you need to replace the files.
