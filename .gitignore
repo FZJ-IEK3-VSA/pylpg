@@ -26,6 +26,8 @@ __pycache__/
 *.build/
 *.dist/
 *.docs/build/
+build/
+dist/
 
 # generated result files
 *.csv
