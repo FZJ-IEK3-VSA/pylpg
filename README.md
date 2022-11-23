@@ -23,6 +23,11 @@ Note that this package downloads the full LPG binaries and the database on first
 
 If you want to use a different database than the one that comes with the package, you need to replace the files.
 
+## Installation
+
+This package can be installed via pip:
+
+    pip install pyloadprofilegenerator
 
 ## License
 
