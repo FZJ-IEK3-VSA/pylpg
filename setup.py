@@ -9,7 +9,7 @@ with open(os.path.join(dir_path, "README.md"), "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="pylpg",
+    name="pyloadprofilegenerator",
     version="0.1.0",
     author="Noah Pflugradt",
     author_email="n.pflugradt@fz-juelich.de",
