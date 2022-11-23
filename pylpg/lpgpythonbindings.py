@@ -65,7 +65,9 @@ class CalcOption(str, Enum):
     LocationsFile = "LocationsFile"
     HouseholdPlan = "HouseholdPlan"
     DeviceProfileExternalEntireHouse = "DeviceProfileExternalEntireHouse"
-    DeviceProfileExternalIndividualHouseholds = "DeviceProfileExternalIndividualHouseholds"
+    DeviceProfileExternalIndividualHouseholds = (
+        "DeviceProfileExternalIndividualHouseholds"
+    )
     MakeGraphics = "MakeGraphics"
     MakePDF = "MakePDF"
     LocationCarpetPlot = "LocationCarpetPlot"
@@ -76,7 +78,9 @@ class CalcOption(str, Enum):
     TransportationStatistics = "TransportationStatistics"
     ActionsEachTimestep = "ActionsEachTimestep"
     CalculationFlameChart = "CalculationFlameChart"
-    SumProfileExternalIndividualHouseholdsAsJson = "SumProfileExternalIndividualHouseholdsAsJson"
+    SumProfileExternalIndividualHouseholdsAsJson = (
+        "SumProfileExternalIndividualHouseholdsAsJson"
+    )
     JsonHouseSumFiles = "JsonHouseSumFiles"
     BodilyActivityStatistics = "BodilyActivityStatistics"
     BasicOverview = "BasicOverview"
@@ -154,7 +158,9 @@ class TransportationPreference:
 
     TransportationDeviceCategories: List[JsonReference] = field(default_factory=list)
 
-    def set_TransportationDeviceCategories(self, value: List[JsonReference]) -> TransportationPreference:
+    def set_TransportationDeviceCategories(
+        self, value: List[JsonReference]
+    ) -> TransportationPreference:
         self.TransportationDeviceCategories = value
         return self
 
@@ -193,9 +199,13 @@ class PersonData:
         self.PersonName = value
         return self
 
-    TransportationPreferences: List[TransportationPreference] = field(default_factory=list)
+    TransportationPreferences: List[TransportationPreference] = field(
+        default_factory=list
+    )
 
-    def set_TransportationPreferences(self, value: List[TransportationPreference]) -> PersonData:
+    def set_TransportationPreferences(
+        self, value: List[TransportationPreference]
+    ) -> PersonData:
         self.TransportationPreferences = value
         return self
 
@@ -346,6 +356,7 @@ class JsonCalcSpecification:
         Default=false
     :type EnableIdlemode: bool
     """
+
     LoadtypesForPostprocessing: List[str] = field(default_factory=list)
 
     def set_LoadtypesForPostprocessing(self, value: List[str]) -> JsonCalcSpecification:
@@ -366,7 +377,9 @@ class JsonCalcSpecification:
 
     DefaultForOutputFiles: Optional[OutputFileDefault] = None
 
-    def set_DefaultForOutputFiles(self, value: OutputFileDefault) -> JsonCalcSpecification:
+    def set_DefaultForOutputFiles(
+        self, value: OutputFileDefault
+    ) -> JsonCalcSpecification:
         self.DefaultForOutputFiles = value
         return self
 
@@ -390,7 +403,9 @@ class JsonCalcSpecification:
 
     EnergyIntensityType: Optional[EnergyIntensityType] = None
 
-    def set_EnergyIntensityType(self, value: EnergyIntensityType) -> JsonCalcSpecification:
+    def set_EnergyIntensityType(
+        self, value: EnergyIntensityType
+    ) -> JsonCalcSpecification:
         self.EnergyIntensityType = value
         return self
 
@@ -468,7 +483,9 @@ class JsonCalcSpecification:
 
     IgnorePreviousActivitiesWhenNeeded: bool = False
 
-    def set_IgnorePreviousActivitiesWhenNeeded(self, value: bool) -> JsonCalcSpecification:
+    def set_IgnorePreviousActivitiesWhenNeeded(
+        self, value: bool
+    ) -> JsonCalcSpecification:
         self.IgnorePreviousActivitiesWhenNeeded = value
         return self
 
@@ -536,7 +553,9 @@ class PersonLivingTag:
 class HouseholdTemplateSpecification:
     Persons: List[PersonLivingTag] = field(default_factory=list)
 
-    def set_Persons(self, value: List[PersonLivingTag]) -> HouseholdTemplateSpecification:
+    def set_Persons(
+        self, value: List[PersonLivingTag]
+    ) -> HouseholdTemplateSpecification:
         self.Persons = value
         return self
 
@@ -548,7 +567,9 @@ class HouseholdTemplateSpecification:
 
     ForbiddenTraitTags: List[str] = field(default_factory=list)
 
-    def set_ForbiddenTraitTags(self, value: List[str]) -> HouseholdTemplateSpecification:
+    def set_ForbiddenTraitTags(
+        self, value: List[str]
+    ) -> HouseholdTemplateSpecification:
         self.ForbiddenTraitTags = value
         return self
 
@@ -559,7 +580,9 @@ class HouseholdTemplateSpecification:
 class HouseholdNameSpecification:
     HouseholdReference: Optional[JsonReference] = None
 
-    def set_HouseholdReference(self, value: JsonReference) -> HouseholdNameSpecification:
+    def set_HouseholdReference(
+        self, value: JsonReference
+    ) -> HouseholdNameSpecification:
         self.HouseholdReference = value
         return self
 
@@ -570,13 +593,17 @@ class HouseholdNameSpecification:
 class HouseholdData:
     HouseholdDataPersonSpec: Optional[HouseholdDataPersonSpecification] = None
 
-    def set_HouseholdDataPersonSpec(self, value: HouseholdDataPersonSpecification) -> HouseholdData:
+    def set_HouseholdDataPersonSpec(
+        self, value: HouseholdDataPersonSpecification
+    ) -> HouseholdData:
         self.HouseholdDataPersonSpec = value
         return self
 
     HouseholdTemplateSpec: Optional[HouseholdTemplateSpecification] = None
 
-    def set_HouseholdTemplateSpec(self, value: HouseholdTemplateSpecification) -> HouseholdData:
+    def set_HouseholdTemplateSpec(
+        self, value: HouseholdTemplateSpecification
+    ) -> HouseholdData:
         self.HouseholdTemplateSpec = value
         return self
 
@@ -616,15 +643,21 @@ class HouseholdData:
         self.TravelRouteSet = value
         return self
 
-    TransportationDistanceModifiers: Optional[List[TransportationDistanceModifier]] = field(default_factory=list)
+    TransportationDistanceModifiers: Optional[
+        List[TransportationDistanceModifier]
+    ] = field(default_factory=list)
 
-    def set_TransportationDistanceModifiers(self, value: List[TransportationDistanceModifier]) -> HouseholdData:
+    def set_TransportationDistanceModifiers(
+        self, value: List[TransportationDistanceModifier]
+    ) -> HouseholdData:
         self.TransportationDistanceModifiers = value
         return self
 
     HouseholdDataSpecification: Optional[HouseholdDataSpecificationType] = None
 
-    def set_HouseholdDataSpecification(self, value: HouseholdDataSpecificationType) -> HouseholdData:
+    def set_HouseholdDataSpecification(
+        self, value: HouseholdDataSpecificationType
+    ) -> HouseholdData:
         self.HouseholdDataSpecification = value
         return self
 
@@ -679,6 +712,7 @@ class HouseCreationAndCalculationJob:
         profilegenerator.db3 in the current directory if not set.
     :type PathToDatabase: str
     """
+
     House: Optional[HouseData] = None
 
     def set_House(self, value: HouseData) -> HouseCreationAndCalculationJob:
@@ -687,13 +721,17 @@ class HouseCreationAndCalculationJob:
 
     CalcSpec: Optional[JsonCalcSpecification] = None
 
-    def set_CalcSpec(self, value: JsonCalcSpecification) -> HouseCreationAndCalculationJob:
+    def set_CalcSpec(
+        self, value: JsonCalcSpecification
+    ) -> HouseCreationAndCalculationJob:
         self.CalcSpec = value
         return self
 
     HouseDefinitionType: Optional[HouseDefinitionType] = HouseDefinitionType.HouseData
 
-    def set_HouseDefinitionType(self, value: HouseDefinitionType) -> HouseCreationAndCalculationJob:
+    def set_HouseDefinitionType(
+        self, value: HouseDefinitionType
+    ) -> HouseCreationAndCalculationJob:
         self.HouseDefinitionType = value
         return self
 
@@ -956,7 +994,9 @@ class JsonSumProfile:
 class JsonDeviceProfiles:
     DeviceProfiles: List[SingleDeviceProfile] = field(default_factory=list)
 
-    def set_DeviceProfiles(self, value: List[SingleDeviceProfile]) -> JsonDeviceProfiles:
+    def set_DeviceProfiles(
+        self, value: List[SingleDeviceProfile]
+    ) -> JsonDeviceProfiles:
         self.DeviceProfiles = value
         return self
 
@@ -989,4 +1029,3 @@ class JsonDeviceProfiles:
     def set_Unit(self, value: str) -> JsonDeviceProfiles:
         self.Unit = value
         return self
-
