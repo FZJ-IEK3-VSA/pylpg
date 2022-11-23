@@ -1,7 +1,5 @@
- <!-- [![PyPI Version](https://img.shields.io/pypi/v/pyloadprofilegenerator.svg)](https://pypi.python.org/pypi/pyloadprofilegenerator) -->
- [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
- <!-- [![PyPI - License](https://img.shields.io/pypi/l/pyloadprofilegenerator)](LICENSE) -->
- <!-- [![codecov](https://codecov.io/gh/FZJ-IEK3-VSA/pyloadprofilegenerator/branch/main/graph/badge.svg)](https://codecov.io/gh/FZJ-IEK3-VSA/pyloadprofilegenerator) -->
+ [![PyPI Version](https://img.shields.io/pypi/v/pyloadprofilegenerator.svg)](https://pypi.python.org/pypi/pyloadprofilegenerator)
+ [![PyPI - License](https://img.shields.io/pypi/l/pyloadprofilegenerator)](LICENSE)
 
 # pyLPG
 
