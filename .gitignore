@@ -1,23 +1,8 @@
+# downloaded LPG binaries
 C*/
 pylpg/LPG_win/
 pylpg/LPG_linux/
 
-# directories
-.vscode/
-pylpg.egg-info/
-.idea/
-__pycache__/
-.ipynb_checkpoints/
-build/
-dist/
-*.local/
-*.eggs/
-*.testing/
-*.examples/
-*.build/
-*.dist/
-*.docs/build/
-
 # file types to ignore
 *.pyc
 *.egg-info
@@ -27,10 +12,6 @@ dist/
 *.mps
 .coverage
 .dmypy.json
-
-# generated result files
-*.csv
-C*/
 
 # directories
 .vscode/
@@ -45,16 +26,6 @@ __pycache__/
 *.build/
 *.dist/
 *.docs/build/
-
-# file types to ignore
-*.pyc
-*.egg-info
-*.log
-*.lp
-*.glp
-*.mps
-.coverage
-.dmypy.json
 
 # generated result files
 *.csv
