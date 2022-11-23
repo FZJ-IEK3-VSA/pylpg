@@ -1,5 +1,7 @@
-<a href="https://www.fz-juelich.de/en/iek/iek-3"><img src="https://www.fz-juelich.de/static/media/Logo.2ceb35fc.svg" alt="Forschungszentrum Juelich Logo" width="230px"></a> 
-
+ <!-- [![PyPI Version](https://img.shields.io/pypi/v/pyloadprofilegenerator.svg)](https://pypi.python.org/pypi/pyloadprofilegenerator) -->
+ [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+ <!-- [![PyPI - License](https://img.shields.io/pypi/l/pyloadprofilegenerator)](LICENSE) -->
+ <!-- [![codecov](https://codecov.io/gh/FZJ-IEK3-VSA/pyloadprofilegenerator/branch/main/graph/badge.svg)](https://codecov.io/gh/FZJ-IEK3-VSA/pyloadprofilegenerator) -->
 
 # pyLPG
 
@@ -11,9 +13,9 @@ Basically it
 * waits for the results,
 * and then returns the results as pandas dataframe.
 
-Look into the [Python test file](test/test_pylpg.py) for examples on use.
+Look into the [single household example](examples/single_household.py) for a simple example on use.
 
-Note that this package downloads the full LPG binaries and the database.
+Note that this package downloads the full LPG binaries and the database on first use.
 
 If you want to use a different database than the one that comes with the package, you need to replace the files.
 
@@ -41,3 +43,5 @@ The package is mainted by the [Institute of Energy and Climate Research – Tech
 ## Contributing
 
 We need your help to make pyLPG an even better tool than it is. Please raise an issue, if it is not clear how to use the package, if you find a bug, or if you have an idea how to improve. If you have implemented a solution, you are invited to contribute with a pull request.
+
+<a href="https://www.fz-juelich.de/en/iek/iek-3"><img src="https://www.fz-juelich.de/static/media/Logo.2ceb35fc.svg" alt="Forschungszentrum Juelich Logo" width="230px"></a> 

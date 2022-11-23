@@ -1,5 +1,5 @@
 import os
-import pandas as pd
+import pandas as pd  # type: ignore
 
 maindfs = None
 # os.chdir("C:\\Work\\settlementresults\\result")
@@ -19,7 +19,7 @@ for file in os.listdir("."):
         else:
             maindfs[1] = maindfs[1] + df1[1]
         #   maindfs = maindfs.merge(df2, left_on=0,right_on=0)
-
+assert maindfs is not None
 
 maindfs = maindfs.drop(maindfs.columns[0], axis=1)
 maindfs = maindfs.mul(60000)

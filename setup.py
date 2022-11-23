@@ -1,4 +1,5 @@
 import os
+
 import setuptools  # type: ignore
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -8,8 +9,8 @@ with open(os.path.join(dir_path, "README.md"), "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="pylpg",
-    version="0.1",
+    name="pyloadprofilegenerator",
+    version="0.1.0",
     author="Noah Pflugradt",
     author_email="n.pflugradt@fz-juelich.de",
     description="Python Bindings for the LoadProfileGenerator",
@@ -22,14 +23,14 @@ setuptools.setup(
     setup_requires=["setuptools-git"],
     classifiers=[
         "Development Status :: 3 - Alpha",
-        "Intended Audience :: End Users/Server",
+        "Intended Audience :: End Users/Desktop",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Topic :: Scientific/Engineering",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],

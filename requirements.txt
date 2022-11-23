@@ -1,5 +1,5 @@
 setuptools
-dataclasses
+requests
 dataclasses_json
 pandas
 numpy

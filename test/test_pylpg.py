@@ -177,7 +177,7 @@ def print_persons_list(persons: List[PersonData]):
 
 
 def person_data_to_string(pd: PersonData) -> str:
-    return str(str(pd.Age) + " - " + pd.Gender)
+    return str(str(pd.Age) + " - " + (pd.Gender or "no gender"))
 
 
 if __name__ == "__main__":

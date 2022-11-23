@@ -175,9 +175,9 @@ class PersonData:
         self.Age = value
         return self
 
-    Gender: Optional[str] = ""
+    Gender: Optional[Gender] = None
 
-    def set_Gender(self, value: str) -> PersonData:
+    def set_Gender(self, value: Gender) -> PersonData:
         self.Gender = value
         return self
 
@@ -244,6 +244,108 @@ class TransportationDistanceModifier:
 @dataclass_json
 @dataclass
 class JsonCalcSpecification:
+    """
+    :param LoadtypesForPostprocessing: List of all load types to process in
+        postprocessing. Internally if you calculate a house, the LPG needs to
+        calculate the warm water needs to correctly calculate the electricity
+        demand from the heat pump. But maybe you don't need the warm water
+        profiles and only want the electricity files. Then you can put
+        Electricity here (case is important!) and the LPG will skip everything
+        in postprocessing that is not in this list. Leave this blank or delete
+        the option entirely if you want all the result files.
+    :type LoadtypesForPostprocessing: List[str]
+    :param CalculationName: Name for the calculation. This is not used in the
+        calculation and is intended for the user to store comments or something
+        like that.
+    :type CalculationName: str
+    :param CalcOptions: List of all calculation output options to enable. This
+        is ADDITIONALLY to the output files enabled by the DefaultForOutputFiles
+        option!
+    :type CalcOptions: List[CalcOption]
+    :param DefaultForOutputFiles: This sets which output files are generated.
+        You need to use one of the defaults. If you want some additional
+        individual output, you can use the calc options list of individual
+        settings to enable additional things.
+    :type DefaultForOutputFiles: OutputFileDefault
+    :param DeleteAllButPDF: This option makes the LPG delete everything but the
+        resulting PDF. This is pretty much only useful if you want to generate a
+        full set of PDFs for all households to get a detailed view of the
+        results for each household. Default: false
+    :type DeleteAllButPDF: bool
+    :param DeviceSelection: If you want the people to use certain devices, for
+        example if you want to make sure that the people really use incandescent
+        light bulbs, then you can set up a device selection to ensure that this
+        type of device will always be selected.
+    :type DeviceSelection: JsonReference
+    :param EndDate: End date of the simulation. Defaults to the 31.12. of the
+        current year if not set. One year maximum.
+    :type EndDate: str
+    :param EnergyIntensityType: How devices are picked for the households, for
+        example if the household gets an old fridge or a new fridge.
+    :type EnergyIntensityType: EnergyIntensityType
+    :param ExternalTimeResolution: If you need result files in 15 min resolution
+        instead of 1 minute, then this option will help you. Set it to 00:15:00
+        to get 15 minute files. Needs to be a multiple of the internal time
+        resolution, which is normally 1 minute.
+    :type ExternalTimeResolution: str
+    :param InternalTimeResolution: If you need result files in 30 sekunds
+        resolution instead of 1 minute, then this option will help you. Set it
+        to 00:00:30 to get 30 second resolution files. Note that the predefined
+        device profiles are measured with a resolution of 1 minute, so you won't
+        gain any accuracy, but it will save you the effort of interpolating the
+        results yourself.
+    :type InternalTimeResolution: str
+    :param GeographicLocation: The guid of the geographic location to use. This
+        determines holidays and sunrise/sunset times.
+    :type GeographicLocation: JsonReference
+    :param LoadTypePriority: Which load types should be included in the
+        calculation. If you want to calculate a house, it is required to use at
+        least the house-setting.
+    :type LoadTypePriority: LoadTypePriority
+    :param OutputDirectory: Path to the output directory where all the files
+        will be put. Defaults to the current path.
+    :type OutputDirectory: str
+    :param RandomSeed: Sets the random seed. If two calculations with the same
+        random seed are run, then the results will be identical. Defaults to -1,
+        which means that it will be randomly selected.
+    :type RandomSeed: int
+    :param ShowSettlingPeriod: The LPG runs a 3-day period before the simulation
+        start to initialize the people. For debugging purposes it is possible to
+        include this in the result files. Defaults to false.
+    :type ShowSettlingPeriod: bool
+    :param EnableFlexibility: Flexibility modelling seperates the electric
+        devices out that can time shifted. The LPG then generates two distinct
+        profiles.
+    :type EnableFlexibility: bool
+    :param SkipExisting: If you enable this, the LPG will check in the result
+        directory if this household/house was already calculated and if so, will
+        quit quietly. Defaults to true.
+    :type SkipExisting: bool
+    :param StartDate: Start date of the simulation. Defaults to the 01.01. of
+        the current year if not set.
+    :type StartDate: str
+    :param TemperatureProfile: Reference of the temperature profile to use.
+        Defaults to the first temperature profile in the database if not set,
+        which is probably not what you want. Only the GUID is used to search the
+        database. The name is ignored and only for human readability.
+    :type TemperatureProfile: JsonReference
+    :param DeleteSqlite: This option make the LPG delete all the SQLite result
+        files after the calculation. Only enable this if you really only want
+        the load profiles and no further processing. Default=false
+    :type DeleteSqlite: bool
+    :param IgnorePreviousActivitiesWhenNeeded: When using household templates,
+        sometimes random households are generated that don't work. With this
+        option you can force the LPG to simulate at least some of the cases
+        anyway. Default=false
+    :type IgnorePreviousActivitiesWhenNeeded: bool
+    :param EnableIdlemode: When using household templates, sometimes random
+        households are generated that don't work. With this option you can force
+        the LPG force to simulate all cases, no matter how messed up the
+        definition is. Basically this enables a special activity "Idle" that
+        always gets activated whenever the person can't find something to do.
+        Default=false
+    :type EnableIdlemode: bool
+    """
     LoadtypesForPostprocessing: List[str] = field(default_factory=list)
 
     def set_LoadtypesForPostprocessing(self, value: List[str]) -> JsonCalcSpecification:
@@ -256,15 +358,15 @@ class JsonCalcSpecification:
         self.CalculationName = value
         return self
 
-    CalcOptions: List[str] = field(default_factory=list)
+    CalcOptions: List[CalcOption] = field(default_factory=list)
 
-    def set_CalcOptions(self, value: List[str]) -> JsonCalcSpecification:
+    def set_CalcOptions(self, value: List[CalcOption]) -> JsonCalcSpecification:
         self.CalcOptions = value
         return self
 
-    DefaultForOutputFiles: Optional[str] = ""
+    DefaultForOutputFiles: Optional[OutputFileDefault] = None
 
-    def set_DefaultForOutputFiles(self, value: str) -> JsonCalcSpecification:
+    def set_DefaultForOutputFiles(self, value: OutputFileDefault) -> JsonCalcSpecification:
         self.DefaultForOutputFiles = value
         return self
 
@@ -286,9 +388,9 @@ class JsonCalcSpecification:
         self.EndDate = value
         return self
 
-    EnergyIntensityType: Optional[str] = ""
+    EnergyIntensityType: Optional[EnergyIntensityType] = None
 
-    def set_EnergyIntensityType(self, value: str) -> JsonCalcSpecification:
+    def set_EnergyIntensityType(self, value: EnergyIntensityType) -> JsonCalcSpecification:
         self.EnergyIntensityType = value
         return self
 
@@ -310,9 +412,9 @@ class JsonCalcSpecification:
         self.GeographicLocation = value
         return self
 
-    LoadTypePriority: Optional[str] = ""
+    LoadTypePriority: Optional[LoadTypePriority] = None
 
-    def set_LoadTypePriority(self, value: str) -> JsonCalcSpecification:
+    def set_LoadTypePriority(self, value: LoadTypePriority) -> JsonCalcSpecification:
         self.LoadTypePriority = value
         return self
 
@@ -520,9 +622,9 @@ class HouseholdData:
         self.TransportationDistanceModifiers = value
         return self
 
-    HouseholdDataSpecification: Optional[str] = ""
+    HouseholdDataSpecification: Optional[HouseholdDataSpecificationType] = None
 
-    def set_HouseholdDataSpecification(self, value: str) -> HouseholdData:
+    def set_HouseholdDataSpecification(self, value: HouseholdDataSpecificationType) -> HouseholdData:
         self.HouseholdDataSpecification = value
         return self
 
@@ -572,6 +674,11 @@ class HouseData:
 @dataclass_json
 @dataclass
 class HouseCreationAndCalculationJob:
+    """
+    :param PathToDatabase: Path to the database file to use. Defaults to
+        profilegenerator.db3 in the current directory if not set.
+    :type PathToDatabase: str
+    """
     House: Optional[HouseData] = None
 
     def set_House(self, value: HouseData) -> HouseCreationAndCalculationJob:
@@ -584,9 +691,9 @@ class HouseCreationAndCalculationJob:
         self.CalcSpec = value
         return self
 
-    HouseDefinitionType: Optional[str] = HouseDefinitionType.HouseData
+    HouseDefinitionType: Optional[HouseDefinitionType] = HouseDefinitionType.HouseData
 
-    def set_HouseDefinitionType(self, value: str) -> HouseCreationAndCalculationJob:
+    def set_HouseDefinitionType(self, value: HouseDefinitionType) -> HouseCreationAndCalculationJob:
         self.HouseDefinitionType = value
         return self
 
@@ -660,9 +767,9 @@ class TemplatePersonEntry:
         self.Age = value
         return self
 
-    Gender: Optional[str] = ""
+    Gender: Optional[Gender] = None
 
-    def set_Gender(self, value: str) -> TemplatePersonEntry:
+    def set_Gender(self, value: Gender) -> TemplatePersonEntry:
         self.Gender = value
         return self
 
@@ -783,7 +890,7 @@ class HouseholdKeyEntry:
         self.HouseName = value
         return self
 
-    KeyType: Optional[str] = ""
+    KeyType: Optional[HouseholdKeyType] = ""
 
     def set_KeyType(self, value: HouseholdKeyType) -> HouseholdKeyEntry:
         self.KeyType = value

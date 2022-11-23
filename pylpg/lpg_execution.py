@@ -1,18 +1,21 @@
+import glob
+import io
+import os
+import pathlib
+import random
+import shutil
+import stat
+import subprocess
 import sys
 import time
-import stat
-from typing import Any
-import random
-import subprocess
-import glob
-import os
-import pandas as pd  # type: ignore
-from pathlib import Path
-from typing import List
-from sys import platform
-import pathlib
-import shutil
 import traceback
+import zipfile
+from pathlib import Path
+from typing import Any, List, Union
+
+import pandas as pd  # type: ignore
+import requests
+
 from pylpg.lpgdata import *
 from pylpg.lpgpythonbindings import *
 
@@ -50,6 +53,7 @@ def execute_lpg_tsib(
         hhd.HouseholdDataPersonSpec.Persons = make_reasonable_family(
             number_of_people_per_household
         )
+        assert request.House is not None, "HouseData was None"
         request.House.Households.append(hhd)
 
     # set more parameters
@@ -127,8 +131,9 @@ def execute_lpg_single_household(
 
     # basic request
     request = lpe.make_default_lpg_settings(year)
-    if random_seed is not None:
+    if random_seed is not None and request.CalcSpec is not None:
         request.CalcSpec.RandomSeed = random_seed
+    assert request.House is not None, "HouseData was None"
     request.House.HouseTypeCode = housetype
     hhnamespec = HouseholdNameSpecification(householdref)
     hhn = HouseholdData(
@@ -184,14 +189,15 @@ def execute_lpg_with_householdata(
             "Starting calc with "
             + str(calculation_index)
             + " for "
-            + householddata.Name
+            + (householddata.Name or "nameless household")
         )
         lpe: LPGExecutor = LPGExecutor(calculation_index, clear_previous_calc)
 
         # basic request
         request = lpe.make_default_lpg_settings(year)
+        assert request.House is not None, "Housedata was None"
         request.House.HouseTypeCode = housetype
-        if random_seed is not None:
+        if random_seed is not None and request.CalcSpec is not None:
             request.CalcSpec.RandomSeed = random_seed
         if target_heating_demand is not None:
             request.House.TargetHeatDemand = target_heating_demand
@@ -254,8 +260,9 @@ def execute_lpg_with_many_householdata(
 
         # basic request
         request = lpe.make_default_lpg_settings(year)
+        assert request.House is not None, "Housedata was None"
         request.House.HouseTypeCode = housetype
-        if random_seed is not None:
+        if random_seed is not None and request.CalcSpec is not None:
             request.CalcSpec.RandomSeed = random_seed
         if target_heating_demand is not None:
             request.House.TargetHeatDemand = target_heating_demand
@@ -349,11 +356,13 @@ def execute_grid_calc(
 
     # basic request
     request = lpe.make_default_lpg_settings(year)
+    assert request.CalcSpec is not None, "Calcspec was None"
     request.CalcSpec.CalcOptions.clear()
     request.CalcSpec.CalcOptions.append(CalcOption.JsonHouseSumFiles)
     if len(household_size_list) < 1:
         raise Exception("need at least one household.")
 
+    assert request.House is not None, "Housedata was None"
     request.House.HouseTypeCode = housetype
     count = 1
     for hs in household_size_list:
@@ -394,25 +403,64 @@ def execute_grid_calc(
 
 
 class LPGExecutor:
-    def __init__(self, calcidx: int, clear_previous_calc: bool):
-        version = "_"
-        self.working_directory = pathlib.Path(__file__).parent.absolute()
-        if platform == "linux" or platform == "linux2":
-            self.calculation_src_directory = Path(
-                self.working_directory, "LPG" + version + "linux"
-            )
-            self.simengine_src_filename = "simengine2"
-            fullname = Path(self.calculation_src_directory, self.simengine_src_filename)
-            print("starting to execute " + str(fullname))
+    @staticmethod
+    def retrieve_lpg_binaries(path: Path):
+        """
+        Downloads the LoadProfileGenerator binaries
+
+        :param path: The path where the LPG binaries will be installed
+        :type path: Path
+        """
+        # determine correct link and destination folder depending on the platform
+        if sys.platform == "linux" or sys.platform == "linux2":
+            # url = "https://www.loadprofilegenerator.de/setup/LPG10.7.0_linux.zip"
+            url = "https://github.com/FZJ-IEK3-VSA/LoadProfileGenerator/releases/download/v10.8.0/LoadProfileGenerator-v10.8.0-linux.zip"
+            folder_name = "LPG_linux"
+        elif sys.platform == "win32":
+            # url = "https://www.loadprofilegenerator.de/setup/LPG10.7.0.zip"
+            url = "https://github.com/FZJ-IEK3-VSA/LoadProfileGenerator/releases/download/v10.8.0/LoadProfileGenerator-v10.8.0.zip"
+            folder_name = "LPG_win"
+        else:
+            raise Exception("Operating system not supported: " + platform)
+
+        print("Downloading LPG binaries from " + url)
+
+        try:
+            # download the LPG binaries from LoadProfileGenerator.de
+            response = requests.get(url)
+            # store the zipped result in a temporary buffer and extract it
+            zipped_result = zipfile.ZipFile(io.BytesIO(response.content))
+            destination_folder = os.path.join(path, folder_name)
+            zipped_result.extractall(destination_folder)
+        except:
+            raise Exception(f"Could not install the LoadProfileGenerator binaries.")
+
+        if sys.platform == "linux":
+            # on linux, make the file executable
+            fullname = os.path.join(destination_folder, "simengine2")
             os.chmod(str(fullname), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
-            print("Permissions:" + str(oct(os.stat(str(fullname))[stat.ST_MODE])[-3:]))
-        elif platform == "win32":
-            self.calculation_src_directory = Path(
-                self.working_directory, "LPG" + version + "win"
+            print(
+                "Permissions set for simengine2:"
+                + str(oct(os.stat(str(fullname))[stat.ST_MODE])[-3:])
             )
+
+    def __init__(self, calcidx: int, clear_previous_calc: bool):
+        self.working_directory = pathlib.Path(__file__).parent.absolute()
+        # get LPG binary directory and executable name depending on platform
+        if sys.platform == "linux" or sys.platform == "linux2":
+            self.calculation_src_directory = Path(self.working_directory, "LPG_linux")
+            self.simengine_src_filename = "simengine2"
+        elif sys.platform == "win32":
+            self.calculation_src_directory = Path(self.working_directory, "LPG_win")
             self.simengine_src_filename = "simulationengine.exe"
         else:
             raise Exception("unknown operating system detected: " + platform)
+
+        # check if the executable exists
+        if not os.path.isfile(
+            os.path.join(self.calculation_src_directory, self.simengine_src_filename)
+        ):
+            LPGExecutor.retrieve_lpg_binaries(self.working_directory)
 
         self.calculation_directory = Path(self.working_directory, "C" + str(calcidx))
         print("Working in directory: " + str(self.calculation_directory))
@@ -431,7 +479,7 @@ class LPGExecutor:
             shutil.copytree(self.calculation_src_directory, self.calculation_directory)
             print("copied to: " + str(self.calculation_directory))
 
-    def error_tolerating_directory_clean(self, path: str):
+    def error_tolerating_directory_clean(self, path: Union[Path, str]):
         mypath = str(path)
         if len(str(mypath)) < 10:
             raise Exception(
