@@ -7,13 +7,7 @@ from matplotlib import pyplot as plt
 from matplotlib import ticker
 
 
-def carpet_plot(
-    data: pd.DataFrame | pd.Series,
-    title: str = "",
-    values_per_day: int = None,
-    vmin=None,
-    vmax=None,
-):
+def carpet_plot(data: pd.DataFrame | pd.Series, title: str = "", vmin=None, vmax=None):
     """
     Shows a carpet plot of the data (expects data for a whole year)
 
@@ -25,16 +19,10 @@ def carpet_plot(
     :param vmax: maximum value for the scale, defaults to None
     """
     # get the list of days in the time frame of the data
-    # dates = [data.index[0].date()]
-    # for i in range(1, len(data.index)):
-    #     if data.index[i].date() > data.index[i - 1].date():
-    #         dates.append(data.index[i].date())
     dates = pd.date_range(data.index[0].date(), data.index[-1].date(), freq="d")
     # assume a fixed resolution
     resolution: timedelta = data.index[1] - data.index[0]
-    data_values_per_day = timedelta(1) // resolution
-    if not values_per_day:
-        values_per_day = data_values_per_day
+    values_per_day = timedelta(1) // resolution
     array = np.full((values_per_day, len(dates)), np.nan)
     for i in range(array.shape[1]):
         date_ = datetime.combine(dates[i], time())
@@ -46,7 +34,8 @@ def carpet_plot(
     # initialize figure
     fig = plt.figure()
     ax: plt.Axes = fig.add_subplot(1, 1, 1)
-    x = dates + [dates[-1] + timedelta(1)]
+    # calculate a datetimeindex with one more day
+    x = dates.union(pd.date_range(dates[-1] + dates.freq, periods=1, freq=dates.freq))
     y = np.linspace(0, 24, values_per_day + 1)
 
     color_mesh = ax.pcolormesh(x, y, array, cmap="jet", vmin=vmin, vmax=vmax)
@@ -72,4 +61,4 @@ def carpet_plot(
     cbar.ax.set_ylabel("Electric Load [kWh]")
     fig.tight_layout()
     fig.show()
-    pass
+    
