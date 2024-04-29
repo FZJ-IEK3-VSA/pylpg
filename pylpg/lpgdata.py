@@ -313,6 +313,12 @@ class Households:
             StrGuid("e7cb1be5-caac-4087-83e8-c181911a68e2"),
         )
     )
+    CHR62_Couple_30_64_years_vacation_home_1_month_presence_only: JsonReference = (
+        JsonReference(
+            "CHR62 Couple, 30 - 64 years, vacation home (1 month presence only)",
+            StrGuid("e641e89e-41b3-4ee0-8df2-b0bb185f09ed"),
+        )
+    )
     CHS01_Couple_with_2_Children_Dad_Employed: JsonReference = JsonReference(
         "CHS01 Couple with 2 Children, Dad Employed",
         StrGuid("148a1c21-2a3a-49bf-93aa-20ac0e89724e"),
@@ -425,6 +431,10 @@ class TransportationDeviceSets:
     Bus_and_one_30_km_h_Car: JsonReference = JsonReference(
         "Bus and one 30 km/h Car", StrGuid("6ac74bd0-bacd-4b39-b84a-dc7ae16702c9")
     )
+    Bus_and_one_30_km_h_Gasoline_Car: JsonReference = JsonReference(
+        "Bus and one 30 km/h Gasoline Car",
+        StrGuid("045a831b-0fde-49ef-b0ce-f4dfda83034b"),
+    )
     Bus_and_one_60_km_h_Car: JsonReference = JsonReference(
         "Bus and one 60 km/h Car", StrGuid("b7b80c60-3292-4d35-9ec2-81ecf1199ce9")
     )
@@ -468,33 +478,36 @@ class ChargingStationSets:
     Charging_At_Work_with_22_kW: JsonReference = JsonReference(
         "Charging At Work with 22 kW", StrGuid("e24180ef-852e-4361-8fc8-0eb01bba096b")
     )
+    Filling_Station_At_Home: JsonReference = JsonReference(
+        "Filling Station At Home", StrGuid("ecbaceba-f067-4cca-aaaa-3e93fd5afa85")
+    )
 
 
 # noinspection PyPep8,PyUnusedLocal
 class TravelRouteSets:
     Travel_Route_Set_for_05km_Commuting_Distance: JsonReference = JsonReference(
         "Travel Route Set for 05km Commuting Distance",
-        StrGuid("a60747ab-3427-43f8-9a61-3233f332075a"),
+        StrGuid("c4de76f9-0085-4c3a-9fca-6754dafb9156"),
     )
     Travel_Route_Set_for_10km_Commuting_Distance: JsonReference = JsonReference(
         "Travel Route Set for 10km Commuting Distance",
-        StrGuid("0b217fce-ad99-4ef1-8540-c07081856d3c"),
+        StrGuid("ca46be86-9cc7-47b5-9769-abff78ceca7a"),
     )
     Travel_Route_Set_for_15km_Commuting_Distance: JsonReference = JsonReference(
         "Travel Route Set for 15km Commuting Distance",
-        StrGuid("0b217fce-ad99-4ef1-8540-c07081856d3c"),
+        StrGuid("8a18c022-d5cc-43f8-bc40-571a7925fbe6"),
     )
     Travel_Route_Set_for_20km_Commuting_Distance: JsonReference = JsonReference(
         "Travel Route Set for 20km Commuting Distance",
-        StrGuid("0b217fce-ad99-4ef1-8540-c07081856d3c"),
+        StrGuid("6322a7a1-81de-4c4d-997b-2aec88900d4c"),
     )
     Travel_Route_Set_for_25km_Commuting_Distance: JsonReference = JsonReference(
         "Travel Route Set for 25km Commuting Distance",
-        StrGuid("0b217fce-ad99-4ef1-8540-c07081856d3c"),
+        StrGuid("0b490f67-2c5f-4125-bb76-8c17169c1571"),
     )
     Travel_Route_Set_for_30km_Commuting_Distance: JsonReference = JsonReference(
         "Travel Route Set for 30km Commuting Distance",
-        StrGuid("0b217fce-ad99-4ef1-8540-c07081856d3c"),
+        StrGuid("78cd9323-b9ea-4f9c-9a49-76b8daf562dc"),
     )
 
 
@@ -982,7 +995,8 @@ class TraitTags:
     Work_Home_Office = "Work / Home Office"
     Work_University = "Work / University"
     Work_University_related = "Work / University related"
-    Work_Work = "Work / Work"
+    Work_Work_1 = "Work / Work 1"
+    Work_Work_2 = "Work / Work 2"
     Work_Work_in_Shifts_1 = "Work / Work in Shifts 1"
     Work_Work_in_Shifts_2 = "Work / Work in Shifts 2"
 
@@ -2073,7 +2087,7 @@ class TemplatePersons:
         Name="CHR59_0_37M",
         Age=37,
         Gender=Gender.Male,
-        LivingPattern="Living Pattern / Office Job / Medium (7-9am)",
+        LivingPattern="Living Pattern / Stay at Home / Regular",
         TemplateName="CHR59 Family, 3 children, parents without work",
         PersonName="CHR59 Dani",
     )

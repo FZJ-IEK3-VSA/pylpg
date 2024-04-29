@@ -643,9 +643,9 @@ class HouseholdData:
         self.TravelRouteSet = value
         return self
 
-    TransportationDistanceModifiers: Optional[
-        List[TransportationDistanceModifier]
-    ] = field(default_factory=list)
+    TransportationDistanceModifiers: Optional[List[TransportationDistanceModifier]] = (
+        field(default_factory=list)
+    )
 
     def set_TransportationDistanceModifiers(
         self, value: List[TransportationDistanceModifier]
