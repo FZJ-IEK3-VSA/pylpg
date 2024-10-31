@@ -991,6 +991,59 @@ class JsonSumProfile:
 # noinspection PyPep8Naming, PyUnusedLocal
 @dataclass_json
 @dataclass
+class JsonEnumProfile:
+    Name: Optional[str] = ""
+
+    def set_Name(self, value: str) -> JsonEnumProfile:
+        self.Name = value
+        return self
+
+    TimeResolution: str = "00:01:00"
+
+    def set_TimeResolution(self, value: str) -> JsonEnumProfile:
+        self.TimeResolution = value
+        return self
+
+    Values: List[str] = field(default_factory=list)
+
+    def set_Values(self, value: List[str]) -> JsonEnumProfile:
+        self.Values = value
+        return self
+
+    StartTime: Optional[str] = ""
+
+    def set_StartTime(self, value: str) -> JsonEnumProfile:
+        self.StartTime = value
+        return self
+
+    LoadTypeName: Optional[str] = ""
+
+    def set_LoadTypeName(self, value: str) -> JsonEnumProfile:
+        self.LoadTypeName = value
+        return self
+
+    LoadTypeDefinition: Optional[LoadTypeInformation] = None
+
+    def set_LoadTypeDefinition(self, value: LoadTypeInformation) -> JsonEnumProfile:
+        self.LoadTypeDefinition = value
+        return self
+
+    Unit: Optional[str] = ""
+
+    def set_Unit(self, value: str) -> JsonEnumProfile:
+        self.Unit = value
+        return self
+
+    HouseKey: Optional[HouseholdKeyEntry] = None
+
+    def set_HouseKey(self, value: HouseholdKeyEntry) -> JsonEnumProfile:
+        self.HouseKey = value
+        return self
+
+
+# noinspection PyPep8Naming, PyUnusedLocal
+@dataclass_json
+@dataclass
 class JsonDeviceProfiles:
     DeviceProfiles: List[SingleDeviceProfile] = field(default_factory=list)
 
