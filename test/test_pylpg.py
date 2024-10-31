@@ -151,7 +151,7 @@ def test_grid_profiles_function() -> None:
         travel_route_set=TravelRouteSets.Travel_Route_Set_for_15km_Commuting_Distance,
     )
     df.to_csv(r"lpgexport_grid.csv", index=True, sep=";")
-    sumcol = df.sum(axis=0)
+    sumcol = df.sum(axis=0, numeric_only=True)
     print(sumcol)
     print("successfully exportet dataframe to lpgexport.csv")
 

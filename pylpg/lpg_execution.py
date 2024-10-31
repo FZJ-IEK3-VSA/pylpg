@@ -544,6 +544,23 @@ class LPGExecutor:
         )
         return hj
 
+    @staticmethod
+    def parse_json_profile(filepath: str) -> JsonSumProfile | JsonEnumProfile:
+        """parses a single json profile file"""
+        print("Reading json file " + str(filepath))
+        with open(str(filepath)) as json_file:
+            filecontent: str = json_file.read()  # type: ignore
+            try:
+                # try to load as a sum profile
+                profile: JsonSumProfile = JsonSumProfile.from_json(filecontent)  # type: ignore
+            except Exception:
+                try:
+                    # try to load as enum profile instead
+                    profile = JsonEnumProfile.from_json(filecontent)
+                except Exception as e:
+                    print(f"Could not parse Json file {filepath} - skipping it")
+        return profile
+
     def read_all_json_results_in_directory(self) -> Optional[pd.DataFrame]:
         df: pd.DataFrame = pd.DataFrame()
         results_directory = Path(self.calculation_directory, "results", "Results")
@@ -569,27 +586,20 @@ class LPGExecutor:
         potential_sum_files.extend(soc)
         isFirst = True
         for file in potential_sum_files:
-            print("Reading file " + str(file))
-            with open(str(file)) as json_file:
-                filecontent: str = json_file.read()  # type: ignore
-                sumProfile: JsonSumProfile = JsonSumProfile.from_json(filecontent)  # type: ignore
-            if sumProfile.LoadTypeName is None:
+            profile = self.parse_json_profile(file)
+            if profile.LoadTypeName is None:
                 raise Exception("Empty load type name on " + str(file))
             if (
-                sumProfile is None
-                or sumProfile.HouseKey is None
-                or sumProfile.HouseKey.HHKey is None
+                profile is None
+                or profile.HouseKey is None
+                or profile.HouseKey.HHKey is None
             ):
                 raise Exception("empty housekey")
-            key: str = (
-                sumProfile.LoadTypeName + "_" + str(sumProfile.HouseKey.HHKey.Key)
-            )
-            df[key] = sumProfile.Values
+            key: str = profile.LoadTypeName + "_" + str(profile.HouseKey.HHKey.Key)
+            df[key] = profile.Values
             if isFirst:
                 isFirst = False
-                ts = sumProfile.StartTime
-                timestamps = pd.date_range(
-                    ts, periods=len(sumProfile.Values), freq="min"
-                )
+                ts = profile.StartTime
+                timestamps = pd.date_range(ts, periods=len(profile.Values), freq="min")
                 df.index = timestamps
         return df
