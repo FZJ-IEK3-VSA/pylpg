@@ -11,7 +11,7 @@ import time
 import traceback
 import zipfile
 from pathlib import Path
-from typing import Any, List, Union
+from typing import Any, List, Union, Optional
 
 import pandas as pd  # type: ignore
 import requests
@@ -418,15 +418,13 @@ class LPGExecutor:
         """
         # determine correct link and destination folder depending on the platform
         if sys.platform == "linux" or sys.platform == "linux2":
-            # url = "https://www.loadprofilegenerator.de/setup/LPG10.7.0_linux.zip"
-            url = "https://github.com/FZJ-IEK3-VSA/LoadProfileGenerator/releases/download/v10.8.0/LoadProfileGenerator-v10.8.0-linux.zip"
+            url = "https://www.loadprofilegenerator.de/setup/LPG10.10.0_linux.zip"
             folder_name = "LPG_linux"
         elif sys.platform == "win32":
-            # url = "https://www.loadprofilegenerator.de/setup/LPG10.7.0.zip"
-            url = "https://github.com/FZJ-IEK3-VSA/LoadProfileGenerator/releases/download/v10.8.0/LoadProfileGenerator-v10.8.0.zip"
+            url = "https://www.loadprofilegenerator.de/setup/LPG10.10.0_core.zip"
             folder_name = "LPG_win"
         else:
-            raise Exception("Operating system not supported: " + platform)
+            raise Exception("Operating system not supported: " + sys.platform)
 
         print("Downloading LPG binaries from " + url)
 
@@ -437,8 +435,8 @@ class LPGExecutor:
             zipped_result = zipfile.ZipFile(io.BytesIO(response.content))
             destination_folder = os.path.join(path, folder_name)
             zipped_result.extractall(destination_folder)
-        except:
-            raise Exception(f"Could not install the LoadProfileGenerator binaries.")
+        except Exception as e:
+            raise Exception(f"Could not install the LoadProfileGenerator binaries: {e}")
 
         if sys.platform == "linux":
             # on linux, make the file executable
@@ -449,6 +447,14 @@ class LPGExecutor:
                 + str(oct(os.stat(str(fullname))[stat.ST_MODE])[-3:])
             )
 
+    def lpg_simengine_filepath(self) -> str:
+        """returns the path of the LPG simulation engine executable file"""
+        return os.path.join(self.calculation_src_directory, self.simengine_src_filename)
+
+    def are_lpg_binaries_available(self) -> bool:
+        """checks if the LPG executable is available"""
+        return os.path.isfile(self.lpg_simengine_filepath())
+
     def __init__(self, calcidx: int, clear_previous_calc: bool):
         self.working_directory = pathlib.Path(__file__).parent.absolute()
         # get LPG binary directory and executable name depending on platform
@@ -457,15 +463,16 @@ class LPGExecutor:
             self.simengine_src_filename = "simengine2"
         elif sys.platform == "win32":
             self.calculation_src_directory = Path(self.working_directory, "LPG_win")
-            self.simengine_src_filename = "simulationengine.exe"
+            self.simengine_src_filename = "simengine2.exe"
         else:
-            raise Exception("unknown operating system detected: " + platform)
+            raise Exception("unknown operating system detected: " + sys.platform)
 
         # check if the executable exists
-        if not os.path.isfile(
-            os.path.join(self.calculation_src_directory, self.simengine_src_filename)
-        ):
+        if not self.are_lpg_binaries_available():
+            # download the binaries for this system
             LPGExecutor.retrieve_lpg_binaries(self.working_directory)
+            if not self.are_lpg_binaries_available():
+                raise Exception("Could not install the LPG binaries.")
 
         self.calculation_directory = Path(self.working_directory, "C" + str(calcidx))
         print("Working in directory: " + str(self.calculation_directory))
@@ -499,10 +506,10 @@ class LPGExecutor:
 
     def execute_lpg_binaries(self) -> Any:
         # execute LPG
-        pathname = Path(self.calculation_directory, self.simengine_src_filename)
+        pathname = self.lpg_simengine_filepath()
         print("executing in " + str(self.calculation_directory))
         subprocess.run(
-            [str(pathname), "processhousejob", "-j", "calcspec.json"],
+            [pathname, "processhousejob", "-j", "calcspec.json"],
             cwd=str(self.calculation_directory),
         )
 
@@ -562,7 +569,6 @@ class LPGExecutor:
         potential_sum_files.extend(soc)
         isFirst = True
         for file in potential_sum_files:
-            #                self.print("Reading json file " + str(file))
             print("Reading file " + str(file))
             with open(str(file)) as json_file:
                 filecontent: str = json_file.read()  # type: ignore
@@ -582,6 +588,8 @@ class LPGExecutor:
             if isFirst:
                 isFirst = False
                 ts = sumProfile.StartTime
-                timestamps = pd.date_range(ts, periods=len(sumProfile.Values), freq="T")
+                timestamps = pd.date_range(
+                    ts, periods=len(sumProfile.Values), freq="min"
+                )
                 df.index = timestamps
         return df
