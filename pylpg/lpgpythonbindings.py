@@ -688,6 +688,12 @@ class HouseData:
         self.HouseGuid = value
         return self
 
+    Coordinates: Optional[Coordinates] = None
+
+    def set_Coordinates(self, value: Coordinates) -> HouseData:
+        self.Coordinates = value
+        return self
+
     Households: List[HouseholdData] = field(default_factory=list)
 
     def set_Households(self, value: List[HouseholdData]) -> HouseData:
@@ -1132,8 +1138,31 @@ class PointOfInterestData:
         self.LocationType = value
         return self
 
+    Coordinates: Optional[Coordinates] = None
+
+    def set_Coordinates(self, value: Coordinates) -> PointOfInterestData:
+        self.Coordinates = value
+        return self
+
     TimeLimit: Optional[JsonReference] = None
 
     def set_TimeLimit(self, value: JsonReference) -> PointOfInterestData:
         self.TimeLimit = value
+        return self
+
+
+# noinspection PyPep8Naming, PyUnusedLocal
+@dataclass_json
+@dataclass
+class Coordinates:
+    Latitude: float = 0
+
+    def set_Latitude(self, value: float) -> Coordinates:
+        self.Latitude = value
+        return self
+
+    Longitude: float = 0
+
+    def set_Longitude(self, value: float) -> Coordinates:
+        self.Longitude = value
         return self
