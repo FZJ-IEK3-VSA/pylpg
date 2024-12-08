@@ -138,7 +138,7 @@ class StrGuid:
 @dataclass_json
 @dataclass
 class TransportationPreference:
-    DestinationSite: Optional[JsonReference] = None
+    DestinationSite: Optional[JsonReference | str] = None
 
     def set_DestinationSite(self, value: JsonReference) -> TransportationPreference:
         self.DestinationSite = value
@@ -389,7 +389,7 @@ class JsonCalcSpecification:
         self.DeleteAllButPDF = value
         return self
 
-    DeviceSelection: Optional[JsonReference] = None
+    DeviceSelection: Optional[JsonReference | str] = None
 
     def set_DeviceSelection(self, value: JsonReference) -> JsonCalcSpecification:
         self.DeviceSelection = value
@@ -421,7 +421,7 @@ class JsonCalcSpecification:
         self.InternalTimeResolution = value
         return self
 
-    GeographicLocation: Optional[JsonReference] = None
+    GeographicLocation: Optional[JsonReference | str] = None
 
     def set_GeographicLocation(self, value: JsonReference) -> JsonCalcSpecification:
         self.GeographicLocation = value
@@ -469,7 +469,7 @@ class JsonCalcSpecification:
         self.StartDate = value
         return self
 
-    TemperatureProfile: Optional[JsonReference] = None
+    TemperatureProfile: Optional[JsonReference | str] = None
 
     def set_TemperatureProfile(self, value: JsonReference) -> JsonCalcSpecification:
         self.TemperatureProfile = value
@@ -506,7 +506,7 @@ class JsonCalcSpecification:
 @dataclass_json
 @dataclass
 class HouseReference:
-    House: Optional[JsonReference] = None
+    House: Optional[JsonReference | str] = None
 
     def set_House(self, value: JsonReference) -> HouseReference:
         self.House = value
@@ -578,7 +578,7 @@ class HouseholdTemplateSpecification:
 @dataclass_json
 @dataclass
 class HouseholdNameSpecification:
-    HouseholdReference: Optional[JsonReference] = None
+    HouseholdReference: Optional[JsonReference | str] = None
 
     def set_HouseholdReference(
         self, value: JsonReference
@@ -625,19 +625,19 @@ class HouseholdData:
         self.Name = value
         return self
 
-    ChargingStationSet: Optional[JsonReference] = None
+    ChargingStationSet: Optional[JsonReference | str] = None
 
     def set_ChargingStationSet(self, value: JsonReference) -> HouseholdData:
         self.ChargingStationSet = value
         return self
 
-    TransportationDeviceSet: Optional[JsonReference] = None
+    TransportationDeviceSet: Optional[JsonReference | str] = None
 
     def set_TransportationDeviceSet(self, value: JsonReference) -> HouseholdData:
         self.TransportationDeviceSet = value
         return self
 
-    TravelRouteSet: Optional[JsonReference] = None
+    TravelRouteSet: Optional[JsonReference | str] = None
 
     def set_TravelRouteSet(self, value: JsonReference) -> HouseholdData:
         self.TravelRouteSet = value
@@ -1013,6 +1013,59 @@ class JsonSumProfile:
 # noinspection PyPep8Naming, PyUnusedLocal
 @dataclass_json
 @dataclass
+class JsonEnumProfile:
+    Name: Optional[str] = ""
+
+    def set_Name(self, value: str) -> JsonEnumProfile:
+        self.Name = value
+        return self
+
+    TimeResolution: str = "00:01:00"
+
+    def set_TimeResolution(self, value: str) -> JsonEnumProfile:
+        self.TimeResolution = value
+        return self
+
+    Values: List[str] = field(default_factory=list)
+
+    def set_Values(self, value: List[str]) -> JsonEnumProfile:
+        self.Values = value
+        return self
+
+    StartTime: Optional[str] = ""
+
+    def set_StartTime(self, value: str) -> JsonEnumProfile:
+        self.StartTime = value
+        return self
+
+    LoadTypeName: Optional[str] = ""
+
+    def set_LoadTypeName(self, value: str) -> JsonEnumProfile:
+        self.LoadTypeName = value
+        return self
+
+    LoadTypeDefinition: Optional[LoadTypeInformation] = None
+
+    def set_LoadTypeDefinition(self, value: LoadTypeInformation) -> JsonEnumProfile:
+        self.LoadTypeDefinition = value
+        return self
+
+    Unit: Optional[str] = ""
+
+    def set_Unit(self, value: str) -> JsonEnumProfile:
+        self.Unit = value
+        return self
+
+    HouseKey: Optional[HouseholdKeyEntry] = None
+
+    def set_HouseKey(self, value: HouseholdKeyEntry) -> JsonEnumProfile:
+        self.HouseKey = value
+        return self
+
+
+# noinspection PyPep8Naming, PyUnusedLocal
+@dataclass_json
+@dataclass
 class JsonDeviceProfiles:
     DeviceProfiles: List[SingleDeviceProfile] = field(default_factory=list)
 
@@ -1057,9 +1110,9 @@ class JsonDeviceProfiles:
 @dataclass_json
 @dataclass
 class PersonPoiPreferences:
-    PoiWeights: Dict[str, int] = field(default_factory=dict)
+    PoiWeights: Dict[str, float] = field(default_factory=dict)
 
-    def set_PoiWeights(self, value: Dict[str, int]) -> PersonPoiPreferences:
+    def set_PoiWeights(self, value: Dict[str, float]) -> PersonPoiPreferences:
         self.PoiWeights = value
         return self
 
@@ -1115,7 +1168,7 @@ class RouteData:
         self.Delay = value
         return self
 
-    TransportationDeviceCategory: Optional[JsonReference] = None
+    TransportationDeviceCategory: Optional[JsonReference | str] = None
 
     def set_TransportationDeviceCategory(self, value: JsonReference) -> RouteData:
         self.TransportationDeviceCategory = value
@@ -1132,7 +1185,7 @@ class RouteData:
 @dataclass_json
 @dataclass
 class PointOfInterestData:
-    LocationType: Optional[JsonReference] = None
+    LocationType: Optional[JsonReference | str] = None
 
     def set_LocationType(self, value: JsonReference) -> PointOfInterestData:
         self.LocationType = value
@@ -1144,7 +1197,7 @@ class PointOfInterestData:
         self.Coordinates = value
         return self
 
-    TimeLimit: Optional[JsonReference] = None
+    TimeLimit: Optional[JsonReference | str] = None
 
     def set_TimeLimit(self, value: JsonReference) -> PointOfInterestData:
         self.TimeLimit = value

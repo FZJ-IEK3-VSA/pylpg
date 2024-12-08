@@ -995,8 +995,7 @@ class TraitTags:
     Work_Home_Office = "Work / Home Office"
     Work_University = "Work / University"
     Work_University_related = "Work / University related"
-    Work_Work_1 = "Work / Work 1"
-    Work_Work_2 = "Work / Work 2"
+    Work_Work = "Work / Work"
     Work_Work_in_Shifts_1 = "Work / Work in Shifts 1"
     Work_Work_in_Shifts_2 = "Work / Work in Shifts 2"
 
