@@ -1116,18 +1116,6 @@ class PersonPoiPreferences:
         self.PoiWeights = value
         return self
 
-    Routes: List[RouteData] = field(default_factory=list)
-
-    def set_Routes(self, value: List[RouteData]) -> PersonPoiPreferences:
-        self.Routes = value
-        return self
-
-    MirrorRoutes: bool = False
-
-    def set_MirrorRoutes(self, value: bool) -> PersonPoiPreferences:
-        self.MirrorRoutes = value
-        return self
-
 
 # noinspection PyPep8Naming, PyUnusedLocal
 @dataclass_json
@@ -1137,6 +1125,18 @@ class CityData:
 
     def set_PointsOfInterest(self, value: Dict[str, PointOfInterestData]) -> CityData:
         self.PointsOfInterest = value
+        return self
+
+    Routes: List[RouteData] = field(default_factory=list)
+
+    def set_Routes(self, value: List[RouteData]) -> CityData:
+        self.Routes = value
+        return self
+
+    MirrorRoutes: bool = False
+
+    def set_MirrorRoutes(self, value: bool) -> CityData:
+        self.MirrorRoutes = value
         return self
 
 
