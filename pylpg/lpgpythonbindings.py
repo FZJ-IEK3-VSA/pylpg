@@ -1144,40 +1144,82 @@ class CityData:
 @dataclass_json
 @dataclass
 class RouteData:
-    Start: Optional[str] = ""
+    origin_id: Optional[str] = ""
 
-    def set_Start(self, value: str) -> RouteData:
-        self.Start = value
+    def set_origin_id(self, value: str) -> RouteData:
+        self.origin_id = value
         return self
 
-    Destination: Optional[str] = ""
+    destination_id: Optional[str] = ""
 
-    def set_Destination(self, value: str) -> RouteData:
-        self.Destination = value
+    def set_destination_id(self, value: str) -> RouteData:
+        self.destination_id = value
         return self
 
-    Distance: int = 0
+    logsum_time: float = 0
 
-    def set_Distance(self, value: int) -> RouteData:
-        self.Distance = value
+    def set_logsum_time(self, value: float) -> RouteData:
+        self.logsum_time = value
         return self
 
-    Delay: float = 0
+    logsum_util_all: float = 0
 
-    def set_Delay(self, value: float) -> RouteData:
-        self.Delay = value
+    def set_logsum_util_all(self, value: float) -> RouteData:
+        self.logsum_util_all = value
         return self
 
-    TransportationDeviceCategory: Optional[JsonReference | str] = None
+    mode_times: Dict[str, float] = field(default_factory=dict)
 
-    def set_TransportationDeviceCategory(self, value: JsonReference) -> RouteData:
-        self.TransportationDeviceCategory = value
+    def set_mode_times(self, value: Dict[str, float]) -> RouteData:
+        self.mode_times = value
         return self
 
-    Weight: float = 0
+    mode_distances: Dict[str, float] = field(default_factory=dict)
 
-    def set_Weight(self, value: float) -> RouteData:
-        self.Weight = value
+    def set_mode_distances(self, value: Dict[str, float]) -> RouteData:
+        self.mode_distances = value
+        return self
+
+    prob_all: Dict[str, float] = field(default_factory=dict)
+
+    def set_prob_all(self, value: Dict[str, float]) -> RouteData:
+        self.prob_all = value
+        return self
+
+    prob_with_car_hh: Dict[str, float] = field(default_factory=dict)
+
+    def set_prob_with_car_hh(self, value: Dict[str, float]) -> RouteData:
+        self.prob_with_car_hh = value
+        return self
+
+    prob_with_car_hh_pt_abo: Dict[str, float] = field(default_factory=dict)
+
+    def set_prob_with_car_hh_pt_abo(self, value: Dict[str, float]) -> RouteData:
+        self.prob_with_car_hh_pt_abo = value
+        return self
+
+    prob_with_car_hh_no_pt_abo: Dict[str, float] = field(default_factory=dict)
+
+    def set_prob_with_car_hh_no_pt_abo(self, value: Dict[str, float]) -> RouteData:
+        self.prob_with_car_hh_no_pt_abo = value
+        return self
+
+    prob_no_car_hh: Dict[str, float] = field(default_factory=dict)
+
+    def set_prob_no_car_hh(self, value: Dict[str, float]) -> RouteData:
+        self.prob_no_car_hh = value
+        return self
+
+    prob_no_car_hh_pt_abo: Dict[str, float] = field(default_factory=dict)
+
+    def set_prob_no_car_hh_pt_abo(self, value: Dict[str, float]) -> RouteData:
+        self.prob_no_car_hh_pt_abo = value
+        return self
+
+    prob_no_car_hh_no_pt_abo: Dict[str, float] = field(default_factory=dict)
+
+    def set_prob_no_car_hh_no_pt_abo(self, value: Dict[str, float]) -> RouteData:
+        self.prob_no_car_hh_no_pt_abo = value
         return self
 
 
