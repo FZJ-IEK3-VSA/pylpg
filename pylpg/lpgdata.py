@@ -656,6 +656,9 @@ class Sites:
 
 # noinspection PyPep8,PyUnusedLocal
 class TransportationDeviceCategories:
+    Bicycle_Category: JsonReference = JsonReference(
+        "Bicycle Category", StrGuid("a44c52ec-dee0-4357-814e-8369274b099d")
+    )
     Bus_Category: JsonReference = JsonReference(
         "Bus Category", StrGuid("db747dbe-5260-4dd8-8a1d-dd0fc00e975e")
     )

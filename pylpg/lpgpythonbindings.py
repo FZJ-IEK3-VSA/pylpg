@@ -99,6 +99,7 @@ class CalcOption(str, Enum):
     HouseholdSumProfilesCsvNoFlex = "HouseholdSumProfilesCsvNoFlex"
     FlexibilityEvents = "FlexibilityEvents"
     DeleteDatFiles = "DeleteDatFiles"
+    TransportationDefinitions = "TransportationDefinitions"
 
 
 class HouseDefinitionType(str, Enum):
@@ -1154,18 +1155,6 @@ class RouteData:
 
     def set_destination_id(self, value: str) -> RouteData:
         self.destination_id = value
-        return self
-
-    logsum_time: float = 0
-
-    def set_logsum_time(self, value: float) -> RouteData:
-        self.logsum_time = value
-        return self
-
-    logsum_util_all: float = 0
-
-    def set_logsum_util_all(self, value: float) -> RouteData:
-        self.logsum_util_all = value
         return self
 
     mode_times: Dict[str, float] = field(default_factory=dict)
