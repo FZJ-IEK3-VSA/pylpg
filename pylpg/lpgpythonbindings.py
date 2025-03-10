@@ -1140,6 +1140,12 @@ class CityData:
         self.MirrorRoutes = value
         return self
 
+    MinimumDrivingAge: int = 0
+
+    def set_MinimumDrivingAge(self, value: int) -> CityData:
+        self.MinimumDrivingAge = value
+        return self
+
 
 # noinspection PyPep8Naming, PyUnusedLocal
 @dataclass_json
