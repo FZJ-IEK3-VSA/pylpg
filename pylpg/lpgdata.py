@@ -428,6 +428,9 @@ class TemperatureProfiles:
 
 # noinspection PyPep8,PyUnusedLocal
 class TransportationDeviceSets:
+    Bus_and_Bicycles_no_Car: JsonReference = JsonReference(
+        "Bus and Bicycles, no Car", StrGuid("7a73e278-6f1b-48bb-b0ab-95049df977fe")
+    )
     Bus_and_one_30_km_h_Car: JsonReference = JsonReference(
         "Bus and one 30 km/h Car", StrGuid("6ac74bd0-bacd-4b39-b84a-dc7ae16702c9")
     )
@@ -437,6 +440,9 @@ class TransportationDeviceSets:
     )
     Bus_and_one_60_km_h_Car: JsonReference = JsonReference(
         "Bus and one 60 km/h Car", StrGuid("b7b80c60-3292-4d35-9ec2-81ecf1199ce9")
+    )
+    Bus_and_three_30_km_h_Cars: JsonReference = JsonReference(
+        "Bus and three 30 km/h Cars", StrGuid("92fbdffe-b247-4c9c-b69a-bdf28ec073aa")
     )
     Bus_and_two_30_km_h_Cars: JsonReference = JsonReference(
         "Bus and two 30 km/h Cars", StrGuid("f90fece2-901a-4419-8a6b-a0ed4ed6ceff")
