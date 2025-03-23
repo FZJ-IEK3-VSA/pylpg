@@ -19,6 +19,7 @@ setuptools.setup(
     url="https://github.com/FZJ-IEK3-VSA/pylpg",
     include_package_data=True,
     packages=setuptools.find_packages(),
+    package_data={"pylpg": ["py.typed"]},
     install_requires=required_packages,
     setup_requires=["setuptools-git"],
     classifiers=[
