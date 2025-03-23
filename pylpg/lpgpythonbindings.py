@@ -1243,16 +1243,7 @@ class PointOfInterestData:
 
 # noinspection PyPep8Naming, PyUnusedLocal
 @dataclass_json
-@dataclass
+@dataclass(frozen=True)
 class Coordinates:
     Latitude: float = 0
-
-    def set_Latitude(self, value: float) -> Coordinates:
-        self.Latitude = value
-        return self
-
     Longitude: float = 0
-
-    def set_Longitude(self, value: float) -> Coordinates:
-        self.Longitude = value
-        return self
