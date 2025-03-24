@@ -453,6 +453,53 @@ class TransportationDeviceSets:
 
 
 # noinspection PyPep8,PyUnusedLocal
+class TransportationDevices:
+    Bus: JsonReference = JsonReference(
+        "Bus", StrGuid("5afbd166-9b10-4267-923d-6a81d3fd3c23")
+    )
+    Car_1_22kW_Charging_Power_avg_Speed_30_km_h: JsonReference = JsonReference(
+        "Car 1, 22kW Charging Power, avg. Speed 30 km/h",
+        StrGuid("1bf273c8-ceee-4db5-bbef-f5a819c60389"),
+    )
+    Car_2_22kW_Charging_Power_avg_Speed_30_km_h: JsonReference = JsonReference(
+        "Car 2, 22kW Charging Power, avg. Speed 30 km/h",
+        StrGuid("2acc7301-29bf-45c6-8209-257469910f6f"),
+    )
+    Car_3_22kW_Charging_Power_avg_Speed_60_km_h: JsonReference = JsonReference(
+        "Car 3, 22kW Charging Power, avg. Speed 60 km/h",
+        StrGuid("ce17f288-e0bc-46ef-bbfe-4d254987f96e"),
+    )
+    Car_4_22kW_Charging_Power_avg_Speed_60_km_h: JsonReference = JsonReference(
+        "Car 4, 22kW Charging Power, avg. Speed 60 km/h",
+        StrGuid("febd2ad9-4428-4e63-89a0-42d792303011"),
+    )
+    Car_5_gasoline_Fuel_Consumption_5_8_l_avg_Speed_30_km_h: JsonReference = (
+        JsonReference(
+            "Car 5 (gasoline), Fuel Consumption 5.8 l, avg. Speed 30 km/h",
+            StrGuid("abe47f12-4f87-4dce-bdd1-4eecf5ae8d32"),
+        )
+    )
+    Car_6_gasoline_Fuel_Consumption_6_2_l_avg_Speed_60_km_h: JsonReference = (
+        JsonReference(
+            "Car 6 (gasoline), Fuel Consumption 6.2 l, avg. Speed 60 km/h",
+            StrGuid("3c39da9a-c63c-4a0f-9e54-c72f36e518b2"),
+        )
+    )
+    Car_7_gasoline_Fuel_Consumption_9_l_avg_Speed_30_km_h: JsonReference = (
+        JsonReference(
+            "Car 7 (gasoline), Fuel Consumption 9 l, avg. Speed 30 km/h",
+            StrGuid("ff39ab67-c465-4cbd-9de9-b2afaa7453f7"),
+        )
+    )
+    Elevator: JsonReference = JsonReference(
+        "Elevator", StrGuid("5f7344c9-54fd-497f-96e4-8b8b122fc06f")
+    )
+    Feet: JsonReference = JsonReference(
+        "Feet", StrGuid("cf6ae18f-ee93-4647-9bbb-5251534fb7b2")
+    )
+
+
+# noinspection PyPep8,PyUnusedLocal
 class ChargingStationSets:
     Charging_At_Home_with_00_5_kW: JsonReference = JsonReference(
         "Charging At Home with 00.5 kW", StrGuid("0a42e424-2f0d-40db-b257-82a5fc010567")
