@@ -313,9 +313,9 @@ class Households:
             StrGuid("e7cb1be5-caac-4087-83e8-c181911a68e2"),
         )
     )
-    CHR62_Couple_30_64_years_vacation_home_1_month_presence_only: JsonReference = (
+    CHR63_Couple_30_64_years_vacation_home_1_month_presence_only: JsonReference = (
         JsonReference(
-            "CHR62 Couple, 30 - 64 years, vacation home (1 month presence only)",
+            "CHR63 Couple, 30 - 64 years, vacation home (1 month presence only)",
             StrGuid("e641e89e-41b3-4ee0-8df2-b0bb185f09ed"),
         )
     )
@@ -365,6 +365,9 @@ class GeographicLocations:
     )
     Germany_Hamburg: JsonReference = JsonReference(
         "(Germany) Hamburg", StrGuid("4535a43c-b165-4ca8-9aa5-8ccaf42bac36")
+    )
+    Germany_Juelich: JsonReference = JsonReference(
+        "(Germany) Jülich", StrGuid("4fa8f573-3bba-4012-8573-c1b760a8cb74")
     )
     Germany_Kassel: JsonReference = JsonReference(
         "(Germany) Kassel", StrGuid("5f665a7f-4edd-4166-8427-bbf3d537cf59")
@@ -424,36 +427,25 @@ class TemperatureProfiles:
             StrGuid("5cee108e-4126-41c2-9601-e867d597a96b"),
         )
     )
-
-
-# noinspection PyPep8,PyUnusedLocal
-class TransportationDeviceSets:
-    Bus_and_Bicycles_no_Car: JsonReference = JsonReference(
-        "Bus and Bicycles, no Car", StrGuid("7a73e278-6f1b-48bb-b0ab-95049df977fe")
-    )
-    Bus_and_one_30_km_h_Car: JsonReference = JsonReference(
-        "Bus and one 30 km/h Car", StrGuid("6ac74bd0-bacd-4b39-b84a-dc7ae16702c9")
-    )
-    Bus_and_one_30_km_h_Gasoline_Car: JsonReference = JsonReference(
-        "Bus and one 30 km/h Gasoline Car",
-        StrGuid("045a831b-0fde-49ef-b0ce-f4dfda83034b"),
-    )
-    Bus_and_one_60_km_h_Car: JsonReference = JsonReference(
-        "Bus and one 60 km/h Car", StrGuid("b7b80c60-3292-4d35-9ec2-81ecf1199ce9")
-    )
-    Bus_and_three_30_km_h_Cars: JsonReference = JsonReference(
-        "Bus and three 30 km/h Cars", StrGuid("92fbdffe-b247-4c9c-b69a-bdf28ec073aa")
-    )
-    Bus_and_two_30_km_h_Cars: JsonReference = JsonReference(
-        "Bus and two 30 km/h Cars", StrGuid("f90fece2-901a-4419-8a6b-a0ed4ed6ceff")
-    )
-    Bus_and_two_60_km_h_Cars: JsonReference = JsonReference(
-        "Bus and two 60 km/h Cars", StrGuid("4bbcd8b8-ddd9-4592-8f4e-f1cf5579eb37")
+    Juelich_Germany_Test_Reference_Year_normal_year_2015_from_Deutscher_Wetterdienst_DWD_www_dwd_de: (
+        JsonReference
+    ) = JsonReference(
+        "Jülich, Germany, Test Reference Year, normal year, 2015 from Deutscher Wetterdienst DWD (www.dwd.de)",
+        StrGuid("56493e5a-a9f8-4902-b894-b7bd5ae0237d"),
     )
 
 
 # noinspection PyPep8,PyUnusedLocal
 class TransportationDevices:
+    Bicycle_1: JsonReference = JsonReference(
+        "Bicycle 1", StrGuid("c27beb7a-4d0b-448e-9252-477d2e6bd792")
+    )
+    Bicycle_2: JsonReference = JsonReference(
+        "Bicycle 2", StrGuid("85c3d829-9425-43a0-89c2-90d9efea675b")
+    )
+    Bicycle_3: JsonReference = JsonReference(
+        "Bicycle 3", StrGuid("fb5e3387-4c34-44bd-9c96-94f6a1fd54e7")
+    )
     Bus: JsonReference = JsonReference(
         "Bus", StrGuid("5afbd166-9b10-4267-923d-6a81d3fd3c23")
     )
@@ -491,11 +483,41 @@ class TransportationDevices:
             StrGuid("ff39ab67-c465-4cbd-9de9-b2afaa7453f7"),
         )
     )
+    Car_8_22kW_Charging_Power_avg_Speed_30_km_h: JsonReference = JsonReference(
+        "Car 8, 22kW Charging Power, avg. Speed 30 km/h",
+        StrGuid("ba1984ab-0ee9-44de-a4d2-1fc69954822a"),
+    )
     Elevator: JsonReference = JsonReference(
         "Elevator", StrGuid("5f7344c9-54fd-497f-96e4-8b8b122fc06f")
     )
     Feet: JsonReference = JsonReference(
         "Feet", StrGuid("cf6ae18f-ee93-4647-9bbb-5251534fb7b2")
+    )
+
+
+# noinspection PyPep8,PyUnusedLocal
+class TransportationDeviceSets:
+    Bus_and_Bicycles_no_Car: JsonReference = JsonReference(
+        "Bus and Bicycles, no Car", StrGuid("7a73e278-6f1b-48bb-b0ab-95049df977fe")
+    )
+    Bus_and_one_30_km_h_Car: JsonReference = JsonReference(
+        "Bus and one 30 km/h Car", StrGuid("6ac74bd0-bacd-4b39-b84a-dc7ae16702c9")
+    )
+    Bus_and_one_30_km_h_Gasoline_Car: JsonReference = JsonReference(
+        "Bus and one 30 km/h Gasoline Car",
+        StrGuid("045a831b-0fde-49ef-b0ce-f4dfda83034b"),
+    )
+    Bus_and_one_60_km_h_Car: JsonReference = JsonReference(
+        "Bus and one 60 km/h Car", StrGuid("b7b80c60-3292-4d35-9ec2-81ecf1199ce9")
+    )
+    Bus_and_three_30_km_h_Cars: JsonReference = JsonReference(
+        "Bus and three 30 km/h Cars", StrGuid("92fbdffe-b247-4c9c-b69a-bdf28ec073aa")
+    )
+    Bus_and_two_30_km_h_Cars: JsonReference = JsonReference(
+        "Bus and two 30 km/h Cars", StrGuid("f90fece2-901a-4419-8a6b-a0ed4ed6ceff")
+    )
+    Bus_and_two_60_km_h_Cars: JsonReference = JsonReference(
+        "Bus and two 60 km/h Cars", StrGuid("4bbcd8b8-ddd9-4592-8f4e-f1cf5579eb37")
     )
 
 
@@ -1970,21 +1992,21 @@ class TemplatePersons:
         TemplateName="CHR51 Couple over 65 years II",
         PersonName="CHR51 Maren",
     )
-    CHR52_0_22M: TemplatePersonEntry = TemplatePersonEntry(
-        Name="CHR52_0_22M",
-        Age=22,
-        Gender=Gender.Male,
-        LivingPattern="Living Pattern / University / Student Independent",
-        TemplateName="CHR52 Student Flatsharing",
-        PersonName="CHR52 Chris",
-    )
-    CHR52_1_22F: TemplatePersonEntry = TemplatePersonEntry(
-        Name="CHR52_1_22F",
+    CHR52_0_22F: TemplatePersonEntry = TemplatePersonEntry(
+        Name="CHR52_0_22F",
         Age=22,
         Gender=Gender.Female,
         LivingPattern="Living Pattern / University / Student Independent",
         TemplateName="CHR52 Student Flatsharing",
-        PersonName="CHR52 Iris",
+        PersonName="CHR52 Ashley",
+    )
+    CHR52_1_22M: TemplatePersonEntry = TemplatePersonEntry(
+        Name="CHR52_1_22M",
+        Age=22,
+        Gender=Gender.Male,
+        LivingPattern="Living Pattern / University / Student Independent",
+        TemplateName="CHR52 Student Flatsharing",
+        PersonName="CHR52 Matthew",
     )
     CHR52_2_23F: TemplatePersonEntry = TemplatePersonEntry(
         Name="CHR52_2_23F",
@@ -1992,7 +2014,7 @@ class TemplatePersons:
         Gender=Gender.Female,
         LivingPattern="Living Pattern / University / Student Independent",
         TemplateName="CHR52 Student Flatsharing",
-        PersonName="CHR52 Maddy",
+        PersonName="CHR52 Mia",
     )
     CHR53_0_45M: TemplatePersonEntry = TemplatePersonEntry(
         Name="CHR53_0_45M",
@@ -2178,29 +2200,29 @@ class TemplatePersons:
         TemplateName="CHR59 Family, 3 children, parents without work",
         PersonName="CHR59 Sorra",
     )
-    CHR60_0_32M: TemplatePersonEntry = TemplatePersonEntry(
-        Name="CHR60_0_32M",
-        Age=32,
-        Gender=Gender.Male,
-        LivingPattern="Living Pattern / Office Job / Medium (7-9am)",
-        TemplateName="CHR60 Family, 1 toddler, one at work, one at home",
-        PersonName="CHR60 Alexander",
-    )
-    CHR60_1_30F: TemplatePersonEntry = TemplatePersonEntry(
-        Name="CHR60_1_30F",
+    CHR60_0_30F: TemplatePersonEntry = TemplatePersonEntry(
+        Name="CHR60_0_30F",
         Age=30,
         Gender=Gender.Female,
         LivingPattern="Living Pattern / Stay at Home / Regular",
         TemplateName="CHR60 Family, 1 toddler, one at work, one at home",
-        PersonName="CHR60 Julia",
+        PersonName="CHR60 Amelia",
     )
-    CHR60_2_2F: TemplatePersonEntry = TemplatePersonEntry(
-        Name="CHR60_2_2F",
+    CHR60_1_2F: TemplatePersonEntry = TemplatePersonEntry(
+        Name="CHR60_1_2F",
         Age=2,
         Gender=Gender.Female,
         LivingPattern="Living Pattern / Kindergarden",
         TemplateName="CHR60 Family, 1 toddler, one at work, one at home",
         PersonName="CHR60 Lea",
+    )
+    CHR60_2_32M: TemplatePersonEntry = TemplatePersonEntry(
+        Name="CHR60_2_32M",
+        Age=32,
+        Gender=Gender.Male,
+        LivingPattern="Living Pattern / Office Job / Medium (7-9am)",
+        TemplateName="CHR60 Family, 1 toddler, one at work, one at home",
+        PersonName="CHR60 Oliver",
     )
     CHR61_0_40F: TemplatePersonEntry = TemplatePersonEntry(
         Name="CHR61_0_40F",
@@ -2226,21 +2248,21 @@ class TemplatePersons:
         TemplateName="CHR61 Family, 1 child, both at work, early living pattern",
         PersonName="CHR61 Lukas",
     )
-    CHR62_0_23F: TemplatePersonEntry = TemplatePersonEntry(
-        Name="CHR62_0_23F",
-        Age=23,
-        Gender=Gender.Female,
-        LivingPattern="Living Pattern / Work From Home / Full Time 5 days",
-        TemplateName="CHR62 Couple both Working from Home",
-        PersonName="CHR01 Rubi",
-    )
-    CHR62_1_25M: TemplatePersonEntry = TemplatePersonEntry(
-        Name="CHR62_1_25M",
+    CHR62_0_25M: TemplatePersonEntry = TemplatePersonEntry(
+        Name="CHR62_0_25M",
         Age=25,
         Gender=Gender.Male,
         LivingPattern="Living Pattern / Work From Home / Full Time 5 days",
         TemplateName="CHR62 Couple both Working from Home",
-        PersonName="CHR01 Sami",
+        PersonName="CHR62 Lucas",
+    )
+    CHR62_1_23F: TemplatePersonEntry = TemplatePersonEntry(
+        Name="CHR62_1_23F",
+        Age=23,
+        Gender=Gender.Female,
+        LivingPattern="Living Pattern / Work From Home / Full Time 5 days",
+        TemplateName="CHR62 Couple both Working from Home",
+        PersonName="CHR62 Sophie",
     )
     CHS01_0_45M: TemplatePersonEntry = TemplatePersonEntry(
         Name="CHS01_0_45M",
