@@ -100,6 +100,7 @@ class CalcOption(str, Enum):
     FlexibilityEvents = "FlexibilityEvents"
     DeleteDatFiles = "DeleteDatFiles"
     TransportationDefinitions = "TransportationDefinitions"
+    TransportationDeviceChoices = "TransportationDeviceChoices"
 
 
 class HouseDefinitionType(str, Enum):

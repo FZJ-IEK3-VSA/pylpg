@@ -806,11 +806,8 @@ class LivingPatternTags:
         "Living Pattern / University / Student Living at Home"
     )
     Living_Pattern_Work_From_Home = "Living Pattern / Work From Home"
-    Living_Pattern_Work_From_Home_Full_Time_5_days = (
-        "Living Pattern / Work From Home / Full Time 5 days"
-    )
     Living_Pattern_Work_From_Home_Part_Time = (
-        "Living Pattern / Work From Home / Part Time"
+        "Living Pattern / Work From Home Part Time"
     )
 
 
@@ -1444,7 +1441,7 @@ class TemplatePersons:
         Name="CHR20_1_40F",
         Age=40,
         Gender=Gender.Female,
-        LivingPattern="Living Pattern / Work From Home / Part Time",
+        LivingPattern="Living Pattern / Work From Home Part Time",
         TemplateName="CHR20 one at work, one work home, 3 children",
         PersonName="CHR20 Cassie",
     )
@@ -2252,7 +2249,7 @@ class TemplatePersons:
         Name="CHR62_0_25M",
         Age=25,
         Gender=Gender.Male,
-        LivingPattern="Living Pattern / Work From Home / Full Time 5 days",
+        LivingPattern="Living Pattern / Work From Home",
         TemplateName="CHR62 Couple both Working from Home",
         PersonName="CHR62 Lucas",
     )
@@ -2260,7 +2257,7 @@ class TemplatePersons:
         Name="CHR62_1_23F",
         Age=23,
         Gender=Gender.Female,
-        LivingPattern="Living Pattern / Work From Home / Full Time 5 days",
+        LivingPattern="Living Pattern / Work From Home",
         TemplateName="CHR62 Couple both Working from Home",
         PersonName="CHR62 Sophie",
     )
