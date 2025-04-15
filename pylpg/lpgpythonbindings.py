@@ -125,6 +125,12 @@ class HouseholdKeyType(str, Enum):
     House = "House"
 
 
+class DayType(str, Enum):
+    Weekday = "Weekday"
+    Weekend = "Weekend"
+    EveryDay = "EveryDay"
+
+
 # noinspection PyPep8Naming, PyUnusedLocal
 @dataclass_json
 @dataclass
@@ -1122,6 +1128,77 @@ class PersonPoiPreferences:
 # noinspection PyPep8Naming, PyUnusedLocal
 @dataclass_json
 @dataclass
+class TimeSlot:
+    Start: int = 0
+
+    def set_Start(self, value: int) -> TimeSlot:
+        self.Start = value
+        return self
+
+    End: int = 0
+
+    def set_End(self, value: int) -> TimeSlot:
+        self.End = value
+        return self
+
+    DayType: Optional[DayType] = None
+
+    def set_DayType(self, value: DayType) -> TimeSlot:
+        self.DayType = value
+        return self
+
+
+# noinspection PyPep8Naming, PyUnusedLocal
+@dataclass_json
+@dataclass
+class RoutesForTimeSlot:
+    TimeSlot: Optional[TimeSlot] = None
+
+    def set_TimeSlot(self, value: TimeSlot) -> RoutesForTimeSlot:
+        self.TimeSlot = value
+        return self
+
+    Routes: List[RouteData] = field(default_factory=list)
+
+    def set_Routes(self, value: List[RouteData]) -> RoutesForTimeSlot:
+        self.Routes = value
+        return self
+
+
+# noinspection PyPep8Naming, PyUnusedLocal
+@dataclass_json
+@dataclass
+class TravelDefinition:
+    TimeSlotRouteLists: List[RoutesForTimeSlot] = field(default_factory=list)
+
+    def set_TimeSlotRouteLists(
+        self, value: List[RoutesForTimeSlot]
+    ) -> TravelDefinition:
+        self.TimeSlotRouteLists = value
+        return self
+
+    PoiClusterMapping: Dict[str, str] = field(default_factory=dict)
+
+    def set_PoiClusterMapping(self, value: Dict[str, str]) -> TravelDefinition:
+        self.PoiClusterMapping = value
+        return self
+
+    MirrorRoutes: bool = False
+
+    def set_MirrorRoutes(self, value: bool) -> TravelDefinition:
+        self.MirrorRoutes = value
+        return self
+
+    MinimumDrivingAge: int = 0
+
+    def set_MinimumDrivingAge(self, value: int) -> TravelDefinition:
+        self.MinimumDrivingAge = value
+        return self
+
+
+# noinspection PyPep8Naming, PyUnusedLocal
+@dataclass_json
+@dataclass
 class CityData:
     PointsOfInterest: Dict[str, PointOfInterestData] = field(default_factory=dict)
 
@@ -1129,22 +1206,10 @@ class CityData:
         self.PointsOfInterest = value
         return self
 
-    Routes: List[RouteData] = field(default_factory=list)
+    TravelDefinition: Optional[TravelDefinition] = None
 
-    def set_Routes(self, value: List[RouteData]) -> CityData:
-        self.Routes = value
-        return self
-
-    MirrorRoutes: bool = False
-
-    def set_MirrorRoutes(self, value: bool) -> CityData:
-        self.MirrorRoutes = value
-        return self
-
-    MinimumDrivingAge: int = 0
-
-    def set_MinimumDrivingAge(self, value: int) -> CityData:
-        self.MinimumDrivingAge = value
+    def set_TravelDefinition(self, value: TravelDefinition) -> CityData:
+        self.TravelDefinition = value
         return self
 
 
