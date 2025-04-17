@@ -125,10 +125,14 @@ class HouseholdKeyType(str, Enum):
     House = "House"
 
 
-class DayType(str, Enum):
-    Weekday = "Weekday"
-    Weekend = "Weekend"
-    EveryDay = "EveryDay"
+class DayOfWeek(str, Enum):
+    Sunday = "Sunday"
+    Monday = "Monday"
+    Tuesday = "Tuesday"
+    Wednesday = "Wednesday"
+    Thursday = "Thursday"
+    Friday = "Friday"
+    Saturday = "Saturday"
 
 
 # noinspection PyPep8Naming, PyUnusedLocal
@@ -1141,10 +1145,10 @@ class TimeSlot:
         self.End = value
         return self
 
-    DayType: Optional[DayType] = None
+    WeekDays: set[DayOfWeek] = field(default_factory=set)
 
-    def set_DayType(self, value: DayType) -> TimeSlot:
-        self.DayType = value
+    def set_WeekDays(self, value: set[DayOfWeek]) -> TimeSlot:
+        self.WeekDays = value
         return self
 
 
