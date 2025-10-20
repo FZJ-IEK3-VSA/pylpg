@@ -128,7 +128,7 @@ def execute_lpg_single_household(
     energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
     resolution: str = "00:01:00",
     calc_options: List[CalcOption] = None,
-) -> pd.DataFrame:
+) -> pd.DataFrame | None:
     """
     Create, run and collect results for a single-household LoadProfileGenerator calculation.
 
