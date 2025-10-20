@@ -129,6 +129,53 @@ def execute_lpg_single_household(
     resolution: str = "00:01:00",
     calc_options: List[CalcOption] = None,
 ) -> pd.DataFrame:
+    """
+    Create, run and collect results for a single-household LoadProfileGenerator calculation.
+
+    This helper builds a minimal HouseCreationAndCalculationJob for the given year
+    containing one household (referenced by `householdref`), writes the calculation
+    specification file (calcspec.json) into the LPG working folder, runs the LPG
+    simulation engine and collects JSON result profiles into a pandas.DataFrame.
+
+    Parameters
+    - year (int): Simulation year.
+    - householdref (JsonReference): Reference to a household record (see pylpg.lpgpythonbindings.JsonReference).
+    - housetype (str): House type code to assign to the House object.
+    - startdate, enddate (str|None): Optional simulation start/end datetimes (ISO-like strings).
+    - geographic_location (JsonReference|None): Optional geographic reference (see bindings).
+    - simulate_transportation (bool): Enable transportation modelling when True.
+    - chargingset, transportation_device_set, travel_route_set (JsonReference|None):
+      Optional references for charging, transportation device and travel route sets.
+    - random_seed (int|None): If set, fixes RNG for reproducible results.
+    - energy_intensity (EnergyIntensityType): Use enum from pylpg.lpgpythonbindings.
+    - resolution (str): External time resolution (e.g. "00:01:00").
+    - calc_options (List[CalcOption]|None): If provided, replaces CalcSpec.CalcOptions.
+      Use CalcOption values from pylpg.lpgpythonbindings.
+
+    Returns
+    - pandas.DataFrame or None: DataFrame with one column per reported load (named
+      "<LoadTypeName>_<HouseholdKey>") indexed by timestamps. Returns None if the
+      result directory or expected JSON result files are missing (i.e. the process
+      failed or produced no results).
+
+    Notes
+    - Many parameters are typed objects defined in pylpg.lpgpythonbindings (JsonReference,
+      StrGuid, CalcOption, EnergyIntensityType, ...); construct them from the bindings.
+    - The function may download/install LPG binaries when missing and will invoke the
+      external LPG executable; related subprocess/IO errors may propagate.
+    - read_all_json_results_in_directory returns None when the "results/Results"
+      folder is not present.
+
+    Example
+    from pylpg import lpg_execution, lpgdata
+    import utils
+    
+    data = lpg_execution.execute_lpg_single_household(
+        2022,
+        lpgdata.Households.CHR01_Couple_both_at_Work,
+        lpgdata.HouseTypes.HT20_Single_Family_House_no_heating_cooling,
+    )
+    """
     lpe: LPGExecutor = LPGExecutor(1, False)
 
     # basic request
