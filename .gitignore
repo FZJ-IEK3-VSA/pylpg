@@ -28,6 +28,8 @@ __pycache__/
 *.docs/build/
 build/
 dist/
+.venv/
+create/
 
 # generated result files
 *.csv

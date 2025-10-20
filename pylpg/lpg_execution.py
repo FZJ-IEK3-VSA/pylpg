@@ -128,7 +128,59 @@ def execute_lpg_single_household(
     energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
     resolution: str = "00:01:00",
     calc_options: List[CalcOption] = None,
-) -> pd.DataFrame:
+    output_unit_format=''
+) -> pd.DataFrame | None:
+    """
+    Create, run and collect results for a single-household LoadProfileGenerator calculation.
+
+    This helper builds a minimal HouseCreationAndCalculationJob for the given year
+    containing one household (referenced by `householdref`), writes the calculation
+    specification file (calcspec.json) into the LPG working folder, runs the LPG
+    simulation engine and collects JSON result profiles into a pandas.DataFrame.
+
+    Parameters
+    - year (int): Simulation year.
+    - householdref (JsonReference): Reference to a household record (see pylpg.lpgpythonbindings.JsonReference).
+    - housetype (str): House type code to assign to the House object.
+    - startdate, enddate (str|None): Optional simulation start/end datetimes (ISO-like strings).
+    - geographic_location (JsonReference|None): Optional geographic reference (see bindings).
+    - simulate_transportation (bool): Enable transportation modelling when True.
+    - chargingset, transportation_device_set, travel_route_set (JsonReference|None):
+      Optional references for charging, transportation device and travel route sets.
+    - random_seed (int|None): If set, fixes RNG for reproducible results.
+    - energy_intensity (EnergyIntensityType): Use enum from pylpg.lpgpythonbindings.
+    - resolution (str): External time resolution (e.g. "00:01:00").
+    - calc_options (List[CalcOption]|None): If provided, replaces CalcSpec.CalcOptions.
+      Use CalcOption values from pylpg.lpgpythonbindings.
+    - output_unit_format (str) : A format string used to append the profile unit to the
+      DataFrame column name (the profile.Unit is passed to unit_format). 
+      Example: unit_format=' in {}'.
+      Default: ''; no unit is appended.
+
+    Returns
+    - pandas.DataFrame or None: DataFrame with one column per reported load (named
+      "<LoadTypeName>_<HouseholdKey>") indexed by timestamps. Returns None if the
+      result directory or expected JSON result files are missing (i.e. the process
+      failed or produced no results).
+
+    Notes
+    - Many parameters are typed objects defined in pylpg.lpgpythonbindings (JsonReference,
+      StrGuid, CalcOption, EnergyIntensityType, ...); construct them from the bindings.
+    - The function may download/install LPG binaries when missing and will invoke the
+      external LPG executable; related subprocess/IO errors may propagate.
+    - read_all_json_results_in_directory returns None when the "results/Results"
+      folder is not present.
+
+    Example
+    from pylpg import lpg_execution, lpgdata
+    import utils
+    
+    data = lpg_execution.execute_lpg_single_household(
+        2022,
+        lpgdata.Households.CHR01_Couple_both_at_Work,
+        lpgdata.HouseTypes.HT20_Single_Family_House_no_heating_cooling,
+    )
+    """
     lpe: LPGExecutor = LPGExecutor(1, False)
 
     # basic request
@@ -172,7 +224,7 @@ def execute_lpg_single_household(
         calcspecfile.write(jsonrequest)
     lpe.execute_lpg_binaries()
 
-    return lpe.read_all_json_results_in_directory()
+    return lpe.read_all_json_results_in_directory(unit_format=output_unit_format)
 
 
 def execute_lpg_with_householdata(
@@ -561,7 +613,38 @@ class LPGExecutor:
                     print(f"Could not parse Json file {filepath} - skipping it")
         return profile
 
-    def read_all_json_results_in_directory(self) -> Optional[pd.DataFrame]:
+    def read_all_json_results_in_directory(self, unit_format="") -> Optional[pd.DataFrame]:
+        """
+        Collect JSON output files from the LPG results folder and return them merged as a DataFrame.
+
+        Scans the calculation's "results/Results" directory for known JSON outputs
+        (e.g. Sum.*, BodilyActivityLevel.*, CarLocation.*, Carstate.*, DrivingDistance.*, Soc.*),
+        attempts to parse each file with parse_json_profile (which yields either a
+        JsonSumProfile or JsonEnumProfile), and places each profile's numeric series
+        into one column of a pandas.DataFrame.
+
+        Parameters
+        - unit_format (str): A format string used to append the profile unit to the
+          DataFrame column name (the profile.Unit is passed to unit_format). 
+          Example: unit_format=' in {}'.
+          Default: ''; no unit is appended.
+
+        Returns
+        - pandas.DataFrame: Combined time series where each column is named
+          "<LoadTypeName>_<HHKey>{unit_suffix}" and rows are indexed by timestamps.
+          The index is created from the first successfully parsed profile StartTime
+          and assumes one-minute resolution.
+        - None: If the results directory is not present (indicating no results), None
+          is returned.
+
+        Notes
+        - Files that cannot be parsed are skipped; parse_json_profile logs a message
+          when parsing fails.
+        - If a parsed profile lacks required metadata (LoadTypeName or HouseKey.HHKey)
+          an Exception is raised.
+        - The first parsed profile defines the DataFrame index length and start time.
+        """
+
         df: pd.DataFrame = pd.DataFrame()
         results_directory = Path(self.calculation_directory, "results", "Results")
         if not os.path.exists(str(results_directory)):
@@ -595,7 +678,13 @@ class LPGExecutor:
                 or profile.HouseKey.HHKey is None
             ):
                 raise Exception("empty housekey")
-            key: str = profile.LoadTypeName + "_" + str(profile.HouseKey.HHKey.Key)
+            key: str = (
+                profile.LoadTypeName
+                +"_" 
+                + str(profile.HouseKey.HHKey.Key)
+                + (unit_format.format(profile.Unit) if profile.Unit else '')
+            )
+
             df[key] = profile.Values
             if isFirst:
                 isFirst = False
