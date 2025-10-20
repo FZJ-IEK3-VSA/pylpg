@@ -128,6 +128,7 @@ def execute_lpg_single_household(
     energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
     resolution: str = "00:01:00",
     calc_options: List[CalcOption] = None,
+    output_unit_format=''
 ) -> pd.DataFrame | None:
     """
     Create, run and collect results for a single-household LoadProfileGenerator calculation.
@@ -151,6 +152,10 @@ def execute_lpg_single_household(
     - resolution (str): External time resolution (e.g. "00:01:00").
     - calc_options (List[CalcOption]|None): If provided, replaces CalcSpec.CalcOptions.
       Use CalcOption values from pylpg.lpgpythonbindings.
+    - output_unit_format (str) : A format string used to append the profile unit to the
+      DataFrame column name (the profile.Unit is passed to unit_format). 
+      Example: unit_format=' in {}'.
+      Default: ''; no unit is appended.
 
     Returns
     - pandas.DataFrame or None: DataFrame with one column per reported load (named
@@ -219,7 +224,7 @@ def execute_lpg_single_household(
         calcspecfile.write(jsonrequest)
     lpe.execute_lpg_binaries()
 
-    return lpe.read_all_json_results_in_directory()
+    return lpe.read_all_json_results_in_directory(unit_format=output_unit_format)
 
 
 def execute_lpg_with_householdata(
@@ -608,7 +613,38 @@ class LPGExecutor:
                     print(f"Could not parse Json file {filepath} - skipping it")
         return profile
 
-    def read_all_json_results_in_directory(self) -> Optional[pd.DataFrame]:
+    def read_all_json_results_in_directory(self, unit_format="") -> Optional[pd.DataFrame]:
+        """
+        Collect JSON output files from the LPG results folder and return them merged as a DataFrame.
+
+        Scans the calculation's "results/Results" directory for known JSON outputs
+        (e.g. Sum.*, BodilyActivityLevel.*, CarLocation.*, Carstate.*, DrivingDistance.*, Soc.*),
+        attempts to parse each file with parse_json_profile (which yields either a
+        JsonSumProfile or JsonEnumProfile), and places each profile's numeric series
+        into one column of a pandas.DataFrame.
+
+        Parameters
+        - unit_format (str): A format string used to append the profile unit to the
+          DataFrame column name (the profile.Unit is passed to unit_format). 
+          Example: unit_format=' in {}'.
+          Default: ''; no unit is appended.
+
+        Returns
+        - pandas.DataFrame: Combined time series where each column is named
+          "<LoadTypeName>_<HHKey>{unit_suffix}" and rows are indexed by timestamps.
+          The index is created from the first successfully parsed profile StartTime
+          and assumes one-minute resolution.
+        - None: If the results directory is not present (indicating no results), None
+          is returned.
+
+        Notes
+        - Files that cannot be parsed are skipped; parse_json_profile logs a message
+          when parsing fails.
+        - If a parsed profile lacks required metadata (LoadTypeName or HouseKey.HHKey)
+          an Exception is raised.
+        - The first parsed profile defines the DataFrame index length and start time.
+        """
+
         df: pd.DataFrame = pd.DataFrame()
         results_directory = Path(self.calculation_directory, "results", "Results")
         if not os.path.exists(str(results_directory)):
@@ -642,7 +678,13 @@ class LPGExecutor:
                 or profile.HouseKey.HHKey is None
             ):
                 raise Exception("empty housekey")
-            key: str = profile.LoadTypeName + "_" + str(profile.HouseKey.HHKey.Key)
+            key: str = (
+                profile.LoadTypeName
+                +"_" 
+                + str(profile.HouseKey.HHKey.Key)
+                + (unit_format.format(profile.Unit) if profile.Unit else '')
+            )
+
             df[key] = profile.Values
             if isFirst:
                 isFirst = False

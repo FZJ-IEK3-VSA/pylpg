@@ -30,9 +30,11 @@ def test_single_household_function() -> None:
         chargingset=ChargingStationSets.Charging_At_Home_with_11_kW,
         transportation_device_set=TransportationDeviceSets.Bus_and_two_30_km_h_Cars,
         travel_route_set=TravelRouteSets.Travel_Route_Set_for_15km_Commuting_Distance,
+        output_unit_format=' in {}'
     )
     df.to_csv(r"lpgexport.csv", index=True, sep=";")
     print("successfully exportet dataframe to lpgexport.csv")
+    assert 'Air Conditioning Load_House in kWh' in df.columns, "The DataFrame is not as expected"
 
 
 def test_householdata_function() -> None:
