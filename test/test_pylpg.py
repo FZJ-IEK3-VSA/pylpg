@@ -104,11 +104,11 @@ def test_many_householdata_function() -> None:
 def test_householdata_function_with_livingpatterns() -> None:
     random.seed(2)
     p1 = PersonLivingTag(
-        LivingPatternTag=LivingPatternTags.Living_Pattern_Work_From_Home_Full_Time_5_days,
+        LivingPatternTag=LivingPatternTags.Living_Pattern_Work_From_Home,
         PersonName=TemplatePersons.CHR01_1_25M.PersonName,
     )
     p2 = PersonLivingTag(
-        LivingPatternTag=LivingPatternTags.Living_Pattern_Work_From_Home_Full_Time_5_days,
+        LivingPatternTag=LivingPatternTags.Living_Pattern_Work_From_Home,
         PersonName=TemplatePersons.CHR01_0_23F.PersonName,
     )
     personspec = HouseholdTemplateSpecification(

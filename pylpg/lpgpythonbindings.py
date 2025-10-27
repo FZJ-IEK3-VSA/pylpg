@@ -1257,22 +1257,16 @@ class RouteData:
         self.prob_with_car_hh = value
         return self
 
-    prob_with_car_hh_pt_abo: Dict[str, float] = field(default_factory=dict)
-
-    def set_prob_with_car_hh_pt_abo(self, value: Dict[str, float]) -> RouteData:
-        self.prob_with_car_hh_pt_abo = value
-        return self
-
-    prob_with_car_hh_no_pt_abo: Dict[str, float] = field(default_factory=dict)
-
-    def set_prob_with_car_hh_no_pt_abo(self, value: Dict[str, float]) -> RouteData:
-        self.prob_with_car_hh_no_pt_abo = value
-        return self
-
     prob_no_car_hh: Dict[str, float] = field(default_factory=dict)
 
     def set_prob_no_car_hh(self, value: Dict[str, float]) -> RouteData:
         self.prob_no_car_hh = value
+        return self
+
+    prob_with_car_hh_pt_abo: Dict[str, float] = field(default_factory=dict)
+
+    def set_prob_with_car_hh_pt_abo(self, value: Dict[str, float]) -> RouteData:
+        self.prob_with_car_hh_pt_abo = value
         return self
 
     prob_no_car_hh_pt_abo: Dict[str, float] = field(default_factory=dict)
@@ -1281,10 +1275,46 @@ class RouteData:
         self.prob_no_car_hh_pt_abo = value
         return self
 
+    prob_with_car_hh_no_pt_abo: Dict[str, float] = field(default_factory=dict)
+
+    def set_prob_with_car_hh_no_pt_abo(self, value: Dict[str, float]) -> RouteData:
+        self.prob_with_car_hh_no_pt_abo = value
+        return self
+
     prob_no_car_hh_no_pt_abo: Dict[str, float] = field(default_factory=dict)
 
     def set_prob_no_car_hh_no_pt_abo(self, value: Dict[str, float]) -> RouteData:
         self.prob_no_car_hh_no_pt_abo = value
+        return self
+
+    index: int = 0
+
+    def set_index(self, value: int) -> RouteData:
+        self.index = value
+        return self
+
+    logsum_util_all: float = 0
+
+    def set_logsum_util_all(self, value: float) -> RouteData:
+        self.logsum_util_all = value
+        return self
+
+    logsum_util_no_car_hh: float = 0
+
+    def set_logsum_util_no_car_hh(self, value: float) -> RouteData:
+        self.logsum_util_no_car_hh = value
+        return self
+
+    logsum_util_with_car_hh: float = 0
+
+    def set_logsum_util_with_car_hh(self, value: float) -> RouteData:
+        self.logsum_util_with_car_hh = value
+        return self
+
+    logsum_time: float = 0
+
+    def set_logsum_time(self, value: float) -> RouteData:
+        self.logsum_time = value
         return self
 
 
@@ -1308,6 +1338,12 @@ class PointOfInterestData:
 
     def set_TimeLimit(self, value: JsonReference) -> PointOfInterestData:
         self.TimeLimit = value
+        return self
+
+    QueueCapacity: int = 0
+
+    def set_QueueCapacity(self, value: int) -> PointOfInterestData:
+        self.QueueCapacity = value
         return self
 
 
