@@ -427,9 +427,7 @@ class TemperatureProfiles:
             StrGuid("5cee108e-4126-41c2-9601-e867d597a96b"),
         )
     )
-    Juelich_Germany_Test_Reference_Year_normal_year_2015_from_Deutscher_Wetterdienst_DWD_www_dwd_de: (
-        JsonReference
-    ) = JsonReference(
+    Juelich_Germany_Test_Reference_Year_normal_year_2015_from_Deutscher_Wetterdienst_DWD_www_dwd_de: JsonReference = JsonReference(
         "Jülich, Germany, Test Reference Year, normal year, 2015 from Deutscher Wetterdienst DWD (www.dwd.de)",
         StrGuid("56493e5a-a9f8-4902-b894-b7bd5ae0237d"),
     )
@@ -1009,6 +1007,7 @@ class TraitTags:
     Sleep_Sleep_Shiftworker_2 = "Sleep / Sleep Shiftworker 2"
     Spare_Time_Car_Activities = "Spare Time / Car Activities"
     Spare_Time_Exercise = "Spare Time / Exercise"
+    Spare_Time_Friends = "Spare Time / Friends"
     Spare_Time_Garden_Activities = "Spare Time / Garden Activities"
     Spare_Time_Hobby = "Spare Time / Hobby"
     Spare_Time_Indoor_Entertainment = "Spare Time / Indoor Entertainment"

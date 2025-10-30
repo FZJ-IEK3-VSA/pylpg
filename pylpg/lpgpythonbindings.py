@@ -335,6 +335,10 @@ class JsonCalcSpecification:
         start to initialize the people. For debugging purposes it is possible to
         include this in the result files. Defaults to false.
     :type ShowSettlingPeriod: bool
+    :param SettlingDays: Determines the number of settling days that are
+        simulated before the actual start date. These days help to avoid
+        simulation artifacts in the beginning. Default=3
+    :type SettlingDays: int
     :param EnableFlexibility: Flexibility modelling seperates the electric
         devices out that can time shifted. The LPG then generates two distinct
         profiles.
@@ -461,6 +465,12 @@ class JsonCalcSpecification:
 
     def set_ShowSettlingPeriod(self, value: bool) -> JsonCalcSpecification:
         self.ShowSettlingPeriod = value
+        return self
+
+    SettlingDays: int = 3
+
+    def set_SettlingDays(self, value: int) -> JsonCalcSpecification:
+        self.SettlingDays = value
         return self
 
     EnableFlexibility: bool = False
