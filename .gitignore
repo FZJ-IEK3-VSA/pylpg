@@ -28,6 +28,7 @@ __pycache__/
 *.docs/build/
 build/
 dist/
+pyLPG_env/
 
 # generated result files
 *.csv
