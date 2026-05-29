@@ -1,4 +1,7 @@
+import shutil
 import random
+from pathlib import Path
+
 import pandas  # type: ignore
 from pylpg import lpg_execution
 from pylpg.lpgdata import *
@@ -167,6 +170,30 @@ def test_family_maker() -> None:
     print_persons_list(persons4)
     persons5: List[PersonData] = lpg_execution.make_reasonable_family(5)
     print_persons_list(persons5)
+
+
+def test_lpg_executor_uses_custom_binary_path(tmp_path) -> None:
+    custom_dir = tmp_path / "custom_lpg"
+    custom_dir.mkdir()
+    custom_binary = custom_dir / "my-simengine.exe"
+    custom_binary.write_text("dummy", encoding="utf-8")
+
+    original_retrieve = lpg_execution.LPGExecutor.retrieve_lpg_binaries
+
+    def fail_if_called(path: Path) -> None:
+        raise AssertionError("retrieve_lpg_binaries should not be called for custom binaries")
+
+    lpg_execution.LPGExecutor.retrieve_lpg_binaries = staticmethod(fail_if_called)
+    executor = None
+    try:
+        executor = lpg_execution.LPGExecutor(98765, True, custom_binary)
+        assert executor.lpg_simengine_filepath() == str(custom_binary)
+        assert executor.calculation_src_directory == custom_dir
+        assert executor.simengine_src_filename == custom_binary.name
+    finally:
+        lpg_execution.LPGExecutor.retrieve_lpg_binaries = original_retrieve
+        if executor is not None and executor.calculation_directory.exists():
+            shutil.rmtree(executor.calculation_directory)
 
 
 def print_persons_list(persons: List[PersonData]):
