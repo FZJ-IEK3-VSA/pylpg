@@ -24,9 +24,9 @@ Configuration
     This keeps LPG's geographic location and weather profile separate, while
     still letting you define meaningful paired presets. Set to `None` to run
     all possible geographic-location/temperature-profile combinations.
-- `TRANSPORT_VARIANT_KEYS`: tuples of
-  `(simulate_transportation, charging_set_key, transport_device_set_key, travel_route_set_key, tag)`.
-  Keys are resolved against the corresponding `lpgdata.*Sets` classes.
+- `TRANSPORT_VARIANT_KEYS`: `TransportVariantKey` entries with key names for
+    LPG transport sets. Keys are resolved against the corresponding
+    `lpgdata.*Sets` classes.
 - `RUNS_PER_COMBO`: number of different seeds per parameter combination.
 
 Outputs
@@ -38,6 +38,7 @@ Run
 """
 
 from pathlib import Path
+from dataclasses import dataclass
 import inspect
 import time
 import traceback
@@ -131,6 +132,52 @@ def make_climate_variants(
     return variants
 
 
+@dataclass(frozen=True)
+class TransportVariantKey:
+    simulate_transportation: bool
+    charging_set_key: Optional[str]
+    transport_device_set_key: Optional[str]
+    travel_route_set_key: Optional[str]
+    tag: str
+
+
+@dataclass(frozen=True)
+class TransportVariant:
+    simulate_transportation: bool
+    charging_set: Optional[JsonReference]
+    transport_device_set: Optional[JsonReference]
+    travel_route_set: Optional[JsonReference]
+    tag: str
+
+
+def make_transport_variants(
+    all_charging_sets: Dict[str, JsonReference],
+    all_transport_device_sets: Dict[str, JsonReference],
+    all_travel_route_sets: Dict[str, JsonReference],
+    variant_keys: list[TransportVariantKey],
+) -> list[TransportVariant]:
+    return [
+        TransportVariant(
+            simulate_transportation=variant_key.simulate_transportation,
+            charging_set=resolve_optional_key(
+                all_charging_sets, variant_key.charging_set_key, "charging set"
+            ),
+            transport_device_set=resolve_optional_key(
+                all_transport_device_sets,
+                variant_key.transport_device_set_key,
+                "transport device set",
+            ),
+            travel_route_set=resolve_optional_key(
+                all_travel_route_sets,
+                variant_key.travel_route_set_key,
+                "travel route set",
+            ),
+            tag=variant_key.tag,
+        )
+        for variant_key in variant_keys
+    ]
+
+
 # ---- CONFIG ----
 YEAR = 2022
 
@@ -161,10 +208,10 @@ CLIMATE_SET_KEYS = [
 ]
 # Set to None to generate all location/temperature-profile combinations.
 
-# (simulate_transportation, charging_set_key, transport_device_set_key, travel_route_set_key, tag)
+# Key-based transport presets.
 TRANSPORT_VARIANT_KEYS = [
-    (False, None, None, None, "no_transport"),
-    (
+    TransportVariantKey(False, None, None, None, "no_transport"),
+    TransportVariantKey(
         True,
         "Charging_At_Home_with_03_7_kW_output_results_to_Car_Electricity",
         "Bus_and_two_30_km_h_Cars",
@@ -215,24 +262,12 @@ def run_all() -> None:
         CLIMATE_SET_KEYS,
     )
 
-    transport_variants = [
-        (
-            simulate_transportation,
-            resolve_optional_key(all_charging_sets, charging_key, "charging set"),
-            resolve_optional_key(
-                all_transport_device_sets, device_set_key, "transport device set"
-            ),
-            resolve_optional_key(all_travel_route_sets, route_key, "travel route set"),
-            tag,
-        )
-        for (
-            simulate_transportation,
-            charging_key,
-            device_set_key,
-            route_key,
-            tag,
-        ) in TRANSPORT_VARIANT_KEYS
-    ]
+    transport_variants = make_transport_variants(
+        all_charging_sets,
+        all_transport_device_sets,
+        all_travel_route_sets,
+        TRANSPORT_VARIANT_KEYS,
+    )
 
     meta_rows = []
     total = 0
@@ -241,14 +276,11 @@ def run_all() -> None:
         tmpl_name = tmpl or "template"
         for geographic_location, temperature_profile, climate_tag in climate_sets:
             climate_name = climate_tag
-            for (
-                simulate_transportation,
-                chargingset,
-                transportation_device_set,
-                travel_route_set,
-                ttag,
-            ) in transport_variants:
-                combo_tag = f"{safe_name(tmpl_name)}__{safe_name(climate_name)}__{ttag}"
+            for transport_variant in transport_variants:
+                combo_tag = (
+                    f"{safe_name(tmpl_name)}__{safe_name(climate_name)}__"
+                    f"{transport_variant.tag}"
+                )
 
                 # Multiple seeds for identical non-seed parameters.
                 for run_idx in range(RUNS_PER_COMBO):
@@ -269,9 +301,9 @@ def run_all() -> None:
                             None,
                             "hhid",
                             "hhname",
-                            chargingset,
-                            transportation_device_set,
-                            travel_route_set,
+                            transport_variant.charging_set,
+                            transport_variant.transport_device_set,
+                            transport_variant.travel_route_set,
                             None,
                             HouseholdDataSpecification=
                             lpgdata.HouseholdDataSpecificationType.ByTemplateName,
@@ -290,7 +322,7 @@ def run_all() -> None:
                             geographic_location=geographic_location,
                             temperature_profile=temperature_profile,
                             enable_flexibility=False,
-                            enable_transportation=simulate_transportation,
+                            enable_transportation=transport_variant.simulate_transportation,
                             random_seed=seed,
                             energy_intensity=EnergyIntensityType.Random,
                             **execute_kwargs,
@@ -318,7 +350,7 @@ def run_all() -> None:
                                     if temperature_profile is not None
                                     else None
                                 ),
-                                "transport_tag": ttag,
+                                "transport_tag": transport_variant.tag,
                                 "seed": seed,
                                 "run_index": run_idx + 1,
                                 "out_file": str(out_csv),
