@@ -196,6 +196,22 @@ def test_lpg_executor_uses_custom_binary_path(tmp_path) -> None:
             shutil.rmtree(executor.calculation_directory)
 
 
+def test_lpg_binary_details_for_platform(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(lpg_execution.sys, "platform", "linux")
+    linux_directory, linux_filename = lpg_execution._lpg_binary_details_for_platform(
+        tmp_path
+    )
+    assert linux_directory == tmp_path / "LPG_linux"
+    assert linux_filename == "simengine2"
+
+    monkeypatch.setattr(lpg_execution.sys, "platform", "win32")
+    windows_directory, windows_filename = lpg_execution._lpg_binary_details_for_platform(
+        tmp_path
+    )
+    assert windows_directory == tmp_path / "LPG_win"
+    assert windows_filename == "simengine2.exe"
+
+
 def print_persons_list(persons: List[PersonData]):
     print("#############")
     print("Persons: " + str(len(persons)))

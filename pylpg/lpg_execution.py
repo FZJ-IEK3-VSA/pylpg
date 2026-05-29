@@ -20,6 +20,14 @@ from pylpg.lpgdata import *
 from pylpg.lpgpythonbindings import *
 
 
+def _lpg_binary_details_for_platform(working_directory: Path) -> tuple[Path, str]:
+    if sys.platform == "linux" or sys.platform == "linux2":
+        return Path(working_directory, "LPG_linux"), "simengine2"
+    if sys.platform == "win32":
+        return Path(working_directory, "LPG_win"), "simengine2.exe"
+    raise Exception("unknown operating system detected: " + sys.platform)
+
+
 def execute_lpg_tsib(
     year: int,
     number_of_households: int,
@@ -551,28 +559,19 @@ class LPGExecutor:
                 self.simengine_src_filename = custom_binary_path.name
             elif custom_binary_path.is_dir():
                 self.calculation_src_directory = custom_binary_path
-                if sys.platform == "linux" or sys.platform == "linux2":
-                    self.simengine_src_filename = "simengine2"
-                elif sys.platform == "win32":
-                    self.simengine_src_filename = "simengine2.exe"
-                else:
-                    raise Exception("unknown operating system detected: " + sys.platform)
+                _, self.simengine_src_filename = _lpg_binary_details_for_platform(
+                    self.working_directory
+                )
             else:
                 raise FileNotFoundError(
                     f"Specified LPG binary path does not exist: {custom_binary_path}"
                 )
         else:
             # get LPG binary directory and executable name depending on platform
-            if sys.platform == "linux" or sys.platform == "linux2":
-                self.calculation_src_directory = Path(
-                    self.working_directory, "LPG_linux"
-                )
-                self.simengine_src_filename = "simengine2"
-            elif sys.platform == "win32":
-                self.calculation_src_directory = Path(self.working_directory, "LPG_win")
-                self.simengine_src_filename = "simengine2.exe"
-            else:
-                raise Exception("unknown operating system detected: " + sys.platform)
+            (
+                self.calculation_src_directory,
+                self.simengine_src_filename,
+            ) = _lpg_binary_details_for_platform(self.working_directory)
 
             # check if the executable exists
             if not self.are_lpg_binaries_available():
