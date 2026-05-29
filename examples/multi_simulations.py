@@ -101,3 +101,84 @@ LPG_BINARY_PATH = None
 # ---- END OF CONFIG ----
 
 
+def run_all():
+    meta_rows = []
+    total = 0
+    for tmpl in HOUSEHOLD_TEMPLATES:
+        tmpl_name = tmpl or "template"
+        for weather in WEATHER_SETS:
+            weather_name = weather.Name or "weather"
+            for (simulate_transportation, chargingset, transportation_device_set, travel_route_set, ttag) in TRANSPORT_VARIANTS:
+                combo_tag = f"{safe_name(tmpl_name)}__{safe_name(weather_name)}__{ttag}"
+                # run multiple seeds for the same parameters to inspect stochastic variability
+                for run_idx in range(RUNS_PER_COMBO):
+                    # use an explicit integer seed so results are reproducible
+                    seed = int(time.time() * 1000) % 2**31
+                    # to get different seeds for the same combo, offset by run_idx
+                    seed = seed + run_idx
+                    try:
+                        print(f"Running: {combo_tag} seed={seed} (run {run_idx+1}/{RUNS_PER_COMBO})")
+                        # construct a HouseholdData using a template reference
+                        household = lpgdata.HouseholdData(
+                            None,
+                            lpgdata.HouseholdTemplateSpecification(
+                                HouseholdTemplateName=tmpl,
+                            ),
+                            None,
+                            "hhid",
+                            "hhname",
+                            chargingset,
+                            transportation_device_set,
+                            travel_route_set,
+                            None,
+                            HouseholdDataSpecification=lpgdata.HouseholdDataSpecificationType.ByTemplateName,
+                        )
+
+                        df = lpg_execution.execute_lpg_with_householddata_custom(
+                            YEAR,
+                            household,
+                            HOUSETYPE,
+                            geographic_location=weather,
+                            enable_flexibility=False,
+                            enable_transportation=simulate_transportation,
+                            random_seed=seed,
+                            energy_intensity=EnergyIntensityType.Random,
+                            lpg_binary_path=LPG_BINARY_PATH,
+                        )
+
+                        if df is None:
+                            print("No results returned for this run")
+                            continue
+
+                        # try to extract electricity profile if available
+                        filename_base = f"{combo_tag}__seed{seed}__run{run_idx+1}"
+                        out_csv = OUTPUT_DIR / (safe_name(filename_base) + ".csv")
+                        if "Electricity_HH1" in df:
+                            df["Electricity_HH1"].to_csv(out_csv)
+                        else:
+                            # save full dataframe
+                            df.to_csv(out_csv)
+
+                        meta_rows.append(
+                            {
+                                "template": tmpl_name,
+                                "weather": weather_name,
+                                "transport_tag": ttag,
+                                "seed": seed,
+                                "run_index": run_idx + 1,
+                                "out_file": str(out_csv),
+                            }
+                        )
+                        total += 1
+                    except Exception:
+                        print("Run failed:")
+                        traceback.print_exc()
+
+    # write metadata summary
+    meta_df = pd.DataFrame(meta_rows)
+    meta_df.to_csv(OUTPUT_DIR / "runs_metadata.csv", index=False)
+    print(f"Finished {total} successful runs. Metadata in {OUTPUT_DIR / 'runs_metadata.csv'}")
+
+
+if __name__ == "__main__":
+    run_all()
