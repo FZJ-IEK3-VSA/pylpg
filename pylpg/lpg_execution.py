@@ -28,8 +28,9 @@ def execute_lpg_tsib(
     enddate: str = None,
     transportation: bool = False,
     energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
+    lpg_binary_path: Optional[Union[Path, str]] = None,
 ) -> pd.DataFrame:
-    lpe: LPGExecutor = LPGExecutor(1, False)
+    lpe: LPGExecutor = LPGExecutor(1, False, lpg_binary_path)
     if number_of_households < 1:
         print("too few households")
         raise Exception("Need at least one household")
@@ -128,8 +129,9 @@ def execute_lpg_single_household(
     energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
     resolution: str = "00:01:00",
     calc_options: List[CalcOption] = None,
+    lpg_binary_path: Optional[Union[Path, str]] = None,
 ) -> pd.DataFrame:
-    lpe: LPGExecutor = LPGExecutor(1, False)
+    lpe: LPGExecutor = LPGExecutor(1, False, lpg_binary_path)
 
     # basic request
     request = lpe.make_default_lpg_settings(year)
@@ -188,6 +190,7 @@ def execute_lpg_with_householdata(
     clear_previous_calc: bool = False,
     random_seed: int = None,
     energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
+    lpg_binary_path: Optional[Union[Path, str]] = None,
 ):
     try:
         print(
@@ -196,7 +199,9 @@ def execute_lpg_with_householdata(
             + " for "
             + (householddata.Name or "nameless household")
         )
-        lpe: LPGExecutor = LPGExecutor(calculation_index, clear_previous_calc)
+        lpe: LPGExecutor = LPGExecutor(
+            calculation_index, clear_previous_calc, lpg_binary_path
+        )
 
         # basic request
         request = lpe.make_default_lpg_settings(year)
@@ -239,6 +244,74 @@ def execute_lpg_with_householdata(
         raise
 
 
+def execute_lpg_with_householddata_custom(
+    year: int,
+    householddata: HouseholdData,
+    housetype: str,
+    startdate: str = None,
+    enddate: str = None,
+    enable_flexibility: bool = False,
+    enable_transportation: bool = False,
+    target_heating_demand: Optional[float] = None,
+    target_cooling_demand: Optional[float] = None,
+    calculation_index: int = 1,
+    clear_previous_calc: bool = False,
+    random_seed: int = None,
+    energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
+    lpg_binary_path: Optional[Union[Path, str]] = None,
+):
+    try:
+        print(
+            "Starting calc with "
+            + str(calculation_index)
+            + " for "
+            + (householddata.Name or "nameless household")
+        )
+        lpe: LPGExecutor = LPGExecutor(
+            calculation_index, clear_previous_calc, lpg_binary_path
+        )
+
+        request = lpe.make_default_lpg_settings(year)
+        assert request.House is not None, "Housedata was None"
+        request.House.HouseTypeCode = housetype
+        if random_seed is not None and request.CalcSpec is not None:
+            request.CalcSpec.RandomSeed = random_seed
+        if target_heating_demand is not None:
+            request.House.TargetHeatDemand = target_heating_demand
+        if target_cooling_demand is not None:
+            request.House.TargetCoolingDemand = target_cooling_demand
+        request.House.Households.append(householddata)
+        if request.CalcSpec is None:
+            raise Exception("Failed to initialize the calculation spec")
+        if startdate is not None:
+            request.CalcSpec.set_StartDate(startdate)
+        if enddate is not None:
+            request.CalcSpec.set_EndDate(enddate)
+        request.CalcSpec.EnergyIntensityType = energy_intensity
+        request.CalcSpec.set_EnableFlexibility(enable_flexibility)
+        request.CalcSpec.set_EnableTransportation(enable_transportation)
+        calcspecfilename = Path(lpe.calculation_directory, "calcspec.json")
+        if enable_transportation:
+            request.CalcSpec.CalcOptions.append(CalcOption.TansportationDeviceJsons)
+        with open(calcspecfilename, "w") as calcspecfile:
+            jsonrequest = request.to_json(indent=4)  # type: ignore
+            calcspecfile.write(jsonrequest)
+        lpe.execute_lpg_binaries()
+
+        df = lpe.read_all_json_results_in_directory()
+
+        return df
+    except OSError as why:
+        print("Exception: " + str(why))
+        traceback.print_stack()
+        raise
+    except:  # catch *all* exceptions
+        e = sys.exc_info()[0]
+        print("Exception: " + str(e))
+        traceback.print_stack()
+        raise
+
+
 def execute_lpg_with_many_householdata(
     year: int,
     householddata: List[HouseholdData],
@@ -252,6 +325,7 @@ def execute_lpg_with_many_householdata(
     clear_previous_calc: bool = False,
     random_seed: int = None,
     energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
+    lpg_binary_path: Optional[Union[Path, str]] = None,
 ):
     try:
         print(
@@ -261,7 +335,9 @@ def execute_lpg_with_many_householdata(
             + str(len(householddata))
             + " households"
         )
-        lpe: LPGExecutor = LPGExecutor(calculation_index, clear_previous_calc)
+        lpe: LPGExecutor = LPGExecutor(
+            calculation_index, clear_previous_calc, lpg_binary_path
+        )
 
         # basic request
         request = lpe.make_default_lpg_settings(year)
@@ -314,6 +390,7 @@ def execute_lpg_with_householdata_with_csv_save(
     target_heating_demand: Optional[float] = None,
     target_cooling_demand: Optional[float] = None,
     calculation_index: int = 1,
+    lpg_binary_path: Optional[Union[Path, str]] = None,
 ):
     try:
         df = execute_lpg_with_householdata(
@@ -327,6 +404,9 @@ def execute_lpg_with_householdata_with_csv_save(
             target_cooling_demand,
             calculation_index,
             True,
+            None,
+            EnergyIntensityType.Random,
+            lpg_binary_path,
         )
         df_electricity = df["Electricity_HH1"]
         df_electricity.to_csv("R" + str(calculation_index) + ".csv")
@@ -356,8 +436,9 @@ def execute_grid_calc(
     chargingset: JsonReference = None,
     transportation_device_set: JsonReference = None,
     travel_route_set: JsonReference = None,
+    lpg_binary_path: Optional[Union[Path, str]] = None,
 ) -> pd.DataFrame:
-    lpe: LPGExecutor = LPGExecutor(1, True)
+    lpe: LPGExecutor = LPGExecutor(1, True, lpg_binary_path)
 
     # basic request
     request = lpe.make_default_lpg_settings(year)
@@ -455,24 +536,49 @@ class LPGExecutor:
         """checks if the LPG executable is available"""
         return os.path.isfile(self.lpg_simengine_filepath())
 
-    def __init__(self, calcidx: int, clear_previous_calc: bool):
+    def __init__(
+        self,
+        calcidx: int,
+        clear_previous_calc: bool,
+        lpg_binary_path: Optional[Union[Path, str]] = None,
+    ):
         self.working_directory = pathlib.Path(__file__).parent.absolute()
-        # get LPG binary directory and executable name depending on platform
-        if sys.platform == "linux" or sys.platform == "linux2":
-            self.calculation_src_directory = Path(self.working_directory, "LPG_linux")
-            self.simengine_src_filename = "simengine2"
-        elif sys.platform == "win32":
-            self.calculation_src_directory = Path(self.working_directory, "LPG_win")
-            self.simengine_src_filename = "simengine2.exe"
+        if lpg_binary_path is not None:
+            custom_binary_path = Path(lpg_binary_path)
+            if custom_binary_path.is_file():
+                self.calculation_src_directory = custom_binary_path.parent
+                self.simengine_src_filename = custom_binary_path.name
+            elif custom_binary_path.is_dir():
+                self.calculation_src_directory = custom_binary_path
+                if sys.platform == "linux" or sys.platform == "linux2":
+                    self.simengine_src_filename = "simengine2"
+                elif sys.platform == "win32":
+                    self.simengine_src_filename = "simengine2.exe"
+                else:
+                    raise Exception("unknown operating system detected: " + sys.platform)
+            else:
+                raise FileNotFoundError(
+                    f"Specified LPG binary path does not exist: {custom_binary_path}"
+                )
         else:
-            raise Exception("unknown operating system detected: " + sys.platform)
+            # get LPG binary directory and executable name depending on platform
+            if sys.platform == "linux" or sys.platform == "linux2":
+                self.calculation_src_directory = Path(
+                    self.working_directory, "LPG_linux"
+                )
+                self.simengine_src_filename = "simengine2"
+            elif sys.platform == "win32":
+                self.calculation_src_directory = Path(self.working_directory, "LPG_win")
+                self.simengine_src_filename = "simengine2.exe"
+            else:
+                raise Exception("unknown operating system detected: " + sys.platform)
 
-        # check if the executable exists
-        if not self.are_lpg_binaries_available():
-            # download the binaries for this system
-            LPGExecutor.retrieve_lpg_binaries(self.working_directory)
+            # check if the executable exists
             if not self.are_lpg_binaries_available():
-                raise Exception("Could not install the LPG binaries.")
+                # download the binaries for this system
+                LPGExecutor.retrieve_lpg_binaries(self.working_directory)
+                if not self.are_lpg_binaries_available():
+                    raise Exception("Could not install the LPG binaries.")
 
         self.calculation_directory = Path(self.working_directory, "C" + str(calcidx))
         print("Working in directory: " + str(self.calculation_directory))

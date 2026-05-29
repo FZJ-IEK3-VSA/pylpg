@@ -20,10 +20,13 @@ household = lpgdata.HouseholdData(
     HouseholdDataSpecification=lpgdata.HouseholdDataSpecificationType.ByTemplateName,
 )
 
-data = lpg_execution.execute_lpg_with_householdata(                         #eigene Funktion mit custom Flags etc. erstellen
+data = lpg_execution.execute_lpg_with_householddata_custom(
     2022,
     household,
     lpgdata.HouseTypes.HT20_Single_Family_House_no_heating_cooling,
+    enable_flexibility=True,
+    enable_transportation=True,
+    # Example: lpg_binary_path=r"C:\Tools\LPG\simengine2.exe"
 )
 
 # Extract the generated electricity load profile
