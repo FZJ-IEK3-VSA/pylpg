@@ -34,7 +34,7 @@ When you pass `lpg_binary_path`, pyLPG does not try to download the packaged LPG
 
 You can pass either:
 
-- a direct path to the executable file, for example `C:\Tools\LPG\simengine2.exe`
+- a direct path to the executable file, for example `C:\Tools\LPG\SimulationEngine.exe`
 - a directory that contains the executable, for example `C:\Tools\LPG`
 
 If you pass a file path, pyLPG uses that file directly. If you pass a folder, pyLPG looks for the platform-default executable name inside that folder (`simengine2.exe` on Windows, `simengine2` on Linux).

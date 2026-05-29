@@ -26,7 +26,7 @@ data = lpg_execution.execute_lpg_with_householddata_custom(
     lpgdata.HouseTypes.HT20_Single_Family_House_no_heating_cooling,
     enable_flexibility=True,
     enable_transportation=True,
-    # Example: lpg_binary_path=r"C:\Tools\LPG\simengine2.exe"
+    # Example: lpg_binary_path=r"C:\Tools\LPG\SimulationEngine.exe"
 )
 
 # Extract the generated electricity load profile

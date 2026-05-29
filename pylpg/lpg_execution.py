@@ -544,6 +544,7 @@ class LPGExecutor:
     ):
         self.working_directory = pathlib.Path(__file__).parent.absolute()
         if lpg_binary_path is not None:
+            # if a custom binary path is provided, use it instead of the default one
             custom_binary_path = Path(lpg_binary_path)
             if custom_binary_path.is_file():
                 self.calculation_src_directory = custom_binary_path.parent
