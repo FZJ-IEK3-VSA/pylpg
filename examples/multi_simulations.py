@@ -3,24 +3,27 @@ Multi-run LPG example template
 
 What this script does
 - Runs multiple LPG simulations for each household template selected by
-  `HOUSEHOLD_TEMPLATE_KEYS`.
-- For each template it iterates over `WEATHER_SET_KEYS` and
-  `TRANSPORT_VARIANT_KEYS`.
-- For each (template, weather, transport) combination it runs
+    `HOUSEHOLD_TEMPLATE_KEYS`.
+- For each template it iterates over `CLIMATE_SET_KEYS` and
+    `TRANSPORT_VARIANT_KEYS`.
+- For each (template, climate, transport) combination it runs
   `RUNS_PER_COMBO` independent simulations with different random seeds to
   inspect stochastic variability.
 
 Generic collector idea
 - `collect_lpg_members(...)` can collect all predefined members of a given
-  type from any LPG static class via introspection (inspect).
-- This is used for templates, weather locations and transport sets, so lists
-  do not need to be manually copied from `lpgdata`.
+    type from any LPG static class via introspection (inspect).
+- This is used for templates, geographic locations, temperature profiles and
+    transport sets, so lists do not need to be manually copied from `lpgdata`.
 
 Configuration
 - `HOUSEHOLD_TEMPLATE_KEYS`: template names from `lpgdata.HouseholdTemplates`.
   Set to `None` to run all available templates.
-- `WEATHER_SET_KEYS`: location names from `lpgdata.GeographicLocations`.
-  Set to `None` to use all available locations.
+- `CLIMATE_SET_KEYS`: tuples of
+    `(geographic_location_key, temperature_profile_key, tag)`.
+    This keeps LPG's geographic location and weather profile separate, while
+    still letting you define meaningful paired presets. Set to `None` to run
+    all possible geographic-location/temperature-profile combinations.
 - `TRANSPORT_VARIANT_KEYS`: tuples of
   `(simulate_transportation, charging_set_key, transport_device_set_key, travel_route_set_key, tag)`.
   Keys are resolved against the corresponding `lpgdata.*Sets` classes.
@@ -98,6 +101,36 @@ def resolve_optional_key(
     return available[key]
 
 
+def make_climate_variants(
+    all_geographic_locations: Dict[str, JsonReference],
+    all_temperature_profiles: Dict[str, JsonReference],
+    climate_keys: Optional[list[tuple[str, Optional[str], str]]],
+) -> list[tuple[JsonReference, Optional[JsonReference], str]]:
+    if climate_keys is None:
+        return [
+            (
+                location,
+                temperature_profile,
+                f"{location_key}__{temperature_key}",
+            )
+            for location_key, location in all_geographic_locations.items()
+            for temperature_key, temperature_profile in all_temperature_profiles.items()
+        ]
+
+    variants = []
+    for location_key, temperature_key, tag in climate_keys:
+        location = resolve_optional_key(
+            all_geographic_locations, location_key, "geographic location"
+        )
+        if location is None:
+            raise KeyError("Climate variants require a geographic location key")
+        temperature_profile = resolve_optional_key(
+            all_temperature_profiles, temperature_key, "temperature profile"
+        )
+        variants.append((location, temperature_profile, tag))
+    return variants
+
+
 # ---- CONFIG ----
 YEAR = 2022
 
@@ -107,11 +140,26 @@ HOUSEHOLD_TEMPLATE_KEYS = [
     "CHR03_Family_1_child_both_at_work",
 ]
 
-# Set to None to use all locations in lpgdata.GeographicLocations.
-WEATHER_SET_KEYS = [
-    "Germany_Berlin",
-    "Finland_Helsinki",
+# Climate presets keep geographic location and temperature profile separate.
+# (geographic_location_key, temperature_profile_key, tag)
+CLIMATE_SET_KEYS = [
+    (
+        "Germany_Berlin",
+        "Berlin_Germany_1996_from_Deutscher_Wetterdienst_DWD_www_dwd_de",
+        "berlin_loc_berlin_temp",
+    ),
+    (
+        "Germany_Hamburg",
+        "Hamburg_Germany_2007_from_Deutscher_Wetterdienst_DWD_www_dwd_de",
+        "hamburg_loc_hamburg_temp",
+    ),
+    (
+        "Germany_Juelich",
+        "Juelich_Germany_Test_Reference_Year_normal_year_2015_from_Deutscher_Wetterdienst_DWD_www_dwd_de",
+        "juelich_loc_juelich_temp",
+    ),
 ]
+# Set to None to generate all location/temperature-profile combinations.
 
 # (simulate_transportation, charging_set_key, transport_device_set_key, travel_route_set_key, tag)
 TRANSPORT_VARIANT_KEYS = [
@@ -149,6 +197,9 @@ def run_all() -> None:
     all_geographic_locations = collect_lpg_members(
         lpgdata.GeographicLocations, JsonReference
     )
+    all_temperature_profiles = collect_lpg_members(
+        lpgdata.TemperatureProfiles, JsonReference
+    )
     all_charging_sets = collect_lpg_members(lpgdata.ChargingStationSets, JsonReference)
     all_transport_device_sets = collect_lpg_members(
         lpgdata.TransportationDeviceSets, JsonReference
@@ -158,8 +209,10 @@ def run_all() -> None:
     household_templates = select_by_keys(
         all_templates, HOUSEHOLD_TEMPLATE_KEYS, "household template"
     )
-    weather_sets = select_by_keys(
-        all_geographic_locations, WEATHER_SET_KEYS, "weather/location"
+    climate_sets = make_climate_variants(
+        all_geographic_locations,
+        all_temperature_profiles,
+        CLIMATE_SET_KEYS,
     )
 
     transport_variants = [
@@ -186,8 +239,8 @@ def run_all() -> None:
 
     for tmpl in household_templates:
         tmpl_name = tmpl or "template"
-        for weather in weather_sets:
-            weather_name = weather.Name or "weather"
+        for geographic_location, temperature_profile, climate_tag in climate_sets:
+            climate_name = climate_tag
             for (
                 simulate_transportation,
                 chargingset,
@@ -195,7 +248,7 @@ def run_all() -> None:
                 travel_route_set,
                 ttag,
             ) in transport_variants:
-                combo_tag = f"{safe_name(tmpl_name)}__{safe_name(weather_name)}__{ttag}"
+                combo_tag = f"{safe_name(tmpl_name)}__{safe_name(climate_name)}__{ttag}"
 
                 # Multiple seeds for identical non-seed parameters.
                 for run_idx in range(RUNS_PER_COMBO):
@@ -234,7 +287,8 @@ def run_all() -> None:
                             YEAR,
                             household,
                             HOUSETYPE,
-                            geographic_location=weather,
+                            geographic_location=geographic_location,
+                            temperature_profile=temperature_profile,
                             enable_flexibility=False,
                             enable_transportation=simulate_transportation,
                             random_seed=seed,
@@ -257,7 +311,13 @@ def run_all() -> None:
                         meta_rows.append(
                             {
                                 "template": tmpl_name,
-                                "weather": weather_name,
+                                "climate": climate_name,
+                                "geographic_location": geographic_location.Name,
+                                "temperature_profile": (
+                                    temperature_profile.Name
+                                    if temperature_profile is not None
+                                    else None
+                                ),
                                 "transport_tag": ttag,
                                 "seed": seed,
                                 "run_index": run_idx + 1,

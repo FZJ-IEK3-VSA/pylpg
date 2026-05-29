@@ -258,6 +258,8 @@ def execute_lpg_with_householddata_custom(
     housetype: str,
     startdate: str = None,
     enddate: str = None,
+    geographic_location: JsonReference = None,
+    temperature_profile: JsonReference = None,
     enable_flexibility: bool = False,
     enable_transportation: bool = False,
     target_heating_demand: Optional[float] = None,
@@ -295,6 +297,8 @@ def execute_lpg_with_householddata_custom(
             request.CalcSpec.set_StartDate(startdate)
         if enddate is not None:
             request.CalcSpec.set_EndDate(enddate)
+        request.CalcSpec.GeographicLocation = geographic_location
+        request.CalcSpec.TemperatureProfile = temperature_profile
         request.CalcSpec.EnergyIntensityType = energy_intensity
         request.CalcSpec.set_EnableFlexibility(enable_flexibility)
         request.CalcSpec.set_EnableTransportation(enable_transportation)
