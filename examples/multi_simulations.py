@@ -41,6 +41,7 @@ Run
 from pathlib import Path
 import time
 import traceback
+import inspect
 import pandas as pd
 
 from pylpg import lpg_execution, lpgdata
@@ -101,7 +102,20 @@ LPG_BINARY_PATH = None
 # ---- END OF CONFIG ----
 
 
+def _print_lpg_binary_source() -> None:
+    if LPG_BINARY_PATH is None:
+        print("LPG binary source: official release downloaded automatically.")
+    else:
+        print(f"LPG binary source: custom binary path {LPG_BINARY_PATH}")
+
+
+def _supports_lpg_binary_path(function) -> bool:
+    signature = inspect.signature(function)
+    return "lpg_binary_path" in signature.parameters
+
+
 def run_all():
+    _print_lpg_binary_source()
     meta_rows = []
     total = 0
     for tmpl in HOUSEHOLD_TEMPLATES:
@@ -134,6 +148,12 @@ def run_all():
                             HouseholdDataSpecification=lpgdata.HouseholdDataSpecificationType.ByTemplateName,
                         )
 
+                        execute_kwargs = {}
+                        if _supports_lpg_binary_path(
+                            lpg_execution.execute_lpg_with_householddata_custom
+                        ):
+                            execute_kwargs["lpg_binary_path"] = LPG_BINARY_PATH
+
                         df = lpg_execution.execute_lpg_with_householddata_custom(
                             YEAR,
                             household,
@@ -143,7 +163,7 @@ def run_all():
                             enable_transportation=simulate_transportation,
                             random_seed=seed,
                             energy_intensity=EnergyIntensityType.Random,
-                            lpg_binary_path=LPG_BINARY_PATH,
+                            **execute_kwargs,
                         )
 
                         if df is None:

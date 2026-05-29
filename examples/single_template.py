@@ -4,6 +4,8 @@ Minimalistic example for using the pylpg package with a household template
 from pylpg import lpg_execution, lpgdata
 import utils
 
+LPG_BINARY_PATH = None
+
 # Simulate the CHR01 household template for the year 2022
 household = lpgdata.HouseholdData(
     None,
@@ -20,13 +22,20 @@ household = lpgdata.HouseholdData(
     HouseholdDataSpecification=lpgdata.HouseholdDataSpecificationType.ByTemplateName,
 )
 
+utils.print_lpg_binary_source(LPG_BINARY_PATH)
+
+execute_kwargs = {
+    "enable_flexibility": True,
+    "enable_transportation": True,
+}
+if utils.supports_lpg_binary_path(lpg_execution.execute_lpg_with_householddata_custom):
+    execute_kwargs["lpg_binary_path"] = LPG_BINARY_PATH
+
 data = lpg_execution.execute_lpg_with_householddata_custom(
     2022,
     household,
     lpgdata.HouseTypes.HT20_Single_Family_House_no_heating_cooling,
-    enable_flexibility=True,
-    enable_transportation=True,
-    # Example: lpg_binary_path=r"C:\Tools\LPG\SimulationEngine.exe"
+    **execute_kwargs,
 )
 
 # Extract the generated electricity load profile

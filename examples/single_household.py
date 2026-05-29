@@ -4,11 +4,19 @@ Minimalistic example for using the pylpg package
 from pylpg import lpg_execution, lpgdata
 import utils
 
+LPG_BINARY_PATH = None
+
 # Simulate the predefined household CHR01 (couple, both employed) for the year 2022
+utils.print_lpg_binary_source(LPG_BINARY_PATH)
+execute_kwargs = {}
+if utils.supports_lpg_binary_path(lpg_execution.execute_lpg_single_household):
+    execute_kwargs["lpg_binary_path"] = LPG_BINARY_PATH
+
 data = lpg_execution.execute_lpg_single_household(
     2022,
     lpgdata.Households.CHR01_Couple_both_at_Work,
     lpgdata.HouseTypes.HT20_Single_Family_House_no_heating_cooling,
+    **execute_kwargs,
 )
 
 # Extract the generated electricity load profile
