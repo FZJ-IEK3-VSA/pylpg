@@ -220,9 +220,24 @@ TRANSPORT_VARIANT_KEYS = [
     ),
 ]
 
-RUNS_PER_COMBO = 8
 HOUSETYPE = lpgdata.HouseTypes.HT20_Single_Family_House_no_heating_cooling
 LPG_BINARY_PATH = None
+
+# Define runs per combination. You can specify:
+# - A dict mapping combo_tag patterns to run counts
+# - Or use a function to determine runs based on parameters
+RUNS_PER_COMBO_MAP = {
+    "no_transport": 1,           # Baseline: 1 run only
+    "home_charge_bus_cars_30km": 3,  # Transport variants: 3 runs
+}
+
+def get_runs_for_combo(combo_tag: str) -> int:
+    """Determine number of seeds for this parameter combination."""
+    for pattern, runs in RUNS_PER_COMBO_MAP.items():
+        if pattern in combo_tag:
+            return runs
+    return 2  # Default fallback: 2 runs for unmapped combinations
+
 # ---- END CONFIG ----
 
 
@@ -282,15 +297,18 @@ def run_all() -> None:
                     f"{transport_variant.tag}"
                 )
 
+                # Determine number of seeds for this combination
+                num_runs = get_runs_for_combo(combo_tag)
+                
                 # Multiple seeds for identical non-seed parameters.
-                for run_idx in range(RUNS_PER_COMBO):
+                for run_idx in range(num_runs):
                     seed = int(time.time() * 1000) % 2**31
                     seed += run_idx
 
                     try:
                         print(
                             f"Running: {combo_tag} seed={seed} "
-                            f"(run {run_idx + 1}/{RUNS_PER_COMBO})"
+                            f"(run {run_idx + 1}/{num_runs})"
                         )
 
                         household = lpgdata.HouseholdData(
