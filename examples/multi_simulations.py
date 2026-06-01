@@ -39,7 +39,9 @@ Run
 
 from pathlib import Path
 from dataclasses import dataclass
+import glob
 import inspect
+import os
 import time
 import traceback
 from typing import Any, Dict, Iterable, Optional
@@ -53,6 +55,32 @@ from pylpg.lpgpythonbindings import EnergyIntensityType, JsonReference
 OUTPUT_DIR = Path("multi_runs_output")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
+
+def prompt_clean_output_dir() -> None:
+    """Ask user if they want to delete existing output files."""
+    csv_files = glob.glob(str(OUTPUT_DIR / "*.csv"))
+    
+    if not csv_files:
+        print(f"Output directory '{OUTPUT_DIR}' is empty. Ready to start.")
+        return
+    
+    print(f"\nFound {len(csv_files)} existing CSV files in '{OUTPUT_DIR}':")
+    for f in sorted(csv_files)[:5]:
+        print(f"  - {Path(f).name}")
+    if len(csv_files) > 5:
+        print(f"  ... and {len(csv_files) - 5} more")
+    
+    response = input("\nDelete all existing output files? (yes/no): ").strip().lower()
+    
+    if response in ("yes", "y"):
+        for f in csv_files:
+            os.remove(f)
+        print(f"Deleted {len(csv_files)} files.\n")
+    elif response in ("no", "n"):
+        print("Keeping existing files. New results will be added.\n")
+    else:
+        print("Invalid response. Please enter 'yes/y' or 'no/n'.")
+        prompt_clean_output_dir()
 
 def safe_name(s: str) -> str:
     return (
@@ -254,6 +282,7 @@ def _supports_lpg_binary_path(function: Any) -> bool:
 
 def run_all() -> None:
     _print_lpg_binary_source()
+    prompt_clean_output_dir()
 
     all_templates = collect_lpg_members(lpgdata.HouseholdTemplates, str)
     all_geographic_locations = collect_lpg_members(
