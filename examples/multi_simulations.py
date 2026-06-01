@@ -201,9 +201,9 @@ CLIMATE_SET_KEYS = [
         "hamburg_loc_hamburg_temp",
     ),
     (
-        "Germany_Juelich",
-        "Juelich_Germany_Test_Reference_Year_normal_year_2015_from_Deutscher_Wetterdienst_DWD_www_dwd_de",
-        "juelich_loc_juelich_temp",
+        "Germany_Chemnitz",
+        "Dresden_Germany_2000_from_Deutscher_Wetterdienst_DWD_www_dwd_de",
+        "chemnitz_loc_dresden_temp",
     ),
 ]
 # Set to None to generate all location/temperature-profile combinations.
@@ -351,12 +351,22 @@ def run_all() -> None:
                             continue
 
                         filename_base = f"{combo_tag}__seed{seed}__run{run_idx + 1}"
-                        out_csv = OUTPUT_DIR / (safe_name(filename_base) + ".csv")
-
-                        if "Electricity_HH1" in df:
-                            df["Electricity_HH1"].to_csv(out_csv)
-                        else:
-                            df.to_csv(out_csv)
+                        
+                        # Save each data type to separate CSV files
+                        data_types = {}
+                        for col in df.columns:
+                            # Extract data type from column name (e.g., "Electricity_HH1" -> "Electricity")
+                            data_type = col.rsplit("_", 1)[0]
+                            if data_type not in data_types:
+                                data_types[data_type] = pd.DataFrame(index=df.index)
+                            data_types[data_type][col] = df[col]
+                        
+                        # Save each data type to its own CSV file
+                        for data_type, type_df in data_types.items():
+                            out_csv = OUTPUT_DIR / (safe_name(f"{filename_base}__{data_type}") + ".csv")
+                            type_df.to_csv(out_csv)
+                        
+                        print(f"  Saved {len(data_types)} data types: {', '.join(sorted(data_types.keys()))}")
 
                         meta_rows.append(
                             {
