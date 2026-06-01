@@ -70,7 +70,7 @@ def prompt_clean_output_dir() -> None:
     if len(csv_files) > 5:
         print(f"  ... and {len(csv_files) - 5} more")
     
-    response = input("\nDelete all existing output files? (yes/no): ").strip().lower()
+    response = input("\nDelete all existing multirun output files for this run? (yes/no): ").strip().lower()
     
     if response in ("yes", "y"):
         for f in csv_files:
