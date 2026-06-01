@@ -30,5 +30,6 @@ build/
 dist/
 pyLPG_env/
 
-# generated result files
+# generated result files and output directories
 *.csv
+multi_runs_output/
