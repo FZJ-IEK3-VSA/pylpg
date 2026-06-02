@@ -70,26 +70,24 @@ def prompt_clean_output_dir() -> None:
     if len(csv_files) > 5:
         print(f"  ... and {len(csv_files) - 5} more")
     
-    response = input("\nDelete all existing multirun output files for this run? (yes/no): ").strip().lower()
-    
-    if response in ("yes", "y"):
-        for f in csv_files:
-            os.remove(f)
-        print(f"Deleted {len(csv_files)} files.\n")
-    elif response in ("no", "n"):
-        print("Keeping existing files. New results will be added.\n")
-    else:
-        print("Invalid response. Please enter 'yes/y' or 'no/n'.")
-        prompt_clean_output_dir()
+    while True:
+        response = input("\nDelete all existing multirun output files for this run? (yes/no): ").strip().lower()
+        
+        if response in ("yes", "y"):
+            for f in csv_files:
+                os.remove(f)
+            print(f"Deleted {len(csv_files)} files.\n")
+            break
+        elif response in ("no", "n"):
+            print("Keeping existing files. New results will be added.\n")
+            break
+        else:
+            print("Invalid response. Please enter 'yes/y' or 'no/n'.")
 
 def safe_name(s: str) -> str:
-    return (
-        s.replace(" ", "_")
-        .replace(",", "")
-        .replace("/", "_")
-        .replace("(", "")
-        .replace(")", "")
-    )
+    """Convert string to filesystem-safe name by replacing/removing special characters."""
+    translation = str.maketrans({" ": "_", "/": "_", ",": "", "(": "", ")": ""})
+    return s.translate(translation)
 
 
 def collect_lpg_members(container: Any, expected_type: type) -> Dict[str, Any]:
