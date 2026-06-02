@@ -90,6 +90,17 @@ def safe_name(s: str) -> str:
     return s.translate(translation)
 
 
+def split_dataframe_by_type(df: pd.DataFrame) -> Dict[str, pd.DataFrame]:
+    """Split DataFrame columns by data type prefix (e.g., 'Electricity_HH1' -> 'Electricity')."""
+    data_types = {}
+    for col in df.columns:
+        data_type = col.rsplit("_", 1)[0]
+        if data_type not in data_types:
+            data_types[data_type] = pd.DataFrame(index=df.index)
+        data_types[data_type][col] = df[col]
+    return data_types
+
+
 def collect_lpg_members(container: Any, expected_type: type) -> Dict[str, Any]:
     """Collect public class members of `container` that match `expected_type`."""
     return {
@@ -379,16 +390,9 @@ def run_all() -> None:
 
                         filename_base = f"{combo_tag}__seed{seed}__run{run_idx + 1}"
                         
-                        # Save each data type to separate CSV files
-                        data_types = {}
-                        for col in df.columns:
-                            # Extract data type from column name (e.g., "Electricity_HH1" -> "Electricity")
-                            data_type = col.rsplit("_", 1)[0]
-                            if data_type not in data_types:
-                                data_types[data_type] = pd.DataFrame(index=df.index)
-                            data_types[data_type][col] = df[col]
+                        # Split dataframe by data type and save to separate CSV files
+                        data_types = split_dataframe_by_type(df)
                         
-                        # Save each data type to its own CSV file
                         for data_type, type_df in data_types.items():
                             out_csv = OUTPUT_DIR / (safe_name(f"{filename_base}__{data_type}") + ".csv")
                             type_df.to_csv(out_csv)
