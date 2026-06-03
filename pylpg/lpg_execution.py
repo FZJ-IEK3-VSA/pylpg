@@ -306,7 +306,8 @@ def execute_lpg_with_householddata_custom(
         if enable_transportation:
             request.CalcSpec.CalcOptions.append(CalcOption.TansportationDeviceJsons)
         if enable_flexibility:
-            request.CalcSpec.CalcOptions.append(CalcOption.FlexibilityEvents)
+            request.CalcSpec.CalcOptions.append(CalcOption.JsonHouseholdSumFiles)
+            request.CalcSpec.CalcOptions.append(CalcOption.JsonHouseholdSumFilesNoFlex)
         # Always enable bodily activity output
         request.CalcSpec.CalcOptions.append(CalcOption.BodilyActivityStatistics)
         with open(calcspecfilename, "w") as calcspecfile:
@@ -698,6 +699,11 @@ class LPGExecutor:
 
         soc = glob.glob(str(results_directory) + "/Soc.*.json")
         potential_sum_files.extend(soc)
+
+        # Include NoFlex (non-flexibility) profiles when flexibility is enabled
+        noflex_files = glob.glob(str(results_directory) + "/*NoFlex*.json")
+        potential_sum_files.extend(noflex_files)
+
         isFirst = True
         for file in potential_sum_files:
             profile = self.parse_json_profile(file)
