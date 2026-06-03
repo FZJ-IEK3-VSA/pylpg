@@ -30,7 +30,10 @@ Configuration
 - `RUNS_PER_COMBO`: number of different seeds per parameter combination.
 
 Outputs
-- Per-run CSV files are written to `multi_runs_output`.
+- Per-run CSV files are written to `multi_runs_output` (if SAVE_CSV=True).
+- HDF5 files with hierarchical structure (if SAVE_HDF5=True):
+    One file per household template: <template_name>.h5
+    Structure within each file: /climate/transport/run_N/data_type
 - `runs_metadata.csv` summarizes all successful runs.
 
 Run
@@ -56,19 +59,31 @@ OUTPUT_DIR = Path("multi_runs_output")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 
+# Output format options
+SAVE_CSV = False  # Save individual CSV files per run
+SAVE_HDF5 = True  # Save runs to HDF5 files (one file per household template)
+
+
 def prompt_clean_output_dir() -> None:
     """Ask user if they want to delete existing output files."""
     csv_files = glob.glob(str(OUTPUT_DIR / "*.csv"))
+    hdf5_files = glob.glob(str(OUTPUT_DIR / "*.h5"))
     
-    if not csv_files:
+    if not csv_files and not hdf5_files:
         print(f"Output directory '{OUTPUT_DIR}' is empty. Ready to start.")
         return
     
-    print(f"\nFound {len(csv_files)} existing CSV files in '{OUTPUT_DIR}':")
-    for f in sorted(csv_files)[:5]:
-        print(f"  - {Path(f).name}")
-    if len(csv_files) > 5:
-        print(f"  ... and {len(csv_files) - 5} more")
+    print(f"\nFound existing output files in '{OUTPUT_DIR}':")
+    if csv_files:
+        print(f"  - {len(csv_files)} CSV files")
+        for f in sorted(csv_files)[:3]:
+            print(f"    - {Path(f).name}")
+        if len(csv_files) > 3:
+            print(f"    ... and {len(csv_files) - 3} more")
+    if hdf5_files:
+        print(f"  - {len(hdf5_files)} HDF5 files")
+        for f in sorted(hdf5_files):
+            print(f"    - {Path(f).name}")
     
     while True:
         response = input("\nDelete all existing multirun output files for this run? (yes/no): ").strip().lower()
@@ -76,7 +91,9 @@ def prompt_clean_output_dir() -> None:
         if response in ("yes", "y"):
             for f in csv_files:
                 os.remove(f)
-            print(f"Deleted {len(csv_files)} files.\n")
+            for f in hdf5_files:
+                os.remove(f)
+            print(f"Deleted {len(csv_files)} CSV files and {len(hdf5_files)} HDF5 files.\n")
             break
         elif response in ("no", "n"):
             print("Keeping existing files. New results will be added.\n")
@@ -390,14 +407,39 @@ def run_all() -> None:
 
                         filename_base = f"{combo_tag}__seed{seed}__run{run_idx + 1}"
                         
-                        # Split dataframe by data type and save to separate CSV files
+                        # Split dataframe by data type
                         data_types = split_dataframe_by_type(df)
                         
-                        for data_type, type_df in data_types.items():
-                            out_csv = OUTPUT_DIR / (safe_name(f"{filename_base}__{data_type}") + ".csv")
-                            type_df.to_csv(out_csv)
+                        # Save to CSV if enabled
+                        if SAVE_CSV:
+                            for data_type, type_df in data_types.items():
+                                out_csv = OUTPUT_DIR / (safe_name(f"{filename_base}__{data_type}") + ".csv")
+                                type_df.to_csv(out_csv)
+                            print(f"  Saved {len(data_types)} data types to CSV: {', '.join(sorted(data_types.keys()))}")
                         
-                        print(f"  Saved {len(data_types)} data types: {', '.join(sorted(data_types.keys()))}")
+                        # Save to HDF5 if enabled (one file per household template)
+                        if SAVE_HDF5:
+                            hdf5_filename = f"{safe_name(tmpl_name)}.h5"
+                            hdf5_path = OUTPUT_DIR / hdf5_filename
+                            # Create hierarchical path: /climate/transport/run_N/data_type
+                            with pd.HDFStore(hdf5_path, mode='a', complevel=9, complib='blosc') as store:
+                                base_path = f"{safe_name(climate_tag)}/{transport_variant.tag}/run_{run_idx + 1}"
+                                for data_type, type_df in data_types.items():
+                                    key = f"{base_path}/{safe_name(data_type)}"
+                                    store.put(key, type_df, format='fixed')
+                                # Store metadata as attributes
+                                metadata_key = f"{base_path}/_metadata"
+                                meta_df = pd.DataFrame([{
+                                    "seed": seed,
+                                    "template": tmpl_name,
+                                    "climate": climate_name,
+                                    "geographic_location": geographic_location.Name,
+                                    "temperature_profile": temperature_profile.Name if temperature_profile else None,
+                                    "transport_tag": transport_variant.tag,
+                                }])
+                                store.put(metadata_key, meta_df, format='fixed')
+                            if not SAVE_CSV:
+                                print(f"  Saved {len(data_types)} data types to HDF5: {', '.join(sorted(data_types.keys()))}")
 
                         meta_rows.append(
                             {
@@ -412,7 +454,8 @@ def run_all() -> None:
                                 "transport_tag": transport_variant.tag,
                                 "seed": seed,
                                 "run_index": run_idx + 1,
-                                "out_file": str(out_csv),
+                                "hdf5_file": f"{safe_name(tmpl_name)}.h5" if SAVE_HDF5 else None,
+                                "hdf5_path": f"{safe_name(climate_tag)}/{transport_variant.tag}/run_{run_idx + 1}" if SAVE_HDF5 else None,
                             }
                         )
                         total += 1
@@ -422,10 +465,26 @@ def run_all() -> None:
 
     meta_df = pd.DataFrame(meta_rows)
     meta_df.to_csv(OUTPUT_DIR / "runs_metadata.csv", index=False)
+    
+    output_summary = []
+    if SAVE_CSV:
+        output_summary.append("CSV files")
+    if SAVE_HDF5:
+        hdf5_files = meta_df['hdf5_file'].dropna().unique()
+        output_summary.append(f"{len(hdf5_files)} HDF5 file(s) (one per household template)")
+    
     print(
-        f"Finished {total} successful runs. "
-        f"Metadata in {OUTPUT_DIR / 'runs_metadata.csv'}"
+        f"\nFinished {total} successful runs.\n"
+        f"Output: {' and '.join(output_summary)}\n"
+        f"Metadata: {OUTPUT_DIR / 'runs_metadata.csv'}"
     )
+    
+    if SAVE_HDF5:
+        print(f"\nHDF5 files created:")
+        for hdf5_file in sorted(hdf5_files):
+            print(f"  - {hdf5_file}")
+        print(f"\nHDF5 structure per file: /climate/transport/run_N/data_type")
+        print(f"To read: pd.read_hdf('<template>.h5', key='/path/to/data')")
 
 
 if __name__ == "__main__":
