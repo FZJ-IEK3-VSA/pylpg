@@ -377,7 +377,7 @@ def run_all() -> None:
                             HOUSETYPE,
                             geographic_location=geographic_location,
                             temperature_profile=temperature_profile,
-                            enable_flexibility=False,
+                            enable_flexibility=True,
                             enable_transportation=transport_variant.simulate_transportation,
                             random_seed=seed,
                             energy_intensity=EnergyIntensityType.Random,

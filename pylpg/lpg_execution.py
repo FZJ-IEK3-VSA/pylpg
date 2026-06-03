@@ -305,6 +305,8 @@ def execute_lpg_with_householddata_custom(
         calcspecfilename = Path(lpe.calculation_directory, "calcspec.json")
         if enable_transportation:
             request.CalcSpec.CalcOptions.append(CalcOption.TansportationDeviceJsons)
+        if enable_flexibility:
+            request.CalcSpec.CalcOptions.append(CalcOption.FlexibilityEvents)
         # Always enable bodily activity output
         request.CalcSpec.CalcOptions.append(CalcOption.BodilyActivityStatistics)
         with open(calcspecfilename, "w") as calcspecfile:
