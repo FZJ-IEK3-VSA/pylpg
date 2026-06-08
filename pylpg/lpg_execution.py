@@ -252,7 +252,7 @@ def execute_lpg_with_householdata(
         raise
 
 
-def execute_lpg_with_householddata_custom(
+def execute_lpg_with_householddata_enabled_flex_and_transport_custom(
     year: int,
     householddata: HouseholdData,
     housetype: str,
@@ -308,6 +308,8 @@ def execute_lpg_with_householddata_custom(
         if enable_flexibility:
             request.CalcSpec.CalcOptions.append(CalcOption.JsonHouseholdSumFiles)
             request.CalcSpec.CalcOptions.append(CalcOption.JsonHouseholdSumFilesNoFlex)
+            request.CalcSpec.CalcOptions.append(CalcOption.FlexibilityEvents)
+
         # Always enable bodily activity output
         request.CalcSpec.CalcOptions.append(CalcOption.BodilyActivityStatistics)
         with open(calcspecfilename, "w") as calcspecfile:
