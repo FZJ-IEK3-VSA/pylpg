@@ -236,10 +236,10 @@ def make_transport_variants(
 YEAR = 2022
 
 # Set to None to use all templates in lpgdata.HouseholdTemplates.
-HOUSEHOLD_TEMPLATE_KEYS = [
-    "CHR01_Couple_both_at_Work",
-    "CHR03_Family_1_child_both_at_work",
-]
+HOUSEHOLD_TEMPLATE_KEYS = None #[
+    #"CHR01_Couple_both_at_Work",
+    #"CHR03_Family_1_child_both_at_work",
+#]
 
 # Climate presets keep geographic location and temperature profile separate.
 # (geographic_location_key, temperature_profile_key, tag)
@@ -484,7 +484,6 @@ def run_all() -> None:
         for hdf5_file in sorted(hdf5_files):
             print(f"  - {hdf5_file}")
         print(f"\nHDF5 structure per file: /climate/transport/run_N/data_type")
-        print(f"To read: pd.read_hdf('<template>.h5', key='/path/to/data')")
 
 
 if __name__ == "__main__":
