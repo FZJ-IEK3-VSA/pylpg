@@ -1,0 +1,756 @@
+"""
+Multi-run LPG example template
+
+What this script does
+- Runs multiple LPG simulations for each household template selected by
+    `HOUSEHOLD_TEMPLATE_KEYS`.
+- For each template it iterates over `CLIMATE_SET_KEYS` and
+    `TRANSPORT_VARIANT_KEYS`.
+- For each (template, climate, transport) combination it runs
+  `RUNS_PER_COMBO` independent simulations with different random seeds to
+  inspect stochastic variability.
+
+Generic collector idea
+- `collect_lpg_members(...)` can collect all predefined members of a given
+    type from any LPG static class via introspection (inspect).
+- This is used for templates, geographic locations, temperature profiles and
+    transport sets, so lists do not need to be manually copied from `lpgdata`.
+
+Configuration
+- `HOUSEHOLD_TEMPLATE_KEYS`: template names from `lpgdata.HouseholdTemplates`.
+  Set to `None` to run all available templates.
+- `CLIMATE_SET_KEYS`: tuples of
+    `(geographic_location_key, temperature_profile_key, tag)`.
+    This keeps LPG's geographic location and weather profile separate, while
+    still letting you define meaningful paired presets. Set to `None` to run
+    all possible geographic-location/temperature-profile combinations.
+- `TRANSPORT_VARIANT_KEYS`: `TransportVariantKey` entries with key names for
+    LPG transport sets. Keys are resolved against the corresponding
+    `lpgdata.*Sets` classes.
+- `RUNS_PER_COMBO`: number of different seeds per parameter combination.
+
+Outputs
+- Per-run CSV files are written to `multi_runs_output` (if SAVE_CSV=True).
+- HDF5 files with hierarchical structure (if SAVE_HDF5=True):
+    One file per household template: <template_name>.h5
+    Structure within each file: /climate/transport/run_N/data_type
+- `runs_metadata.csv` summarizes all successful runs.
+
+Run
+    python examples/multi_simulations.py
+"""
+
+from pathlib import Path
+from dataclasses import dataclass
+import glob
+import inspect
+import time
+import traceback
+from typing import Any, Iterable, Optional
+
+import pandas as pd
+
+from pylpg import lpg_execution, lpgdata
+from pylpg.lpgpythonbindings import EnergyIntensityType, JsonReference
+
+
+OUTPUT_DIR = Path("multi_runs_output")
+OUTPUT_DIR.mkdir(exist_ok=True)
+
+
+# Output format options
+SAVE_CSV = False  # Save individual CSV files per run
+SAVE_HDF5 = True  # Save runs to HDF5 files (one file per household template)
+
+
+def get_attr_key(cls: type, attr_value: Any) -> str:
+    """Get the attribute name from a class for a given attribute value.
+    
+    :param type cls: The class to search for the attribute.
+    :param Any attr_value: The attribute value to find the name for.
+    :return str: The attribute name.
+    :raises ValueError: If the attribute is not found in the class.
+    """
+    for name, value in inspect.getmembers(cls):
+        if not name.startswith("_") and value is attr_value:
+            return name
+    raise ValueError(f"Attribute not found in {cls.__name__}")
+
+
+
+def prompt_clean_output_dir() -> None:
+    """Ask user if they want to delete existing output files.
+    
+    Prompts the user interactively to delete CSV and HDF5 files in OUTPUT_DIR.
+    Lists existing files and waits for yes/no confirmation.
+    
+    :return None: No return value.
+    """
+    csv_files = glob.glob(str(OUTPUT_DIR / "*.csv"))
+    hdf5_files = glob.glob(str(OUTPUT_DIR / "*.h5"))
+    
+    if not csv_files and not hdf5_files:
+        print(f"Output directory '{OUTPUT_DIR}' is empty. Ready to start.")
+        return
+    
+    print(f"\nFound existing output files in '{OUTPUT_DIR}':")
+    if csv_files:
+        print(f"  - {len(csv_files)} CSV files")
+        for f in sorted(csv_files)[:3]:
+            print(f"    - {Path(f).name}")
+        if len(csv_files) > 3:
+            print(f"    ... and {len(csv_files) - 3} more")
+    if hdf5_files:
+        print(f"  - {len(hdf5_files)} HDF5 files")
+        for f in sorted(hdf5_files):
+            print(f"    - {Path(f).name}")
+    
+    while True:
+        response = input("\nDelete all existing multirun output files for this run? (yes/no): ").strip().lower()
+        
+        if response in ("yes", "y"):
+            for f in csv_files:
+                Path(f).unlink()
+            for f in hdf5_files:
+                Path(f).unlink()
+            print(f"Deleted {len(csv_files)} CSV files and {len(hdf5_files)} HDF5 files.\n")
+            break
+        elif response in ("no", "n"):
+            print("Keeping existing files. New results will be added.\n")
+            break
+        else:
+            print("Invalid response. Please enter 'yes/y' or 'no/n'.")
+
+def safe_name(s: str) -> str:
+    """Convert string to filesystem-safe name by replacing/removing special characters.
+    
+    :param str s: The string to convert.
+    :return str: Filesystem-safe version of the string.
+    """
+    translation = str.maketrans({" ": "_", "/": "_", ",": "", "(": "", ")": ""})
+    return s.translate(translation)
+
+
+def split_dataframe_by_type(df: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    """Split DataFrame columns by data type prefix (e.g., 'Electricity_HH1' -> 'Electricity').
+    
+    :param pd.DataFrame df: The DataFrame to split.
+    :return dict[str, pd.DataFrame]: Dictionary mapping data type to DataFrame.
+    """
+    data_types = {}
+    for col in df.columns:
+        data_type = col.rsplit("_", 1)[0]
+        if data_type not in data_types:
+            data_types[data_type] = pd.DataFrame(index=df.index)
+        data_types[data_type][col] = df[col]
+    return data_types
+
+
+def collect_lpg_members(container: Any, expected_type: type) -> dict[str, Any]:
+    """Collect public class members of `container` that match `expected_type`.
+    
+    :param Any container: The class or object to collect members from.
+    :param type expected_type: The type to filter members by.
+    :return dict[str, Any]: Dictionary mapping member names to values.
+    """
+    return {
+        name: value
+        for name, value in inspect.getmembers(container)
+        if not name.startswith("_") and isinstance(value, expected_type)
+    }
+
+
+def select_by_keys(
+    available: dict[str, Any],
+    keys: Optional[Iterable[str]],
+    label: str,
+) -> list[Any]:
+    """Select values from `available` by key list, or all values if keys is None.
+    
+    :param dict[str, Any] available: Dictionary of available values.
+    :param Optional[Iterable[str]] keys: Keys to select, or None for all values.
+    :param str label: Label for error messages.
+    :return list[Any]: List of selected values.
+    :raises KeyError: If a key is not found in available.
+    """
+    if keys is None:
+        return list(available.values())
+
+    selected: list[Any] = []
+    for key in keys:
+        if key not in available:
+            raise KeyError(f"Unknown {label} key: {key}")
+        selected.append(available[key])
+    return selected
+
+
+def resolve_optional_key(
+    available: dict[str, JsonReference],
+    key: Optional[str],
+    label: str,
+) -> Optional[JsonReference]:
+    """Resolve an optional key to a JsonReference.
+    
+    :param dict[str, JsonReference] available: Dictionary of available references.
+    :param Optional[str] key: The key to resolve, or None.
+    :param str label: Label for error messages.
+    :return Optional[JsonReference]: The resolved reference, or None if key is None.
+    :raises KeyError: If the key is not found in available.
+    """
+    if key is None:
+        return None
+    if key not in available:
+        raise KeyError(f"Unknown {label} key: {key}")
+    return available[key]
+
+
+def make_climate_variants(
+    all_geographic_locations: dict[str, JsonReference],
+    all_temperature_profiles: dict[str, JsonReference],
+    climate_keys: Optional[list[tuple[str, Optional[str], str]]],
+) -> list[tuple[JsonReference, Optional[JsonReference], str]]:
+    """Create climate variant combinations.
+    
+    :param dict[str, JsonReference] all_geographic_locations: Available geographic locations.
+    :param dict[str, JsonReference] all_temperature_profiles: Available temperature profiles.
+    :param Optional[list[tuple[str, Optional[str], str]]] climate_keys: List of (location_key, temp_key, tag) tuples, or None for all combinations.
+    :return list[tuple[JsonReference, Optional[JsonReference], str]]: List of (location, temperature_profile, tag) tuples.
+    :raises KeyError: If a required location key is missing.
+    """
+    if climate_keys is None:
+        return [
+            (
+                location,
+                temperature_profile,
+                f"{location_key}__{temperature_key}",
+            )
+            for location_key, location in all_geographic_locations.items()
+            for temperature_key, temperature_profile in all_temperature_profiles.items()
+        ]
+
+    variants = []
+    for location_key, temperature_key, tag in climate_keys:
+        location = resolve_optional_key(
+            all_geographic_locations, location_key, "geographic location"
+        )
+        if location is None:
+            raise KeyError("Climate variants require a geographic location key")
+        temperature_profile = resolve_optional_key(
+            all_temperature_profiles, temperature_key, "temperature profile"
+        )
+        variants.append((location, temperature_profile, tag))
+    return variants
+
+
+@dataclass(frozen=True)
+class TransportVariantKey:
+    """Configuration key for a transport variant.
+    
+    Attributes:
+        simulate_transportation: Whether to enable transportation simulation.
+        charging_set_key: Key for charging station set (or None).
+        transport_device_set_key: Key for transportation device set (or None).
+        travel_route_set_key: Key for travel route set (or None).
+        tag: Human-readable tag for this variant.
+    """
+    simulate_transportation: bool
+    charging_set_key: Optional[str]
+    transport_device_set_key: Optional[str]
+    travel_route_set_key: Optional[str]
+    tag: str
+
+
+@dataclass(frozen=True)
+class TransportVariant:
+    """Resolved transport variant with JsonReferences.
+    
+    Attributes:
+        simulate_transportation: Whether to enable transportation simulation.
+        charging_set: Charging station set reference (or None).
+        transport_device_set: Transportation device set reference (or None).
+        travel_route_set: Travel route set reference (or None).
+        tag: Human-readable tag for this variant.
+    """
+    simulate_transportation: bool
+    charging_set: Optional[JsonReference]
+    transport_device_set: Optional[JsonReference]
+    travel_route_set: Optional[JsonReference]
+    tag: str
+
+
+def make_transport_variants(
+    all_charging_sets: dict[str, JsonReference],
+    all_transport_device_sets: dict[str, JsonReference],
+    all_travel_route_sets: dict[str, JsonReference],
+    variant_keys: list[TransportVariantKey],
+) -> list[TransportVariant]:
+    """Create transport variant combinations from variant keys.
+    
+    :param dict[str, JsonReference] all_charging_sets: Available charging station sets.
+    :param dict[str, JsonReference] all_transport_device_sets: Available transportation device sets.
+    :param dict[str, JsonReference] all_travel_route_sets: Available travel route sets.
+    :param list[TransportVariantKey] variant_keys: List of transport variant key configurations.
+    :return list[TransportVariant]: List of resolved transport variants.
+    """
+    return [
+        TransportVariant(
+            simulate_transportation=variant_key.simulate_transportation,
+            charging_set=resolve_optional_key(
+                all_charging_sets, variant_key.charging_set_key, "charging set"
+            ),
+            transport_device_set=resolve_optional_key(
+                all_transport_device_sets,
+                variant_key.transport_device_set_key,
+                "transport device set",
+            ),
+            travel_route_set=resolve_optional_key(
+                all_travel_route_sets,
+                variant_key.travel_route_set_key,
+                "travel route set",
+            ),
+            tag=variant_key.tag,
+        )
+        for variant_key in variant_keys
+    ]
+
+
+# ---- CONFIG ------------------------------------------------------------------------------------------------------------------------------------------
+YEAR = 2022
+
+# Set to None to use all templates in lpgdata.HouseholdTemplates.
+HOUSEHOLD_TEMPLATE_KEYS = None  # [
+    # get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR01_Couple_both_at_Work),
+    # get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR03_Family_1_child_both_at_work),
+# ]
+
+# Climate presets keep geographic location and temperature profile separate.
+# (geographic_location_key, temperature_profile_key, tag)
+CLIMATE_SET_KEYS = [
+    (
+        get_attr_key(lpgdata.GeographicLocations, lpgdata.GeographicLocations.Germany_Berlin),
+        get_attr_key(lpgdata.TemperatureProfiles, lpgdata.TemperatureProfiles.Berlin_Germany_1996_from_Deutscher_Wetterdienst_DWD_www_dwd_de),
+        "berlin_loc_berlin_temp",
+    ),
+    (
+        get_attr_key(lpgdata.GeographicLocations, lpgdata.GeographicLocations.Germany_Hamburg),
+        get_attr_key(lpgdata.TemperatureProfiles, lpgdata.TemperatureProfiles.Hamburg_Germany_2007_from_Deutscher_Wetterdienst_DWD_www_dwd_de),
+        "hamburg_loc_hamburg_temp",
+    ),
+    (
+        get_attr_key(lpgdata.GeographicLocations, lpgdata.GeographicLocations.Germany_Chemnitz),
+        get_attr_key(lpgdata.TemperatureProfiles, lpgdata.TemperatureProfiles.Dresden_Germany_2000_from_Deutscher_Wetterdienst_DWD_www_dwd_de),
+        "chemnitz_loc_dresden_temp",
+    ),
+]
+# Set to None to generate all location/temperature-profile combinations.
+
+# Key-based transport presets.
+TRANSPORT_VARIANT_KEYS = [
+    TransportVariantKey(False, None, None, None, "no_transport"),
+    TransportVariantKey(
+        True,
+        get_attr_key(lpgdata.ChargingStationSets, lpgdata.ChargingStationSets.Charging_At_Home_with_03_7_kW_output_results_to_Car_Electricity),
+        get_attr_key(lpgdata.TransportationDeviceSets, lpgdata.TransportationDeviceSets.Bus_and_two_30_km_h_Cars),
+        get_attr_key(lpgdata.TravelRouteSets, lpgdata.TravelRouteSets.Travel_Route_Set_for_30km_Commuting_Distance),
+        "home_charge_bus_cars_30km",
+    ),
+]
+
+HOUSETYPE = lpgdata.HouseTypes.HT20_Single_Family_House_no_heating_cooling
+
+#: Custom binary path for LPG. Set to None to use the official release downloaded automatically by the package.
+LPG_BINARY_PATH = None 
+
+# Define runs per combination. You can specify:
+# - A dict mapping combo_tag patterns to run counts
+# - Or use a function to determine runs based on parameters
+RUNS_PER_COMBO_MAP = {
+    "no_transport": 1,           # Baseline: 1 run only
+    "home_charge_bus_cars_30km": 3,  # Transport variants: 3 runs
+}
+
+def get_runs_for_combo(combo_tag: str) -> int:
+    """Determine the number of runs for a given combination tag.
+    
+    Looks up the combo_tag in RUNS_PER_COMBO_MAP to find matching patterns.
+    Returns the configured number of runs, or a default of 2 if no pattern matches.
+    
+    :param str combo_tag: The combination tag to look up.
+    :return int: Number of runs for this combination.
+    """
+    for pattern, runs in RUNS_PER_COMBO_MAP.items():
+        if pattern in combo_tag:
+            return runs
+    return 2  # Default fallback: 2 runs for unmapped combinations
+
+# ---- END CONFIG ------------------------------------------------------------------------------------------------------------------------------------------
+
+def _print_lpg_binary_source() -> None:
+    """Print the source of the LPG binary being used.
+    
+    :return None: No return value.
+    """
+    if LPG_BINARY_PATH is None: 
+        print("LPG binary source: official release downloaded automatically.")
+    else:
+        print(f"LPG binary source: custom binary path {LPG_BINARY_PATH}")
+
+
+def save_as_HDF5(
+    tmpl_name: str,
+    geographic_location: JsonReference,
+    temperature_profile: Optional[JsonReference],
+    climate_tag: str,
+    climate_name: str,
+    transport_variant: TransportVariant,
+    run_idx: int,
+    seed: int,
+    data_types: dict[str, pd.DataFrame],
+) -> None:
+    """Save simulation results to HDF5 file with hierarchical structure.
+    
+    Creates or appends to an HDF5 file named after the template. Data is organized as:
+    /climate_tag/transport_tag/run_N/data_type
+    
+    :param str tmpl_name: Template name for the HDF5 filename.
+    :param JsonReference geographic_location: Geographic location reference.
+    :param Optional[JsonReference] temperature_profile: Temperature profile reference.
+    :param str climate_tag: Climate variant tag.
+    :param str climate_name: Climate variant name.
+    :param TransportVariant transport_variant: Transport variant configuration.
+    :param int run_idx: Run index (0-based).
+    :param int seed: Random seed used for this run.
+    :param dict[str, pd.DataFrame] data_types: Dictionary mapping data type names to DataFrames.
+    :return None: No return value.
+    """
+    hdf5_filename = f"{safe_name(tmpl_name)}.h5"
+    hdf5_path = OUTPUT_DIR / hdf5_filename
+                            # Create hierarchical path: /climate/transport/run_N/data_type
+    with pd.HDFStore(hdf5_path, mode='a', complevel=9, complib='blosc') as store:
+        base_path = f"{safe_name(climate_tag)}/{transport_variant.tag}/run_{run_idx + 1}"
+        for data_type, type_df in data_types.items():
+            key = f"{base_path}/{safe_name(data_type)}"
+            store.put(key, type_df, format='fixed')
+                                # Store metadata as attributes
+        metadata_key = f"{base_path}/_metadata"
+        meta_df = pd.DataFrame([{
+                                    "seed": seed,
+                                    "template": tmpl_name,
+                                    "climate": climate_name,
+                                    "geographic_location": geographic_location.Name,
+                                    "temperature_profile": temperature_profile.Name if temperature_profile else None,
+                                    "transport_tag": transport_variant.tag,
+                                }])
+        store.put(metadata_key, meta_df, format='fixed')
+    if not SAVE_CSV:
+        print(f"  Saved {len(data_types)} data types to HDF5: {', '.join(sorted(data_types.keys()))}")
+
+
+def _supports_lpg_binary_path(function: Any) -> bool:
+    """Check if a function supports the lpg_binary_path parameter.
+    
+    :param Any function: The function to check.
+    :return bool: True if the function has an lpg_binary_path parameter.
+    """
+    return "lpg_binary_path" in inspect.signature(function).parameters
+
+
+def create_combo_tag(tmpl_name: str, climate_name: str, transport_tag: str) -> str:
+    """Create a combination tag from template, climate, and transport names.
+    
+    Combines the three components with double underscores, using safe_name()
+    to ensure filesystem compatibility.
+    
+    :param str tmpl_name: Template name.
+    :param str climate_name: Climate variant name.
+    :param str transport_tag: Transport variant tag.
+    :return str: Combined tag string.
+    """
+    return f"{safe_name(tmpl_name)}__{safe_name(climate_name)}__{transport_tag}"
+
+
+def run_lpg_simulation(
+    tmpl: str,
+    transport_variant: TransportVariant,
+    geographic_location: JsonReference,
+    temperature_profile: Optional[JsonReference],
+    seed: int,
+) -> Optional[pd.DataFrame]:
+    """Build a household and execute one LPG simulation.
+
+    This is the core execution primitive shared between interactive
+    (multi_simulations) and SLURM-array (run_task) modes.
+
+    :param str tmpl: Template name string (value of a HouseholdTemplates attribute).
+    :param TransportVariant transport_variant: Resolved transport configuration.
+    :param JsonReference geographic_location: Geographic location reference.
+    :param Optional[JsonReference] temperature_profile: Temperature profile reference.
+    :param int seed: Random seed.
+    :return Optional[pd.DataFrame]: Simulation result DataFrame, or None on failure.
+    """
+    household = lpgdata.HouseholdData(
+        None,
+        lpgdata.HouseholdTemplateSpecification(HouseholdTemplateName=tmpl),
+        None,
+        "hhid",
+        "hhname",
+        transport_variant.charging_set,
+        transport_variant.transport_device_set,
+        transport_variant.travel_route_set,
+        None,
+        HouseholdDataSpecification=lpgdata.HouseholdDataSpecificationType.ByTemplateName,
+    )
+
+    execute_kwargs: dict[str, Any] = {}
+    if _supports_lpg_binary_path(
+        lpg_execution.execute_lpg_with_householddata_enabled_flex_and_transport_custom
+    ):
+        execute_kwargs["lpg_binary_path"] = LPG_BINARY_PATH
+
+    return lpg_execution.execute_lpg_with_householddata_enabled_flex_and_transport_custom(
+        YEAR,
+        household,
+        HOUSETYPE,
+        geographic_location=geographic_location,
+        temperature_profile=temperature_profile,
+        enable_flexibility=True,
+        enable_transportation=transport_variant.simulate_transportation,
+        random_seed=seed,
+        energy_intensity=EnergyIntensityType.Random,
+        **execute_kwargs,
+    )
+
+
+def execute_single_run(
+    tmpl: str,
+    tmpl_name: str,
+    geographic_location: JsonReference,
+    temperature_profile: Optional[JsonReference],
+    climate_tag: str,
+    climate_name: str,
+    transport_variant: TransportVariant,
+    combo_tag: str,
+    run_idx: int,
+    num_runs: int,
+) -> Optional[dict[str, Any]]:
+    """Execute a single LPG simulation run.
+    
+    :param str tmpl: Template identifier.
+    :param str tmpl_name: Template name for output files.
+    :param JsonReference geographic_location: Geographic location reference.
+    :param Optional[JsonReference] temperature_profile: Temperature profile reference.
+    :param str climate_tag: Climate variant tag.
+    :param str climate_name: Climate variant name.
+    :param TransportVariant transport_variant: Transport variant configuration.
+    :param str combo_tag: Combined identifier tag.
+    :param int run_idx: Run index (0-based).
+    :param int num_runs: Total number of runs for this combination.
+    :return Optional[dict[str, Any]]: Metadata dictionary if successful, None otherwise.
+    """
+    # Generate seed: current time in milliseconds, modulo 2^31 to fit in 32-bit signed int
+    seed = int(time.time() * 1000) % 2**31
+    seed += run_idx  # Add run index to ensure different seeds for multiple runs
+
+    try:
+        print(
+            f"Running: {combo_tag} seed={seed} "
+            f"(run {run_idx + 1}/{num_runs})"
+        )
+
+        df = run_lpg_simulation(
+            tmpl, transport_variant, geographic_location, temperature_profile, seed
+        )
+
+        if df is None:
+            print("No results returned for this run")
+            return None
+
+        filename_base = f"{combo_tag}__seed{seed}__run{run_idx + 1}"
+        
+        # Split dataframe by data type
+        data_types = split_dataframe_by_type(df)
+        
+        # Save to CSV if enabled
+        if SAVE_CSV:
+            for data_type, type_df in data_types.items():
+                out_csv = OUTPUT_DIR / (safe_name(f"{filename_base}__{data_type}") + ".csv")
+                type_df.to_csv(out_csv)
+            print(f"  Saved {len(data_types)} data types to CSV: {', '.join(sorted(data_types.keys()))}")
+        
+        # Save to HDF5 if enabled (one file per household template)
+        if SAVE_HDF5:
+            save_as_HDF5(
+                tmpl_name,
+                geographic_location,
+                temperature_profile,
+                climate_tag,
+                climate_name,
+                transport_variant,
+                run_idx,
+                seed,
+                data_types,
+            )
+
+        return {
+            "template": tmpl_name,
+            "climate": climate_name,
+            "geographic_location": geographic_location.Name,
+            "temperature_profile": (
+                temperature_profile.Name
+                if temperature_profile is not None
+                else None
+            ),
+            "transport_tag": transport_variant.tag,
+            "seed": seed,
+            "run_index": run_idx + 1,
+            "hdf5_file": f"{safe_name(tmpl_name)}.h5" if SAVE_HDF5 else None,
+            "hdf5_path": f"{safe_name(climate_tag)}/{transport_variant.tag}/run_{run_idx + 1}" if SAVE_HDF5 else None,
+        }
+    except Exception:
+        print("Run failed:")
+        traceback.print_exc()
+        return None
+
+
+def execute_all_runs(
+    household_templates: list[str],
+    climate_sets: list[tuple[JsonReference, Optional[JsonReference], str]],
+    transport_variants: list[TransportVariant],
+) -> tuple[list[dict[str, Any]], int]:
+    """Execute all simulation runs for given parameter combinations.
+    
+    Iterates through all combinations of templates, climate variants, and transport
+    variants, executing multiple runs per combination based on configuration.
+    
+    :param list[str] household_templates: List of household template names.
+    :param list[tuple[JsonReference, Optional[JsonReference], str]] climate_sets: List of (location, temp_profile, tag) tuples.
+    :param list[TransportVariant] transport_variants: List of transport variant configurations.
+    :return tuple[list[dict[str, Any]], int]: Tuple of (metadata rows, total successful runs).
+    """
+    meta_rows = []
+    total = 0
+
+    # Execute all parameter combinations
+    for tmpl in household_templates:
+        if tmpl is None:
+            raise ValueError("Household template is None")
+        tmpl_name = tmpl
+        
+        for geographic_location, temperature_profile, climate_tag in climate_sets:
+            climate_name = climate_tag
+            
+            for transport_variant in transport_variants:
+                combo_tag = create_combo_tag(tmpl_name, climate_name, transport_variant.tag)
+                num_runs = get_runs_for_combo(combo_tag)
+                
+                # Execute multiple runs with different seeds for this combination
+                for run_idx in range(num_runs):
+                    metadata = execute_single_run(
+                        tmpl,
+                        tmpl_name,
+                        geographic_location,
+                        temperature_profile,
+                        climate_tag,
+                        climate_name,
+                        transport_variant,
+                        combo_tag,
+                        run_idx,
+                        num_runs,
+                    )
+                    
+                    if metadata is not None:
+                        meta_rows.append(metadata)
+                        total += 1
+    
+    return meta_rows, total
+
+
+def print_summary(meta_df: pd.DataFrame, total: int) -> None:
+    """Print summary of completed simulation runs.
+    
+    :param pd.DataFrame meta_df: DataFrame containing metadata for all runs.
+    :param int total: Total number of successful runs.
+    :return None: No return value.
+    """
+    output_summary = []
+    if SAVE_CSV:
+        output_summary.append("CSV files")
+    if SAVE_HDF5:
+        hdf5_files = meta_df['hdf5_file'].dropna().unique()
+        output_summary.append(f"{len(hdf5_files)} HDF5 file(s) (one per household template)")
+    
+    print(
+        f"\nFinished {total} successful runs.\n"
+        f"Output: {' and '.join(output_summary)}\n"
+        f"Metadata: {OUTPUT_DIR / 'runs_metadata.csv'}"
+    )
+    
+    if SAVE_HDF5:
+        hdf5_files = meta_df['hdf5_file'].dropna().unique()
+        print(f"\nHDF5 files created:")
+        for hdf5_file in sorted(hdf5_files):
+            print(f"  - {hdf5_file}")
+        print(f"\nHDF5 structure per file: /climate/transport/run_N/data_type")
+
+
+def run_all() -> None:
+    """Run all configured LPG simulations and save results.
+    
+    Main execution function that:
+    1. Collects all available LPG members (templates, locations, etc.)
+    2. Creates parameter combinations from configuration
+    3. Runs simulations for each combination with multiple seeds
+    4. Saves results to CSV and/or HDF5 files
+    5. Generates metadata CSV summarizing all runs
+    
+    :return None: No return value.
+    """
+    _print_lpg_binary_source()
+    prompt_clean_output_dir()
+
+    # Collect all available LPG members
+    all_templates = collect_lpg_members(lpgdata.HouseholdTemplates, str)
+    all_geographic_locations = collect_lpg_members(
+        lpgdata.GeographicLocations, JsonReference
+    )
+    all_temperature_profiles = collect_lpg_members(
+        lpgdata.TemperatureProfiles, JsonReference
+    )
+    all_charging_sets = collect_lpg_members(lpgdata.ChargingStationSets, JsonReference)
+    all_transport_device_sets = collect_lpg_members(
+        lpgdata.TransportationDeviceSets, JsonReference
+    )
+    all_travel_route_sets = collect_lpg_members(lpgdata.TravelRouteSets, JsonReference)
+
+    # Create parameter combinations
+    household_templates = select_by_keys(
+        all_templates, HOUSEHOLD_TEMPLATE_KEYS, "household template"
+    )
+    climate_sets = make_climate_variants(
+        all_geographic_locations,
+        all_temperature_profiles,
+        CLIMATE_SET_KEYS,
+    )
+    transport_variants = make_transport_variants(
+        all_charging_sets,
+        all_transport_device_sets,
+        all_travel_route_sets,
+        TRANSPORT_VARIANT_KEYS,
+    )
+
+    # Execute all simulation runs
+    meta_rows, total = execute_all_runs(
+        household_templates,
+        climate_sets,
+        transport_variants,
+    )
+
+    # Save metadata and print summary
+    meta_df = pd.DataFrame(meta_rows)
+    meta_df.to_csv(OUTPUT_DIR / "runs_metadata.csv", index=False)
+    print_summary(meta_df, total)
+
+
+
+if __name__ == "__main__":
+    run_all()

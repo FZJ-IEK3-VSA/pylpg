@@ -1,0 +1,130 @@
+# SLP_Ade — Parallelised LPG Simulations on SLURM
+
+This folder contains everything needed to run large-scale LPG household simulations in parallel on a SLURM cluster.  
+All simulation logic and configuration live in `multi_simulations.py`; the three SLURM scripts are thin wrappers around it.
+
+---
+
+## Folder contents
+
+| File | Purpose |
+|---|---|
+| `multi_simulations.py` | Simulation configuration, helper functions, and sequential runner (also works standalone) |
+| `generate_tasks.py` | Enumerates all parameter combinations, writes `tasks.json` |
+| `run_task.py` | SLURM array worker — executes one task from `tasks.json` |
+| `merge_results.py` | Assembles per-task HDF5 files into final per-template HDF5 files |
+| `submit_array.sh` | SLURM batch script |
+
+---
+
+## Configuration
+
+All parameters are set at the top of `multi_simulations.py` under `# ---- CONFIG ----`:
+
+| Variable | Description | Default |
+|---|---|---|
+| `YEAR` | Simulation year | `2022` |
+| `HOUSEHOLD_TEMPLATE_KEYS` | List of template names, or `None` for all | `None` (all) |
+| `CLIMATE_SET_KEYS` | List of `(geo_location_key, temp_profile_key, tag)` tuples, or `None` for all combinations | 3 German cities |
+| `TRANSPORT_VARIANT_KEYS` | List of `TransportVariantKey` presets | no-transport + home-charging |
+| `RUNS_PER_COMBO_MAP` | Dict mapping combo-tag patterns to run counts | `{"no_transport": 1, "home_charge_bus_cars_30km": 3}` |
+| `HOUSETYPE` | LPG house type | `HT20_Single_Family_House_no_heating_cooling` |
+| `LPG_BINARY_PATH` | Custom LPG binary, or `None` for auto-download | `None` |
+| `SAVE_CSV` / `SAVE_HDF5` | Output format switches | `False` / `True` |
+
+---
+
+## Workflow
+
+### 1 — Configure
+
+Edit `multi_simulations.py` to set your templates, climate presets, transport variants, and run counts.
+
+### 2 — Generate the task manifest
+
+Run once on the **login node**:
+
+```bash
+python SLP_Ade/generate_tasks.py
+```
+
+This writes `tasks.json` to the repo root and prints the array range, e.g.:
+
+```
+Generated 42 tasks  ->  /path/to/pylpg/tasks.json
+Submit with:  --array=0-41
+```
+
+### 3 — Submit the job array
+
+Update the `--array` directive in `submit_array.sh` to match the printed range, then:
+
+```bash
+sbatch SLP_Ade/submit_array.sh
+```
+
+Each array element runs one independent simulation and writes its result to `slurm_output/task_NNNNNN.h5`.  
+One file per task means there are **no concurrent write conflicts**.
+
+### 4 — Merge results
+
+After all jobs finish:
+
+```bash
+python SLP_Ade/merge_results.py
+```
+
+Output:
+- `multi_runs_output/<template_name>.h5` — one file per household template, with hierarchy:  
+  `/<climate_tag>/<transport_tag>/run_<N>/<data_type>`
+- `multi_runs_output/runs_metadata.csv` — summary of every merged run
+
+---
+
+## Running locally (no SLURM)
+
+**Sequential** (original multi-run mode):
+
+```bash
+python SLP_Ade/multi_simulations.py
+```
+
+**Single task** (for testing one array element):
+
+```bash
+python SLP_Ade/run_task.py --task-id 0
+```
+
+---
+
+## How the scripts relate
+
+```
+multi_simulations.py
+│  CONFIG, helper functions, run_lpg_simulation()
+│
+├── generate_tasks.py   reads CONFIG → writes tasks.json
+│
+├── run_task.py         reads tasks.json[N] → calls run_lpg_simulation()
+│                                           → writes slurm_output/task_N.h5
+│
+└── merge_results.py    reads slurm_output/*.h5 + tasks.json
+                        → writes multi_runs_output/<template>.h5
+```
+
+`run_lpg_simulation()` defined in `multi_simulations.py` is the single shared execution primitive — both the sequential `execute_single_run()` and the SLURM worker `run_task.py` call it.
+
+---
+
+## SLURM resource defaults
+
+Defined in `submit_array.sh` — adjust to your cluster limits:
+
+| Directive | Default | Notes |
+|---|---|---|
+| `--cpus-per-task` | `1` | LPG runs are single-threaded |
+| `--mem` | `4G` | Typical usage <2 GB; 4 GB gives headroom |
+| `--time` | `2:00:00` | Safe default for a single-year simulation |
+| `--array=%50` | max 50 concurrent | Tune to cluster fair-use policy |
+
+Logs are written to `logs/task_<jobid>_<arrayid>.out/.err`.
