@@ -29,6 +29,8 @@ __pycache__/
 build/
 dist/
 pyLPG_env/
+SLP_Ade/__pycache__/
+CLAUDE.md
 
 # generated result files and output directories
 *.csv
