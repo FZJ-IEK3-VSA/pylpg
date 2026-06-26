@@ -36,11 +36,11 @@ All parameters are set at the top of `multi_simulations.py` under `# ---- CONFIG
 
 ## Workflow
 
-### 1 — Configure
+### 1. Configure
 
 Edit `multi_simulations.py` to set your templates, climate presets, transport variants, and run counts.
 
-### 2 — Generate the task manifest
+### 2. Generate the task manifest
 
 Run once on the **login node**:
 
@@ -55,7 +55,7 @@ Generated 42 tasks  ->  /path/to/pylpg/tasks.json
 Submit with:  --array=0-41
 ```
 
-### 3 — Submit the job array
+### 3. Submit the job array
 
 Update the `--array` directive in `submit_array.sh` to match the printed range, then:
 
@@ -66,7 +66,7 @@ sbatch SLP_Ade/submit_array.sh
 Each array element runs one independent simulation and writes its result to `slurm_output/task_NNNNNN.h5`.  
 One file per task means there are **no concurrent write conflicts**.
 
-### 4 — Merge results
+### 4. Merge results
 
 After all jobs finish:
 
