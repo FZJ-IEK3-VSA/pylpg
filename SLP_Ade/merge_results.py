@@ -58,7 +58,8 @@ def main() -> None:
     tasks_by_id: dict[int, dict] = {t["task_id"]: t for t in tasks}
 
     # LPG_OUTPUT_DIR mirrors the setting in submit_array.sh / run_task.py.
-    slurm_dir = Path(os.environ.get("LPG_OUTPUT_DIR", str(_REPO_ROOT / "slurm_output")))
+    _env_output = os.environ.get("LPG_OUTPUT_DIR")
+    slurm_dir = Path(_env_output) if _env_output else _REPO_ROOT / "slurm_output"
     final_dir = _REPO_ROOT / "multi_runs_output"
     final_dir.mkdir(exist_ok=True)
 

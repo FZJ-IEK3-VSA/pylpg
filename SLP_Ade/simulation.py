@@ -35,7 +35,6 @@ import os
 import sys
 from pathlib import Path
 from dataclasses import dataclass
-import glob
 import inspect
 import time
 import traceback
@@ -76,8 +75,8 @@ def prompt_clean_output_dir() -> None:
 
     :return None: No return value.
     """
-    csv_files = glob.glob(str(OUTPUT_DIR / "*.csv"))
-    hdf5_files = glob.glob(str(OUTPUT_DIR / "*.h5"))
+    csv_files = list(OUTPUT_DIR.glob("*.csv"))
+    hdf5_files = list(OUTPUT_DIR.glob("*.h5"))
 
     if not csv_files and not hdf5_files:
         print(f"Output directory '{OUTPUT_DIR}' is empty. Ready to start.")
@@ -87,22 +86,22 @@ def prompt_clean_output_dir() -> None:
     if csv_files:
         print(f"  - {len(csv_files)} CSV files")
         for f in sorted(csv_files)[:3]:
-            print(f"    - {Path(f).name}")
+            print(f"    - {f.name}")
         if len(csv_files) > 3:
             print(f"    ... and {len(csv_files) - 3} more")
     if hdf5_files:
         print(f"  - {len(hdf5_files)} HDF5 files")
         for f in sorted(hdf5_files):
-            print(f"    - {Path(f).name}")
+            print(f"    - {f.name}")
 
     while True:
         response = input("\nDelete all existing multirun output files for this run? (yes/no): ").strip().lower()
 
         if response in ("yes", "y"):
             for f in csv_files:
-                Path(f).unlink()
+                f.unlink()
             for f in hdf5_files:
-                Path(f).unlink()
+                f.unlink()
             print(f"Deleted {len(csv_files)} CSV files and {len(hdf5_files)} HDF5 files.\n")
             break
         elif response in ("no", "n"):

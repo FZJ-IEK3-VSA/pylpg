@@ -126,7 +126,8 @@ def run_task(task: dict) -> None:
     # --- save per-task HDF5 (no concurrent write risk) -------------------
     # LPG_OUTPUT_DIR can be set in the environment (e.g. by submit_array.sh on
     # the cluster).  Falls back to slurm_output/ inside the repo for local runs.
-    output_dir = Path(os.environ.get("LPG_OUTPUT_DIR", str(_REPO_ROOT / "slurm_output")))
+    _env_output = os.environ.get("LPG_OUTPUT_DIR")
+    output_dir = Path(_env_output) if _env_output else _REPO_ROOT / "slurm_output"
     output_dir.mkdir(parents=True, exist_ok=True)
     out_path = output_dir / f"task_{task_id:06d}.h5"
 
