@@ -6,7 +6,7 @@ Run after **all** array jobs have finished:
 
 Input
 -----
-tasks.json           -- task manifest (repo root)
+SLP_Ade/tasks.json   -- task manifest
 slurm_output/        -- directory of task_<NNNNNN>.h5 files written by run_task.py
 
 Output
@@ -50,7 +50,7 @@ def main() -> None:
     :return None: No return value.
     :raises SystemExit: If ``tasks.json`` is missing or no task files are found.
     """
-    tasks_file = _REPO_ROOT / "tasks.json"
+    tasks_file = _REPO_ROOT / "SLP_Ade" / "tasks.json"
     if not tasks_file.exists():
         sys.exit(f"tasks.json not found at {tasks_file}")
 

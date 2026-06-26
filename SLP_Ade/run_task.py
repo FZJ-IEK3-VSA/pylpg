@@ -8,8 +8,7 @@ Or for local testing of a single task:
 
 Input
 -----
-tasks.json  -- task manifest created by generate_tasks.py (must exist in the
-               repo root, i.e. the working directory when the job runs).
+SLP_Ade/tasks.json  -- task manifest created by generate_tasks.py.
 
 Output
 ------
@@ -154,8 +153,8 @@ def main() -> None:
     """Parse CLI arguments and dispatch to :func:`run_task`.
 
     Reads ``--task-id`` (falls back to ``$SLURM_ARRAY_TASK_ID``, then 0),
-    loads ``tasks.json`` from the repo root, and calls :func:`run_task` for
-    the selected entry.
+    loads ``SLP_Ade/tasks.json``, and calls :func:`run_task` for the selected
+    entry.
 
     :return None: No return value.
     :raises SystemExit: If ``tasks.json`` is missing or the task id is out of range.
@@ -171,7 +170,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    tasks_file = _REPO_ROOT / "tasks.json"
+    tasks_file = _REPO_ROOT / "SLP_Ade" / "tasks.json"
     if not tasks_file.exists():
         sys.exit(f"tasks.json not found at {tasks_file}. Run generate_tasks.py first.")
 

@@ -137,17 +137,25 @@ def build_task_list() -> list[dict]:
 def main() -> None:
     """Generate tasks.json and print submission guidance.
 
-    Calls :func:`build_task_list`, writes the result to ``tasks.json`` in the
-    repo root, and prints the total task count together with the ``--array``
-    range to use when submitting the SLURM job array.
+    Calls :func:`build_task_list`, writes the result to ``SLP_Ade/tasks.json``,
+    and prints the total task count together with the ``--array`` range to use
+    when submitting the SLURM job array.
 
     :return None: No return value.
     """
     tasks = build_task_list()
-    out = _REPO_ROOT / "tasks.json"
+    out = _REPO_ROOT / "SLP_Ade" / "tasks.json"
     out.write_text(json.dumps(tasks, indent=2))
+
+    # Write the task count to a machine-readable file so submit_array.sh can
+    # derive its --array range automatically (no manual, drift-prone edit).
+    count_file = _REPO_ROOT / "SLP_Ade" / "task_count.txt"
+    count_file.write_text(str(len(tasks)))
+
     print(f"Generated {len(tasks)} tasks  ->  {out}")
-    print(f"Submit with:  --array=0-{len(tasks) - 1}")
+    print(f"Wrote task count        ->  {count_file}")
+    print(f"Submit with:  bash SLP_Ade/submit_array.sh   (reads {count_file.name} automatically)")
+    print(f"Or manually:  sbatch --array=0-{len(tasks) - 1} SLP_Ade/submit_array.sh")
 
 
 if __name__ == "__main__":

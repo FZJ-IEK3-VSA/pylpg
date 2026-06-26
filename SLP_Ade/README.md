@@ -49,20 +49,24 @@ Run once on the **login node**:
 python SLP_Ade/generate_tasks.py
 ```
 
-This writes `tasks.json` to the repo root and prints the array range, e.g.:
+This writes `tasks.json` **and** `task_count.txt` into `SLP_Ade/`, e.g.:
 
 ```
-Generated 42 tasks  ->  /path/to/pylpg/tasks.json
-Submit with:  --array=0-41
+Generated 42 tasks  ->  /path/to/pylpg/SLP_Ade/tasks.json
+Wrote task count        ->  /path/to/pylpg/SLP_Ade/task_count.txt
+Submit with:  bash SLP_Ade/submit_array.sh   (reads task_count.txt automatically)
+Or manually:  sbatch --array=0-41 SLP_Ade/submit_array.sh
 ```
 
 ### 3. Submit the job array
 
-Update the `--array` directive in `submit_array.sh` to match the printed range, then:
+No manual range editing needed — just run:
 
 ```bash
-sbatch SLP_Ade/submit_array.sh
+bash SLP_Ade/submit_array.sh
 ```
+
+The script reads `task_count.txt`, then re-submits itself as a SLURM array job covering `0 .. count-1` (capped at `MAX_CONCURRENT` concurrent tasks, default 50). Launch it with `bash` on the login node; `sbatch SLP_Ade/submit_array.sh` also works but runs the one-line bootstrap inside a compute-node allocation.
 
 Each array element runs one independent simulation and writes its result to `slurm_output/task_NNNNNN.h5`.  
 One file per task means there are **no concurrent write conflicts**.
@@ -128,6 +132,6 @@ Defined in `submit_array.sh` — adjust to your cluster limits:
 | `--cpus-per-task` | `1` | LPG runs are single-threaded |
 | `--mem` | `4G` | Typical usage <2 GB; 4 GB gives headroom |
 | `--time` | `2:00:00` | Safe default for a single-year simulation |
-| `--array=%50` | max 50 concurrent | Tune to cluster fair-use policy |
+| `MAX_CONCURRENT` | max 50 concurrent | Concurrency cap applied to the auto-generated `--array` range; tune to cluster fair-use policy |
 
 Logs are written to `logs/task_<jobid>_<arrayid>.out/.err`.
