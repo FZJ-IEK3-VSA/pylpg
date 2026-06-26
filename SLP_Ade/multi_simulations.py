@@ -425,34 +425,25 @@ def save_as_HDF5(
     """
     hdf5_filename = f"{safe_name(tmpl_name)}.h5"
     hdf5_path = OUTPUT_DIR / hdf5_filename
-                            # Create hierarchical path: /climate/transport/run_N/data_type
+    # Create hierarchical path: /climate/transport/run_N/data_type
     with pd.HDFStore(hdf5_path, mode='a', complevel=9, complib='blosc') as store:
         base_path = f"{safe_name(climate_tag)}/{transport_variant.tag}/run_{run_idx + 1}"
         for data_type, type_df in data_types.items():
             key = f"{base_path}/{safe_name(data_type)}"
             store.put(key, type_df, format='fixed')
-                                # Store metadata as attributes
+        # Store metadata
         metadata_key = f"{base_path}/_metadata"
         meta_df = pd.DataFrame([{
-                                    "seed": seed,
-                                    "template": tmpl_name,
-                                    "climate": climate_name,
-                                    "geographic_location": geographic_location.Name,
-                                    "temperature_profile": temperature_profile.Name if temperature_profile else None,
-                                    "transport_tag": transport_variant.tag,
-                                }])
+            "seed": seed,
+            "template": tmpl_name,
+            "climate": climate_name,
+            "geographic_location": geographic_location.Name,
+            "temperature_profile": temperature_profile.Name if temperature_profile else None,
+            "transport_tag": transport_variant.tag,
+        }])
         store.put(metadata_key, meta_df, format='fixed')
     if not SAVE_CSV:
         print(f"  Saved {len(data_types)} data types to HDF5: {', '.join(sorted(data_types.keys()))}")
-
-
-def _supports_lpg_binary_path(function: Any) -> bool:
-    """Check if a function supports the lpg_binary_path parameter.
-    
-    :param Any function: The function to check.
-    :return bool: True if the function has an lpg_binary_path parameter.
-    """
-    return "lpg_binary_path" in inspect.signature(function).parameters
 
 
 def create_combo_tag(tmpl_name: str, climate_name: str, transport_tag: str) -> str:
@@ -502,9 +493,9 @@ def run_lpg_simulation(
     )
 
     execute_kwargs: dict[str, Any] = {}
-    if _supports_lpg_binary_path(
+    if "lpg_binary_path" in inspect.signature(
         lpg_execution.execute_lpg_with_householddata_enabled_flex_and_transport_custom
-    ):
+    ).parameters:
         execute_kwargs["lpg_binary_path"] = LPG_BINARY_PATH
 
     return lpg_execution.execute_lpg_with_householddata_enabled_flex_and_transport_custom(
