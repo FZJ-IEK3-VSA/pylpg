@@ -46,11 +46,32 @@ from SLP_Ade.simulation import (  # noqa: E402
 
 
 def _resolve_optional(container: object, key: str | None) -> object | None:
-    """Return ``getattr(container, key)`` or ``None`` when *key* is ``None``."""
+    """Return ``getattr(container, key)`` or ``None`` when *key* is ``None``.
+
+    :param object container: The object to look up the attribute on.
+    :param str | None key: Attribute name to retrieve, or ``None``.
+    :return object | None: The resolved attribute value, or ``None`` if key is ``None``.
+    """
     return getattr(container, key) if key is not None else None
 
 
 def run_task(task: dict) -> None:
+    """Execute one simulation task and write the result to a per-task HDF5 file.
+
+    Resolves all string keys in *task* back to LPG objects, calls
+    :func:`~SLP_Ade.simulation.run_lpg_simulation`, and writes one
+    ``task_<NNNNNN>.h5`` file containing:
+
+    - ``/data/<data_type>`` — simulation result DataFrames (one per load type)
+    - ``/metadata`` — single-row DataFrame with run metadata
+
+    The output directory defaults to ``slurm_output/`` in the repo root and
+    can be overridden via the ``$LPG_OUTPUT_DIR`` environment variable.
+
+    :param dict task: Task dictionary as produced by :func:`~SLP_Ade.generate_tasks.build_task_list`.
+    :return None: No return value.
+    :raises SystemExit: If the simulation returns no results.
+    """
     task_id: int = task["task_id"]
 
     # --- resolve string keys to LPG objects ------------------------------
@@ -130,6 +151,15 @@ def run_task(task: dict) -> None:
 
 
 def main() -> None:
+    """Parse CLI arguments and dispatch to :func:`run_task`.
+
+    Reads ``--task-id`` (falls back to ``$SLURM_ARRAY_TASK_ID``, then 0),
+    loads ``tasks.json`` from the repo root, and calls :func:`run_task` for
+    the selected entry.
+
+    :return None: No return value.
+    :raises SystemExit: If ``tasks.json`` is missing or the task id is out of range.
+    """
     parser = argparse.ArgumentParser(description="Run one LPG task from tasks.json")
     parser.add_argument(
         "--task-id",

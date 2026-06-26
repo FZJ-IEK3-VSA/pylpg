@@ -35,6 +35,21 @@ from SLP_Ade.simulation import safe_name  # noqa: E402
 
 
 def main() -> None:
+    """Merge all per-task HDF5 files into final per-template HDF5 files.
+
+    Reads ``tasks.json`` and iterates over every ``task_<NNNNNN>.h5`` in
+    ``$LPG_OUTPUT_DIR`` (default: ``slurm_output/``).  For each task file the
+    simulation DataFrames are copied into
+    ``multi_runs_output/<template_name>.h5`` under the hierarchical path
+    ``/<climate_tag>/<transport_tag>/run_<N>/<data_type>``.
+
+    After merging, a ``runs_metadata.csv`` summary is written to
+    ``multi_runs_output/`` and any task ids present in ``tasks.json`` but
+    missing from the output directory are reported as warnings.
+
+    :return None: No return value.
+    :raises SystemExit: If ``tasks.json`` is missing or no task files are found.
+    """
     tasks_file = _REPO_ROOT / "tasks.json"
     if not tasks_file.exists():
         sys.exit(f"tasks.json not found at {tasks_file}")

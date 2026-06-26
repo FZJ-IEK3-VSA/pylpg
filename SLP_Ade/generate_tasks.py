@@ -47,13 +47,32 @@ from SLP_Ade.simulation import (  # noqa: E402
 
 
 def _deterministic_seed(combo_tag: str, run_idx: int) -> int:
-    """Derive a reproducible 31-bit seed from combo_tag and run index."""
+    """Derive a reproducible 31-bit seed from combo_tag and run index.
+
+    Uses MD5 of ``"<combo_tag>_<run_idx>"`` so the same manifest always
+    produces the same seeds regardless of when or where it is generated.
+
+    :param str combo_tag: Combined identifier tag for the parameter combination.
+    :param int run_idx: Zero-based run index within the combination.
+    :return int: A reproducible seed value in the range [0, 2**31).
+    """
     raw = f"{combo_tag}_{run_idx}".encode()
     return int(hashlib.md5(raw).hexdigest(), 16) % (2**31)
 
 
 def build_task_list() -> list[dict]:
-    """Build the full list of independent simulation tasks."""
+    """Build the full list of independent simulation tasks.
+
+    Expands the CONFIG cartesian product (templates × climate sets × transport
+    variants × runs-per-combo) into a flat list of task dictionaries. Each
+    task stores only string keys so the manifest is JSON-serialisable; the
+    worker resolves them back to LPG objects at runtime.
+
+    Seeds are derived deterministically via :func:`_deterministic_seed` so the
+    manifest is reproducible.
+
+    :return list[dict]: Ordered list of task dictionaries, one per simulation run.
+    """
     # --- resolve template keys -------------------------------------------
     all_template_keys: list[str] = list(
         collect_lpg_members(lpgdata.HouseholdTemplates, str).keys()
@@ -116,6 +135,14 @@ def build_task_list() -> list[dict]:
 
 
 def main() -> None:
+    """Generate tasks.json and print submission guidance.
+
+    Calls :func:`build_task_list`, writes the result to ``tasks.json`` in the
+    repo root, and prints the total task count together with the ``--array``
+    range to use when submitting the SLURM job array.
+
+    :return None: No return value.
+    """
     tasks = build_task_list()
     out = _REPO_ROOT / "tasks.json"
     out.write_text(json.dumps(tasks, indent=2))
