@@ -12,7 +12,7 @@ slurm_output/        -- directory of task_<NNNNNN>.h5 files written by run_task.
 Output
 ------
 multi_runs_output/<template_name>.h5  -- one file per household template,
-    with the same hierarchical structure as multi_simulations.py:
+    with the same hierarchical structure as simulation.py:
     /<climate_tag>/<transport_tag>/run_<N>/<data_type>
     /<climate_tag>/<transport_tag>/run_<N>/_metadata
 
@@ -31,7 +31,7 @@ sys.path.insert(0, str(_REPO_ROOT))
 
 import pandas as pd
 
-from SLP_Ade.multi_simulations import safe_name  # noqa: E402
+from SLP_Ade.simulation import safe_name  # noqa: E402
 
 
 def main() -> None:

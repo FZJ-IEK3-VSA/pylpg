@@ -2,7 +2,7 @@
 
 All tests here are fast and do NOT execute LPG simulations.
 They cover:
-  - Pure helper functions in multi_simulations.py
+  - Pure helper functions in simulation.py
   - Task-manifest generation in generate_tasks.py (build_task_list)
 """
 from __future__ import annotations
@@ -16,12 +16,14 @@ import pytest
 from pylpg import lpgdata
 from pylpg.lpgpythonbindings import JsonReference
 
-from SLP_Ade.multi_simulations import (
+from SLP_Ade.config import (
     CLIMATE_SET_KEYS,
     TRANSPORT_VARIANT_KEYS,
+    get_runs_for_combo,
+)
+from SLP_Ade.simulation import (
     collect_lpg_members,
     create_combo_tag,
-    get_runs_for_combo,
     safe_name,
     select_by_keys,
     split_dataframe_by_type,

@@ -37,7 +37,7 @@ import pandas as pd
 
 from pylpg import lpgdata
 
-from SLP_Ade.multi_simulations import (  # noqa: E402
+from SLP_Ade.simulation import (  # noqa: E402
     TransportVariant,
     run_lpg_simulation,
     safe_name,

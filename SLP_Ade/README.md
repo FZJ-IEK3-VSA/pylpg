@@ -1,7 +1,7 @@
 # SLP_Ade — Parallelised LPG Simulations on SLURM
 
 This folder contains everything needed to run large-scale LPG household simulations in parallel on a SLURM cluster.  
-All simulation logic and configuration live in `multi_simulations.py`; the three SLURM scripts are thin wrappers around it.
+All configuration lives in `config.py` and the simulation logic in `simulation.py`; the three SLURM scripts are thin wrappers around them.
 
 ---
 
@@ -9,7 +9,8 @@ All simulation logic and configuration live in `multi_simulations.py`; the three
 
 | File | Purpose |
 |---|---|
-| `multi_simulations.py` | Simulation configuration, helper functions, and sequential runner (also works standalone) |
+| `config.py` | All tunable sweep parameters (the `# ---- CONFIG ----` block) |
+| `simulation.py` | Helper functions, the shared `run_lpg_simulation()` primitive, and the sequential runner (also works standalone) |
 | `generate_tasks.py` | Enumerates all parameter combinations, writes `tasks.json` |
 | `run_task.py` | SLURM array worker — executes one task from `tasks.json` |
 | `merge_results.py` | Assembles per-task HDF5 files into final per-template HDF5 files |
@@ -19,7 +20,7 @@ All simulation logic and configuration live in `multi_simulations.py`; the three
 
 ## Configuration
 
-All parameters are set at the top of `multi_simulations.py` under `# ---- CONFIG ----`:
+All parameters are set in `config.py` under `# ---- CONFIG ----`:
 
 | Variable | Description | Default |
 |---|---|---|
@@ -38,7 +39,7 @@ All parameters are set at the top of `multi_simulations.py` under `# ---- CONFIG
 
 ### 1. Configure
 
-Edit `multi_simulations.py` to set your templates, climate presets, transport variants, and run counts.
+Edit `config.py` to set your templates, climate presets, transport variants, and run counts.
 
 ### 2. Generate the task manifest
 
@@ -86,7 +87,7 @@ Output:
 **Sequential** (original multi-run mode):
 
 ```bash
-python SLP_Ade/multi_simulations.py
+python SLP_Ade/simulation.py
 ```
 
 **Single task** (for testing one array element):
@@ -100,8 +101,10 @@ python SLP_Ade/run_task.py --task-id 0
 ## How the scripts relate
 
 ```
-multi_simulations.py
-│  CONFIG, helper functions, run_lpg_simulation()
+config.py               CONFIG (all sweep parameters)
+│
+simulation.py           helper functions, run_lpg_simulation()
+│  (imports config.py)
 │
 ├── generate_tasks.py   reads CONFIG → writes tasks.json
 │
@@ -112,7 +115,7 @@ multi_simulations.py
                         → writes multi_runs_output/<template>.h5
 ```
 
-`run_lpg_simulation()` defined in `multi_simulations.py` is the single shared execution primitive — both the sequential `execute_single_run()` and the SLURM worker `run_task.py` call it.
+`run_lpg_simulation()` defined in `simulation.py` is the single shared execution primitive — both the sequential `execute_single_run()` and the SLURM worker `run_task.py` call it.
 
 ---
 

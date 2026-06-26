@@ -33,14 +33,16 @@ sys.path.insert(0, str(_REPO_ROOT))
 from pylpg import lpgdata
 from pylpg.lpgpythonbindings import JsonReference
 
-# Import configuration and helpers from multi_simulations.py
-from SLP_Ade.multi_simulations import (  # noqa: E402
+# Configuration lives in config.py; execution helpers in simulation.py.
+from SLP_Ade.config import (  # noqa: E402
     CLIMATE_SET_KEYS,
     HOUSEHOLD_TEMPLATE_KEYS,
     TRANSPORT_VARIANT_KEYS,
+    get_runs_for_combo,
+)
+from SLP_Ade.simulation import (  # noqa: E402
     collect_lpg_members,
     create_combo_tag,
-    get_runs_for_combo,
 )
 
 

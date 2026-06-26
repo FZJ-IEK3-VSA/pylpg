@@ -31,6 +31,7 @@ dist/
 pyLPG_env/
 SLP_Ade/__pycache__/
 CLAUDE.md
+tasks.json
 
 # generated result files and output directories
 *.csv
