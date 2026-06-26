@@ -196,6 +196,34 @@ def test_lpg_executor_uses_custom_binary_path(tmp_path) -> None:
             shutil.rmtree(executor.calculation_directory)
 
 
+def test_lpg_executor_custom_working_directory(tmp_path) -> None:
+    # A custom binary keeps the test offline (no download). A custom working
+    # directory should relocate the C<idx> calc dir there, while the binary
+    # source stays at the provided binary's location (package dir untouched).
+    custom_dir = tmp_path / "custom_lpg"
+    custom_dir.mkdir()
+    custom_binary = custom_dir / "my-simengine.exe"
+    custom_binary.write_text("dummy", encoding="utf-8")
+
+    work_dir = tmp_path / "scratch"
+
+    executor = None
+    try:
+        executor = lpg_execution.LPGExecutor(
+            123, False, custom_binary, working_directory=work_dir
+        )
+        # Calc dir is relocated under the custom working directory ...
+        assert executor.working_directory == work_dir
+        assert executor.calculation_directory == work_dir / "C123"
+        assert executor.calculation_directory.exists()
+        # ... but the binary source and package dir are unchanged.
+        assert executor.calculation_src_directory == custom_dir
+        assert executor.package_directory == Path(lpg_execution.__file__).parent.absolute()
+    finally:
+        if executor is not None and executor.calculation_directory.exists():
+            shutil.rmtree(executor.calculation_directory)
+
+
 def test_lpg_binary_details_for_platform(monkeypatch, tmp_path) -> None:
     monkeypatch.setattr(lpg_execution.sys, "platform", "linux")
     linux_directory, linux_filename = lpg_execution._lpg_binary_details_for_platform(

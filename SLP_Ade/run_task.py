@@ -105,8 +105,18 @@ def run_task(task: dict) -> None:
         f"seed={task['seed']}"
     )
 
+    # Use task_id as the (unique) calculation index so concurrent array tasks
+    # never share a C<idx> working directory. clear_previous_calc=True ensures a
+    # clean dir if this task id is requeued. The dir base is LPG_WORK_DIR (set to
+    # node-local scratch by submit_array.sh).
     df = run_lpg_simulation(
-        tmpl, transport_variant, geographic_location, temperature_profile, task["seed"]
+        tmpl,
+        transport_variant,
+        geographic_location,
+        temperature_profile,
+        task["seed"],
+        calculation_index=task_id,
+        clear_previous_calc=True,
     )
 
     if df is None:

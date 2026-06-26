@@ -31,6 +31,7 @@ Run
     python SLP_Ade/simulation.py
 """
 
+import os
 import sys
 from pathlib import Path
 from dataclasses import dataclass
@@ -367,17 +368,29 @@ def run_lpg_simulation(
     geographic_location: JsonReference,
     temperature_profile: Optional[JsonReference],
     seed: int,
+    calculation_index: int = 1,
+    clear_previous_calc: bool = False,
 ) -> Optional[pd.DataFrame]:
     """Build a household and execute one LPG simulation.
 
     This is the core execution primitive shared between interactive
     (simulation) and SLURM-array (run_task) modes.
 
+    Each calculation runs in its own ``C<calculation_index>`` working directory.
+    Parallel callers (e.g. the SLURM worker) MUST pass a unique
+    ``calculation_index`` per concurrent run, otherwise they collide on the same
+    working directory. The base location of these working directories is taken
+    from the ``LPG_WORK_DIR`` environment variable when set (point it at fast
+    node-local scratch such as ``$TMPDIR`` on a cluster); otherwise it defaults
+    to the pylpg package directory.
+
     :param str tmpl: Template name string (value of a HouseholdTemplates attribute).
     :param TransportVariant transport_variant: Resolved transport configuration.
     :param JsonReference geographic_location: Geographic location reference.
     :param Optional[JsonReference] temperature_profile: Temperature profile reference.
     :param int seed: Random seed.
+    :param int calculation_index: Unique index selecting the C<idx> working directory.
+    :param bool clear_previous_calc: Wipe and re-copy the working directory before running.
     :return Optional[pd.DataFrame]: Simulation result DataFrame, or None on failure.
     """
     household = lpgdata.HouseholdData(
@@ -393,11 +406,17 @@ def run_lpg_simulation(
         HouseholdDataSpecification=lpgdata.HouseholdDataSpecificationType.ByTemplateName,
     )
 
-    execute_kwargs: dict[str, Any] = {}
-    if "lpg_binary_path" in inspect.signature(
+    # Only forward optional kwargs the installed pylpg actually supports, so an
+    # older package without working_directory/lpg_binary_path still works.
+    execute_params = inspect.signature(
         lpg_execution.execute_lpg_with_householddata_enabled_flex_and_transport_custom
-    ).parameters:
+    ).parameters
+    execute_kwargs: dict[str, Any] = {}
+    if "lpg_binary_path" in execute_params:
         execute_kwargs["lpg_binary_path"] = LPG_BINARY_PATH
+    if "working_directory" in execute_params:
+        # Run calculations in node-local scratch when LPG_WORK_DIR is set.
+        execute_kwargs["working_directory"] = os.environ.get("LPG_WORK_DIR") or None
 
     return lpg_execution.execute_lpg_with_householddata_enabled_flex_and_transport_custom(
         YEAR,
@@ -409,6 +428,8 @@ def run_lpg_simulation(
         enable_transportation=transport_variant.simulate_transportation,
         random_seed=seed,
         energy_intensity=EnergyIntensityType.Random,
+        calculation_index=calculation_index,
+        clear_previous_calc=clear_previous_calc,
         **execute_kwargs,
     )
 

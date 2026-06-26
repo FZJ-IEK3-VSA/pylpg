@@ -66,10 +66,12 @@ No manual range editing needed — just run:
 bash SLP_Ade/submit_array.sh
 ```
 
-The script reads `task_count.txt`, then re-submits itself as a SLURM array job covering `0 .. count-1` (capped at `MAX_CONCURRENT` concurrent tasks, default 50). Launch it with `bash` on the login node; `sbatch SLP_Ade/submit_array.sh` also works but runs the one-line bootstrap inside a compute-node allocation.
+The script reads `task_count.txt`, then re-submits itself as a SLURM array job covering `0 .. count-1` (capped at `MAX_CONCURRENT` concurrent tasks, default 50). Launch it with `bash` on the login node; `sbatch SLP_Ade/submit_array.sh` also works but runs the one-line bootstrap inside a compute-node allocation. The bootstrap also **pre-fetches the LPG binary once** on the login node, so the first wave of concurrent tasks doesn't race to download it.
 
 Each array element runs one independent simulation and writes its result to `slurm_output/task_NNNNNN.h5`.  
 One file per task means there are **no concurrent write conflicts**.
+
+Each task also runs its LPG calculation in its own working directory `C<task_id>` (a ~155 MB binary+DB copy), isolating concurrent runs. To keep that off shared storage, `submit_array.sh` sets `LPG_WORK_DIR` to node-local scratch (`$TMPDIR`); `run_task.py` passes `calculation_index=task_id` so no two tasks share a directory.
 
 ### 4. Merge results
 
@@ -133,5 +135,14 @@ Defined in `submit_array.sh` — adjust to your cluster limits:
 | `--mem` | `4G` | Typical usage <2 GB; 4 GB gives headroom |
 | `--time` | `2:00:00` | Safe default for a single-year simulation |
 | `MAX_CONCURRENT` | max 50 concurrent | Concurrency cap applied to the auto-generated `--array` range; tune to cluster fair-use policy |
+
+Two environment variables (exported in `submit_array.sh`) control where data goes:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `LPG_OUTPUT_DIR` | `slurm_output/` | Where per-task `task_NNNNNN.h5` results are written |
+| `LPG_WORK_DIR` | `$TMPDIR` | Base for each task's `C<task_id>` LPG calc dir; keep on node-local scratch |
+
+Both fall back to in-repo defaults when unset, so local testing works without the cluster.
 
 Logs are written to `logs/task_<jobid>_<arrayid>.out/.err`.

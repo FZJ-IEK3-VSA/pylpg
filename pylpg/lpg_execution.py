@@ -269,6 +269,7 @@ def execute_lpg_with_householddata_enabled_flex_and_transport_custom(
     random_seed: int = None,
     energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
     lpg_binary_path: Optional[Union[Path, str]] = None,
+    working_directory: Optional[Union[Path, str]] = None,
 ):
     try:
         print(
@@ -278,7 +279,7 @@ def execute_lpg_with_householddata_enabled_flex_and_transport_custom(
             + (householddata.Name or "nameless household")
         )
         lpe: LPGExecutor = LPGExecutor(
-            calculation_index, clear_previous_calc, lpg_binary_path
+            calculation_index, clear_previous_calc, lpg_binary_path, working_directory
         )
 
         request = lpe.make_default_lpg_settings(year)
@@ -560,8 +561,20 @@ class LPGExecutor:
         calcidx: int,
         clear_previous_calc: bool,
         lpg_binary_path: Optional[Union[Path, str]] = None,
+        working_directory: Optional[Union[Path, str]] = None,
     ):
-        self.working_directory = pathlib.Path(__file__).parent.absolute()
+        # The package directory is where the bundled LPG binaries live (and are
+        # downloaded to on first use).  The working directory is where the
+        # per-calculation C<idx> folders are created and run.  By default they
+        # are the same, but working_directory can be pointed at fast node-local
+        # scratch (e.g. $TMPDIR) so parallel runs do not copy hundreds of MB
+        # into the package directory on shared storage.
+        self.package_directory = pathlib.Path(__file__).parent.absolute()
+        if working_directory is not None:
+            self.working_directory = Path(working_directory)
+            self.working_directory.mkdir(parents=True, exist_ok=True)
+        else:
+            self.working_directory = self.package_directory
         if lpg_binary_path is not None:
             # if a custom binary path is provided, use it instead of the default one
             custom_binary_path = Path(lpg_binary_path)
@@ -571,23 +584,25 @@ class LPGExecutor:
             elif custom_binary_path.is_dir():
                 self.calculation_src_directory = custom_binary_path
                 _, self.simengine_src_filename = _lpg_binary_details_for_platform(
-                    self.working_directory
+                    self.package_directory
                 )
             else:
                 raise FileNotFoundError(
                     f"Specified LPG binary path does not exist: {custom_binary_path}"
                 )
         else:
-            # get LPG binary directory and executable name depending on platform
+            # get LPG binary directory and executable name depending on platform.
+            # Binaries always live in the package directory (downloaded once),
+            # never in a custom working directory.
             (
                 self.calculation_src_directory,
                 self.simengine_src_filename,
-            ) = _lpg_binary_details_for_platform(self.working_directory)
+            ) = _lpg_binary_details_for_platform(self.package_directory)
 
             # check if the executable exists
             if not self.are_lpg_binaries_available():
                 # download the binaries for this system
-                LPGExecutor.retrieve_lpg_binaries(self.working_directory)
+                LPGExecutor.retrieve_lpg_binaries(self.package_directory)
                 if not self.are_lpg_binaries_available():
                     raise Exception("Could not install the LPG binaries.")
 

@@ -69,6 +69,27 @@ if [ -z "${SLURM_ARRAY_TASK_ID:-}" ]; then
         exit 1
     fi
 
+    # Pre-fetch the LPG binary ONCE, here on the login node. Otherwise the first
+    # wave of concurrent array tasks would all race to download it into pylpg/
+    # and corrupt the folder. Safe to re-run: only downloads when it is missing.
+    echo "Pre-flight: ensuring the LPG binary is present ..."
+    source pyLPG_env/bin/activate
+    python - <<'PY'
+from pathlib import Path
+from pylpg import lpg_execution as le
+pkg = Path(le.__file__).parent
+src, exe = le._lpg_binary_details_for_platform(pkg)
+if (src / exe).is_file():
+    print(f"  LPG binary already present: {src / exe}")
+else:
+    print(f"  Downloading LPG binary into {pkg} ...")
+    le.LPGExecutor.retrieve_lpg_binaries(pkg)
+PY
+    if [ $? -ne 0 ]; then
+        echo "ERROR: LPG binary pre-flight failed; not submitting." >&2
+        exit 1
+    fi
+
     echo "Submitting array 0-$((COUNT - 1))%${MAX_CONCURRENT} (${COUNT} tasks)"
     exec sbatch --array="0-$((COUNT - 1))%${MAX_CONCURRENT}" SLP_Ade/submit_array.sh
 fi
@@ -96,6 +117,12 @@ source pyLPG_env/bin/activate
 # run_task.py and merge_results.py both read this variable; they fall back to
 # slurm_output/ inside the repo when it is not set (useful for local testing).
 export LPG_OUTPUT_DIR="/fast/central/projects/2026-a-tarasenko-SLP_Ade/first_training_set"
+
+# Working directory for per-task LPG calc dirs (C<task_id>). Point it at fast
+# node-local scratch so the ~155 MB binary+DB copy each task makes does NOT land
+# on shared storage. $TMPDIR is set per job by SLURM on most clusters; the LPG
+# binary itself is still read from / downloaded into pylpg/ (done in pre-flight).
+export LPG_WORK_DIR="${TMPDIR:-/tmp}"
 
 # Create log directory if it does not yet exist
 mkdir -p logs
