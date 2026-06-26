@@ -46,13 +46,15 @@
 # Activate the project virtual environment (path relative to submission dir):
 source pyLPG_env/bin/activate
 
-# Ensure we run from the repository root so that imports and relative paths work
+# cd to the repository root regardless of where sbatch was called from:
+# realpath resolves submit_array.sh to an absolute path, dirname strips the
+# filename (leaving SLP_Ade/), and /.. steps up one level to the repo root.
 cd "$(dirname "$(realpath "$0")")/.."
 
 # Output directory for per-task HDF5 files on the cluster.
 # run_task.py and merge_results.py both read this variable; they fall back to
 # slurm_output/ inside the repo when it is not set (useful for local testing).
-export LPG_OUTPUT_DIR="/projects5/2026-a-tarasenko-SLP_Ade/first_training_set"
+export LPG_OUTPUT_DIR="/fast/central/projects/2026-a-tarasenko-SLP_Ade/first_training_set"
 
 # Create log directory if it does not yet exist
 mkdir -p logs
@@ -62,7 +64,7 @@ mkdir -p logs
 # ---------------------------------------------------------------------------
 echo "Starting task $SLURM_ARRAY_TASK_ID on $(hostname) at $(date)"
 
-python SLP_Ade/run_task.py --task-id "$SLURM_ARRAY_TASK_ID"
+python SLP_Ade/run_task.py --task-id "$SLURM_ARRAY_TASK_ID"                     # TODO: for schleife für tasks?
 
 EXIT_CODE=$?
 echo "Task $SLURM_ARRAY_TASK_ID finished with exit code $EXIT_CODE at $(date)"
