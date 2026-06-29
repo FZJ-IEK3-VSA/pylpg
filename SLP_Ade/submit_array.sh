@@ -23,7 +23,7 @@
 # Each LPG run is single-threaded (--cpus-per-task=1).
 # Memory usage is typically <2 GB per run; 4 GB gives headroom.
 # Wall time depends on the simulation year and household complexity; 2 h is
-# a safe default for a single year.  Adjust all three to your cluster limits.
+# a safe default for a single year.  Adjust all three to cluster limits.
 
 #SBATCH --job-name=pylpg_array
 #SBATCH --ntasks=1
@@ -39,7 +39,7 @@
 # directives before the script body runs, so it cannot read the task count from
 # a file. Instead the bootstrap block below reads task_count.txt and re-submits
 # this script with the correct --array range. Cap on concurrent array tasks
-# (tune to your cluster's fair-use policy):
+# (tune to cluster's fair-use policy):
 MAX_CONCURRENT=50
 
 # ---------------------------------------------------------------------------

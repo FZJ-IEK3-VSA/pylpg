@@ -100,7 +100,7 @@ TRANSPORT_VARIANT_KEYS = [
     ),
 ]
 
-HOUSETYPE = lpgdata.HouseTypes.HT20_Single_Family_House_no_heating_cooling
+HOUSETYPE = lpgdata.HouseTypes.HT20_Single_Family_House_no_heating_cooling          # TODO: refactor to key iteration, replace scalar with list -> add loop over keys in generate_tasks.py, in run_task.py resolve key back to string, in simulation.py accept house type as parameter
 
 #: Custom binary path for LPG. Set to None to use the official release downloaded automatically by the package.
 LPG_BINARY_PATH = None
