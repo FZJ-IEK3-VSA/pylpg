@@ -3,18 +3,20 @@
 This folder contains everything needed to run large-scale LPG household simulations in parallel on a SLURM cluster.  
 All configuration lives in `config.py` and the simulation logic in `simulation.py`; the three SLURM scripts are thin wrappers around them.
 
+> For a detailed developer-facing account of the code changes behind this workflow (the new `LPGExecutor` behaviour, the new execute function, and the whole `SLP_Ade/` subsystem), see [CHANGES.md](CHANGES.md).
+
 ---
 
 ## Folder contents
 
-| File | Purpose |
-|---|---|
-| `config.py` | All tunable sweep parameters (the `# ---- CONFIG ----` block) |
-| `simulation.py` | Helper functions, the shared `run_lpg_simulation()` primitive, and the sequential runner (also works standalone) |
-| `generate_tasks.py` | Enumerates all parameter combinations, writes `tasks.json` |
-| `run_task.py` | SLURM array worker — executes one task from `tasks.json` |
-| `merge_results.py` | Assembles per-task HDF5 files into final per-template HDF5 files |
-| `submit_array.sh` | SLURM batch script |
+| File                | Purpose                                                                                                          |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `config.py`         | All tunable sweep parameters (the `# ---- CONFIG ----` block)                                                    |
+| `simulation.py`     | Helper functions, the shared `run_lpg_simulation()` primitive, and the sequential runner (also works standalone) |
+| `generate_tasks.py` | Enumerates all parameter combinations, writes `tasks.json`                                                       |
+| `run_task.py`       | SLURM array worker — executes one task from `tasks.json`                                                         |
+| `merge_results.py`  | Assembles per-task HDF5 files into final per-template HDF5 files                                                 |
+| `submit_array.sh`   | SLURM batch script                                                                                               |
 
 ---
 
@@ -22,16 +24,16 @@ All configuration lives in `config.py` and the simulation logic in `simulation.p
 
 All parameters are set in `config.py` under `# ---- CONFIG ----`:
 
-| Variable | Description | Default |
-|---|---|---|
-| `YEAR` | Simulation year | `2022` |
-| `HOUSEHOLD_TEMPLATE_KEYS` | List of template names, or `None` for all | `None` (all) |
-| `CLIMATE_SET_KEYS` | List of `(geo_location_key, temp_profile_key, tag)` tuples, or `None` for all combinations | 3 German cities |
-| `TRANSPORT_VARIANT_KEYS` | List of `TransportVariantKey` presets | no-transport + home-charging |
-| `RUNS_PER_COMBO_MAP` | Dict mapping combo-tag patterns to run counts | `{"no_transport": 1, "home_charge_bus_cars_30km": 3}` |
-| `HOUSETYPE` | LPG house type | `HT20_Single_Family_House_no_heating_cooling` |
-| `LPG_BINARY_PATH` | Custom LPG binary, or `None` for auto-download | `None` |
-| `SAVE_CSV` / `SAVE_HDF5` | Output format switches | `False` / `True` |
+| Variable                  | Description                                                                                | Default                                               |
+| ------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| `YEAR`                    | Simulation year                                                                            | `2022`                                                |
+| `HOUSEHOLD_TEMPLATE_KEYS` | List of template names, or `None` for all                                                  | `None` (all)                                          |
+| `CLIMATE_SET_KEYS`        | List of `(geo_location_key, temp_profile_key, tag)` tuples, or `None` for all combinations | 3 German cities                                       |
+| `TRANSPORT_VARIANT_KEYS`  | List of `TransportVariantKey` presets                                                      | no-transport + home-charging                          |
+| `RUNS_PER_COMBO_MAP`      | Dict mapping combo-tag patterns to run counts                                              | `{"no_transport": 1, "home_charge_bus_cars_30km": 3}` |
+| `HOUSETYPE`               | LPG house type                                                                             | `HT20_Single_Family_House_no_heating_cooling`         |
+| `LPG_BINARY_PATH`         | Custom LPG binary, or `None` for auto-download                                             | `None`                                                |
+| `SAVE_CSV` / `SAVE_HDF5`  | Output format switches                                                                     | `False` / `True`                                      |
 
 ---
 
@@ -82,6 +84,7 @@ python SLP_Ade/merge_results.py
 ```
 
 Output:
+
 - `multi_runs_output/<template_name>.h5` — one file per household template, with hierarchy:  
   `/<climate_tag>/<transport_tag>/run_<N>/<data_type>`
 - `multi_runs_output/runs_metadata.csv` — summary of every merged run
@@ -129,19 +132,19 @@ simulation.py           helper functions, run_lpg_simulation()
 
 Defined in `submit_array.sh` — adjust to your cluster limits:
 
-| Directive | Default | Notes |
-|---|---|---|
-| `--cpus-per-task` | `1` | LPG runs are single-threaded |
-| `--mem` | `4G` | Typical usage <2 GB; 4 GB gives headroom |
-| `--time` | `2:00:00` | Safe default for a single-year simulation |
-| `MAX_CONCURRENT` | max 50 concurrent | Concurrency cap applied to the auto-generated `--array` range; tune to cluster fair-use policy |
+| Directive         | Default           | Notes                                                                                          |
+| ----------------- | ----------------- | ---------------------------------------------------------------------------------------------- |
+| `--cpus-per-task` | `1`               | LPG runs are single-threaded                                                                   |
+| `--mem`           | `4G`              | Typical usage <2 GB; 4 GB gives headroom                                                       |
+| `--time`          | `2:00:00`         | Safe default for a single-year simulation                                                      |
+| `MAX_CONCURRENT`  | max 50 concurrent | Concurrency cap applied to the auto-generated `--array` range; tune to cluster fair-use policy |
 
 Two environment variables (exported in `submit_array.sh`) control where data goes:
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `LPG_OUTPUT_DIR` | `slurm_output/` | Where per-task `task_NNNNNN.h5` results are written |
-| `LPG_WORK_DIR` | `$TMPDIR` | Base for each task's `C<task_id>` LPG calc dir; keep on node-local scratch |
+| Variable         | Default         | Purpose                                                                    |
+| ---------------- | --------------- | -------------------------------------------------------------------------- |
+| `LPG_OUTPUT_DIR` | `slurm_output/` | Where per-task `task_NNNNNN.h5` results are written                        |
+| `LPG_WORK_DIR`   | `$TMPDIR`       | Base for each task's `C<task_id>` LPG calc dir; keep on node-local scratch |
 
 Both fall back to in-repo defaults when unset, so local testing works without the cluster.
 
