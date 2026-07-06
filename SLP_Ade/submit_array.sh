@@ -73,7 +73,8 @@ if [ -z "${SLURM_ARRAY_TASK_ID:-}" ]; then
     # wave of concurrent array tasks would all race to download it into pylpg/
     # and corrupt the folder. Safe to re-run: only downloads when it is missing.
     echo "Pre-flight: ensuring the LPG binary is present ..."
-    source pyLPG_env/bin/activate
+    source $HOME/miniforge3/etc/profile.d/conda.sh
+    conda activate pyLPG_env
     python - <<'PY'
 from pathlib import Path
 from pylpg import lpg_execution as le
@@ -111,7 +112,8 @@ cd "${SLURM_SUBMIT_DIR:-$(dirname "$(realpath "$0")")/..}" || exit 1
 # module load python/3.11
 
 # Activate the project virtual environment (path relative to repo root):
-source pyLPG_env/bin/activate
+source $HOME/miniforge3/etc/profile.d/conda.sh
+conda activate pyLPG_env
 
 # Output directory for per-task HDF5 files on the cluster.
 # run_task.py and merge_results.py both read this variable; they fall back to
