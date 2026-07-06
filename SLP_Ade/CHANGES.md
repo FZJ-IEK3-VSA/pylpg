@@ -109,12 +109,40 @@ in the root [../README.md](../README.md) under *"Choosing The LPG Binary At Runt
 > `execute_lpg_with_householddata_custom(...)`; the actual function is
 > `execute_lpg_with_householddata_enabled_flex_and_transport_custom`.
 
-### 1.5 NoFlex profiles included in result parsing
+### 1.5 Flexibility outputs: NoFlex profiles keyed distinctly + event log surfaced
 
-`read_all_json_results_in_directory()` now also globs `*NoFlex*.json` and merges those
-profiles into the result set. Previously, enabling flexibility caused the non-flexibility
-("NoFlex") sum profiles to be dropped; they are now retained so a run can carry both the
-flexibility and the baseline non-flexibility series.
+When `enable_flexibility=True`, the LPG emits two extra kinds of output that were
+previously being lost. Both are now surfaced correctly.
+
+**NoFlex profiles — distinct keys, no more collision.** With flexibility on, the LPG writes
+`Sum.NoFlexDevices.<LoadType>.<HHKey>.json` files: the same load profiles *without* the
+flexible-device shifting applied. These carry an **identical** `LoadTypeName`/`HHKey` to
+their flexible counterparts. The old reader built each column key as
+`<LoadTypeName>_<HHKey>`, so the flexible and NoFlex profiles mapped to the *same* column.
+Worse, `read_all_json_results_in_directory()` first globbed `Sum.*.json` (which already
+matches the NoFlex files) **and then** globbed `*NoFlex*.json` again and appended those,
+so the NoFlex profile was processed last and silently **overwrote** the flexible one —
+enabling flexibility actually made the output show the *no-flexibility* series. The reader
+now:
+
+- drops the redundant second `*NoFlex*.json` glob (the `Sum.*.json` glob already covers
+  them), and
+- detects NoFlex files by filename and keys them `<LoadTypeName>_NoFlex_<HHKey>`.
+
+So a flexibility run now carries both series as their own columns / data types
+(`<LoadType>` and `<LoadType>_NoFlex`); their difference is the effect of flexibility.
+
+**Flexibility event log — now read.** The LPG also writes one
+`FlexibilityEvents.<HHKey>.json` per household into `results/**Reports**/` (not `Results/`,
+which is why the profile reader never saw it). Each file is a JSON list of load-shifting
+events — an event log, not a minute profile. A new
+`LPGExecutor.read_flexibility_events()` flattens every household's events
+(`pandas.json_normalize`, one row per event, tagged with `HHKey`; nested list/dict cells
+JSON-encoded so the frame is HDF5-`fixed`-safe) into one DataFrame. When flexibility is
+enabled, `execute_lpg_with_householddata_enabled_flex_and_transport_custom()` attaches it
+to the result frame as `df.attrs["flexibility_events"]` (frame metadata, since its shape
+differs from the profiles). The `SLP_Ade` workflow stores it as its own `FlexibilityEvents`
+group (see §2.2 / §2.4).
 
 ---
 
@@ -181,7 +209,9 @@ sequential runner (`python SLP_Ade/simulation.py`).
   `select_by_keys()`, `resolve_optional_key()`, `make_climate_variants()`,
   `make_transport_variants()` + the resolved `TransportVariant` dataclass,
   `safe_name()` (filesystem/HDF5-safe keys), `split_dataframe_by_type()` (regroup result
-  columns by the prefix before the last `_`), `create_combo_tag()`, and `save_as_HDF5()`.
+  columns by the prefix before the last `_`), `attach_flexibility_events()` (fold the
+  flexibility event log from `df.attrs` into the data-type map as a `FlexibilityEvents`
+  group — see §1.5), `create_combo_tag()`, and `save_as_HDF5()`.
 - **HDF5 layout.** The sequential runner writes one file per template with the hierarchy
   `/<climate_tag>/<transport_tag>/run_<N>/<data_type>` (+ a `_metadata` node) — the same
   layout the merge step reproduces (§2.5).
@@ -214,7 +244,10 @@ calls `run_lpg_simulation()`.
   a clean dir if a task id is requeued.
 - **One file per task.** Each task writes a single `slurm_output/task_<NNNNNN>.h5`
   (`/data/<data_type>` + `/metadata`), so there are **zero concurrent HDF5 write
-  conflicts**. The output directory is overridable via `$LPG_OUTPUT_DIR`.
+  conflicts**. The output directory is overridable via `$LPG_OUTPUT_DIR`. When flexibility
+  is enabled, the flexibility event log rides along as a `/data/FlexibilityEvents` group
+  (§1.5), so the generic `/data/*` copy in the merge step (§2.5) carries it through with no
+  special-casing.
 
 ### 2.5 `merge_results.py` — fan-in
 

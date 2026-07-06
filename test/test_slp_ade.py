@@ -22,6 +22,7 @@ from SLP_Ade.config import (
     get_runs_for_combo,
 )
 from SLP_Ade.simulation import (
+    attach_flexibility_events,
     collect_lpg_members,
     create_combo_tag,
     safe_name,
@@ -69,6 +70,41 @@ def test_split_dataframe_by_type_splits_on_last_underscore() -> None:
     df = pd.DataFrame({"Foo_Bar_HH1": [1.0]})
     result = split_dataframe_by_type(df)
     assert "Foo_Bar" in result
+
+
+def test_split_dataframe_by_type_keeps_noflex_distinct() -> None:
+    # Flexible and NoFlex profiles must land in separate data types, not collide.
+    df = pd.DataFrame({
+        "Electricity_HH1": [1.0, 2.0],
+        "Electricity_NoFlex_HH1": [3.0, 4.0],
+    })
+    result = split_dataframe_by_type(df)
+    assert set(result.keys()) == {"Electricity", "Electricity_NoFlex"}
+
+
+# ---------------------------------------------------------------------------
+# attach_flexibility_events
+# ---------------------------------------------------------------------------
+
+def test_attach_flexibility_events_adds_group_when_present() -> None:
+    data_types = {"Electricity": pd.DataFrame({"Electricity_HH1": [1.0]})}
+    df = pd.DataFrame({"Electricity_HH1": [1.0]})
+    events = pd.DataFrame({"HHKey": ["HH1"], "Device.Name": ["Dishwasher"]})
+    df.attrs["flexibility_events"] = events
+
+    attach_flexibility_events(data_types, df)
+
+    assert "FlexibilityEvents" in data_types
+    assert data_types["FlexibilityEvents"] is events
+
+
+def test_attach_flexibility_events_noop_without_events() -> None:
+    data_types = {"Electricity": pd.DataFrame({"Electricity_HH1": [1.0]})}
+    df = pd.DataFrame({"Electricity_HH1": [1.0]})  # no .attrs set
+
+    attach_flexibility_events(data_types, df)
+
+    assert "FlexibilityEvents" not in data_types
 
 
 # ---------------------------------------------------------------------------

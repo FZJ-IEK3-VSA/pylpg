@@ -28,9 +28,9 @@
 #SBATCH --job-name=pylpg_array
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=4G
+#SBATCH --mem=2G
 #SBATCH --time=02:00:00
-
+    
 # Log files – one per array element: logs/task_<jobid>_<arrayid>.{out,err}
 #SBATCH --output=logs/task_%A_%a.out
 #SBATCH --error=logs/task_%A_%a.err

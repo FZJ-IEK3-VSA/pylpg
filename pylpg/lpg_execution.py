@@ -1,5 +1,6 @@
 import glob
 import io
+import json
 import os
 import pathlib
 import random
@@ -319,6 +320,14 @@ def execute_lpg_with_householddata_enabled_flex_and_transport_custom(
         lpe.execute_lpg_binaries()
 
         df = lpe.read_all_json_results_in_directory()
+
+        # The flexibility event log lives outside the profile results and has a
+        # different shape, so it is attached as frame metadata rather than a
+        # column. Callers (e.g. the SLP_Ade workflow) store it as its own group.
+        if enable_flexibility and df is not None:
+            events_df = lpe.read_flexibility_events()
+            if events_df is not None:
+                df.attrs["flexibility_events"] = events_df
 
         return df
     except OSError as why:
@@ -694,10 +703,32 @@ class LPGExecutor:
         return profile
 
     def read_all_json_results_in_directory(self) -> Optional[pd.DataFrame]:
+        """Parse every minute-resolution profile JSON into one DataFrame.
+
+        Each column is keyed ``<LoadTypeName>_<HHKey>`` and the index is a
+        minute-resolution ``DatetimeIndex``.
+
+        When flexibility is enabled, the LPG additionally writes
+        ``Sum.NoFlexDevices.<LoadType>.<HHKey>.json`` files: the *same* load
+        profiles as they would look **without** the flexible-device shifting
+        applied. These carry an identical ``LoadTypeName``/``HHKey`` to their
+        flexible counterparts, so they are keyed ``<LoadTypeName>_NoFlex_<HHKey>``
+        to keep them as their own columns/data types instead of overwriting the
+        flexible profiles. Comparing ``<LoadType>`` against ``<LoadType>_NoFlex``
+        is how the effect of flexibility is read out. The raw flexibility event
+        log is exposed separately via :meth:`read_flexibility_events`.
+
+        :return Optional[pd.DataFrame]: Combined profiles, or None if the results
+            directory does not exist.
+        """
         df: pd.DataFrame = pd.DataFrame()
         results_directory = Path(self.calculation_directory, "results", "Results")
         if not os.path.exists(str(results_directory)):
             return None
+        # ``Sum.*.json`` already matches the ``Sum.NoFlexDevices.*.json`` files,
+        # so they must NOT be globbed a second time (that duplicated them and,
+        # combined with the shared key, let the NoFlex profile silently overwrite
+        # the flexible one). NoFlex files are told apart by filename below.
         potential_sum_files = glob.glob(str(results_directory) + "/Sum.*.json")
 
         bodilyActivity_files = glob.glob(
@@ -717,10 +748,6 @@ class LPGExecutor:
         soc = glob.glob(str(results_directory) + "/Soc.*.json")
         potential_sum_files.extend(soc)
 
-        # Include NoFlex (non-flexibility) profiles when flexibility is enabled
-        noflex_files = glob.glob(str(results_directory) + "/*NoFlex*.json")
-        potential_sum_files.extend(noflex_files)
-
         isFirst = True
         for file in potential_sum_files:
             profile = self.parse_json_profile(file)
@@ -732,7 +759,12 @@ class LPGExecutor:
                 or profile.HouseKey.HHKey is None
             ):
                 raise Exception("empty housekey")
-            key: str = profile.LoadTypeName + "_" + str(profile.HouseKey.HHKey.Key)
+            # NoFlex profiles share LoadTypeName/HHKey with the flexible profile;
+            # mark them so they land in a distinct column instead of colliding.
+            load_type_name = profile.LoadTypeName
+            if "NoFlex" in Path(file).name:
+                load_type_name = load_type_name + "_NoFlex"
+            key: str = load_type_name + "_" + str(profile.HouseKey.HHKey.Key)
             df[key] = profile.Values
             if isFirst:
                 isFirst = False
@@ -740,3 +772,49 @@ class LPGExecutor:
                 timestamps = pd.date_range(ts, periods=len(profile.Values), freq="min")
                 df.index = timestamps
         return df
+
+    def read_flexibility_events(self) -> Optional[pd.DataFrame]:
+        """Read the flexibility event log written under ``results/Reports/``.
+
+        When flexibility is enabled the LPG writes one
+        ``FlexibilityEvents.<HHKey>.json`` file per household into the
+        ``Reports`` directory (not ``Results``, which is why the profile reader
+        never picked it up). Each file is a JSON list of load-shifting events
+        (flexible device, its loads, timing) — an event log, not a minute
+        profile, so it cannot be a column in the profile DataFrame.
+
+        The events from every household file are flattened with
+        :func:`pandas.json_normalize` into one row per event, tagged with the
+        originating ``HHKey``. Any remaining nested (list/dict) cells are
+        JSON-encoded to strings so the frame is safe to store in HDF5
+        ``fixed`` format.
+
+        :return Optional[pd.DataFrame]: One row per flexibility event, or None
+            when no (non-empty) event file exists.
+        """
+        reports_directory = Path(self.calculation_directory, "results", "Reports")
+        if not reports_directory.exists():
+            return None
+
+        frames: List[pd.DataFrame] = []
+        for event_file in sorted(reports_directory.glob("FlexibilityEvents.*.json")):
+            with open(event_file) as fh:
+                events = json.load(fh)
+            if not events:
+                continue
+            frame = pd.json_normalize(events)
+            # Filename is FlexibilityEvents.<HHKey>.json -> recover the HHKey.
+            frame.insert(0, "HHKey", event_file.name.split(".")[1])
+            frames.append(frame)
+
+        if not frames:
+            return None
+
+        events_df = pd.concat(frames, ignore_index=True)
+        # HDF5 fixed format cannot store list/dict cells; JSON-encode them.
+        for col in events_df.columns:
+            if events_df[col].map(lambda v: isinstance(v, (list, dict))).any():
+                events_df[col] = events_df[col].map(
+                    lambda v: json.dumps(v) if isinstance(v, (list, dict)) else v
+                )
+        return events_df

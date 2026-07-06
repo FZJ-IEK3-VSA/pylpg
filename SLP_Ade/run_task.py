@@ -13,7 +13,9 @@ SLP_Ade/tasks.json  -- task manifest created by generate_tasks.py.
 Output
 ------
 slurm_output/task_<NNNNNN>.h5  -- per-task HDF5 file with:
-    /data/<data_type>   -- simulation result DataFrames
+    /data/<data_type>   -- simulation result DataFrames (per-load-type profiles;
+                           with flexibility enabled also the `<LoadType>_NoFlex`
+                           baseline profiles and a `FlexibilityEvents` event log)
     /metadata           -- single-row DataFrame with run metadata
 
 Writing one file per task avoids concurrent HDF5 write conflicts entirely.
@@ -38,6 +40,7 @@ from pylpg import lpgdata
 
 from SLP_Ade.simulation import (  # noqa: E402
     TransportVariant,
+    attach_flexibility_events,
     run_lpg_simulation,
     safe_name,
     split_dataframe_by_type,
@@ -132,6 +135,8 @@ def run_task(task: dict) -> None:
     out_path = output_dir / f"task_{task_id:06d}.h5"
 
     data_types = split_dataframe_by_type(df)
+    # Store the flexibility event log (if any) as its own group.
+    attach_flexibility_events(data_types, df)
 
     with pd.HDFStore(out_path, mode="w", complevel=9, complib="blosc") as store:
         for data_type, type_df in data_types.items():

@@ -89,6 +89,18 @@ Output:
   `/<climate_tag>/<transport_tag>/run_<N>/<data_type>`
 - `multi_runs_output/runs_metadata.csv` — summary of every merged run
 
+The `<data_type>` groups are the per-load-type profiles (e.g. `Electricity`, `Hot_water`).
+When flexibility is enabled (it is by default in `run_lpg_simulation`), two extra kinds of
+`<data_type>` appear:
+
+- `<LoadType>_NoFlex` — the same load profile **without** flexible-device shifting applied.
+  Comparing `<LoadType>` against `<LoadType>_NoFlex` is how you read out the effect of
+  flexibility. (Flexibility itself is not a load type, so there is no standalone
+  "flexibility" series.)
+- `FlexibilityEvents` — the load-shifting **event log** (one row per event: flexible
+  device, its loads, timing), flattened from the LPG's per-household
+  `FlexibilityEvents.<HHKey>.json` reports. This is a records table, not a time series.
+
 ---
 
 ## Running locally (no SLURM)

@@ -25,6 +25,8 @@ Outputs
 - HDF5 files with hierarchical structure (if SAVE_HDF5=True):
     One file per household template: <template_name>.h5
     Structure within each file: /climate/transport/run_N/data_type
+    With flexibility enabled, the data_type groups also include the baseline
+    `<LoadType>_NoFlex` profiles and a `FlexibilityEvents` event-log table.
 - `runs_metadata.csv` summarizes all successful runs.
 
 Run
@@ -133,6 +135,27 @@ def split_dataframe_by_type(df: pd.DataFrame) -> dict[str, pd.DataFrame]:
         if data_type not in data_types:
             data_types[data_type] = pd.DataFrame(index=df.index)
         data_types[data_type][col] = df[col]
+    return data_types
+
+
+def attach_flexibility_events(
+    data_types: dict[str, pd.DataFrame], df: pd.DataFrame
+) -> dict[str, pd.DataFrame]:
+    """Add the flexibility event log (if present) as its own data-type group.
+
+    When flexibility is enabled and shifting events occurred, the LPG execution
+    layer attaches the flattened event log to ``df.attrs['flexibility_events']``.
+    It is an event log, not a minute-resolution profile, so it is stored as a
+    standalone ``FlexibilityEvents`` group alongside the per-load-type profiles
+    rather than merged into them. No-op when no events are attached.
+
+    :param dict[str, pd.DataFrame] data_types: Data-type -> DataFrame mapping to extend.
+    :param pd.DataFrame df: Result frame whose ``.attrs`` may hold the event log.
+    :return dict[str, pd.DataFrame]: The mapping, with a ``FlexibilityEvents`` entry added when present.
+    """
+    events_df = df.attrs.get("flexibility_events")
+    if events_df is not None:
+        data_types["FlexibilityEvents"] = events_df
     return data_types
 
 
@@ -481,6 +504,8 @@ def execute_single_run(
 
         # Split dataframe by data type
         data_types = split_dataframe_by_type(df)
+        # Store the flexibility event log (if any) as its own group.
+        attach_flexibility_events(data_types, df)
 
         # Save to CSV if enabled
         if SAVE_CSV:
