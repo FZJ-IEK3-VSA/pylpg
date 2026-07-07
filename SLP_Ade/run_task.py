@@ -12,7 +12,7 @@ SLP_Ade/tasks.json  -- task manifest created by generate_tasks.py.
 
 Output
 ------
-slurm_output/task_<NNNNNN>.h5  -- per-task HDF5 file with:
+config.SLURM_OUTPUT_DIR/task_<NNNNNN>.h5  -- per-task HDF5 file with:
     /data/<data_type>   -- simulation result DataFrames (per-load-type profiles;
                            with flexibility enabled also the `<LoadType>_NoFlex`
                            baseline profiles and a `FlexibilityEvents` event log)
@@ -38,6 +38,7 @@ import pandas as pd
 
 from pylpg import lpgdata
 
+from SLP_Ade.config import SLURM_OUTPUT_DIR  # noqa: E402
 from SLP_Ade.simulation import (  # noqa: E402
     TransportVariant,
     attach_flexibility_events,
@@ -67,8 +68,10 @@ def run_task(task: dict) -> None:
     - ``/data/<data_type>`` — simulation result DataFrames (one per load type)
     - ``/metadata`` — single-row DataFrame with run metadata
 
-    The output directory defaults to ``slurm_output/`` in the repo root and
-    can be overridden via the ``$LPG_OUTPUT_DIR`` environment variable.
+    The output directory is :data:`SLP_Ade.config.SLURM_OUTPUT_DIR` — the single
+    source of truth that :mod:`SLP_Ade.merge_results` reads from too, so writer
+    and reader can never diverge. Override it for a one-off run by exporting
+    ``$LPG_OUTPUT_DIR`` (config resolves that consistently for both scripts).
 
     :param dict task: Task dictionary as produced by :func:`~SLP_Ade.generate_tasks.build_task_list`.
     :return None: No return value.
@@ -127,10 +130,10 @@ def run_task(task: dict) -> None:
         sys.exit(1)
 
     # --- save per-task HDF5 (no concurrent write risk) -------------------
-    # LPG_OUTPUT_DIR can be set in the environment (e.g. by submit_array.sh on
-    # the cluster).  Falls back to slurm_output/ inside the repo for local runs.
-    _env_output = os.environ.get("LPG_OUTPUT_DIR")
-    output_dir = Path(_env_output)                      
+    # config.SLURM_OUTPUT_DIR is the single source of truth for where task files
+    # go; merge_results.py reads the same value. It honours $LPG_OUTPUT_DIR when
+    # set, else falls back to the committed default in config.py.
+    output_dir = SLURM_OUTPUT_DIR
     output_dir.mkdir(parents=True, exist_ok=True)
     out_path = output_dir / f"task_{task_id:06d}.h5"
 

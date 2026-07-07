@@ -129,9 +129,9 @@ simulation.py           helper functions, run_lpg_simulation()
 ├── generate_tasks.py   reads CONFIG → writes tasks.json
 │
 ├── run_task.py         reads tasks.json[N] → calls run_lpg_simulation()
-│                                           → writes slurm_output/task_N.h5
+│                                           → writes SLURM_OUTPUT_DIR/task_N.h5
 │
-└── merge_results.py    reads slurm_output/*.h5 + tasks.json
+└── merge_results.py    reads SLURM_OUTPUT_DIR/*.h5 + tasks.json
                         → writes multi_runs_output/<template>.h5
 ```
 
@@ -150,13 +150,19 @@ Defined in `submit_array.sh` — adjust to your cluster limits:
 | `--time`          | `2:00:00`         | Safe default for a single-year simulation                                                      |
 | `MAX_CONCURRENT`  | max 50 concurrent | Concurrency cap applied to the auto-generated `--array` range; tune to cluster fair-use policy |
 
-Two environment variables (exported in `submit_array.sh`) control where data goes:
+Where the per-task results are written is the **single source of truth**
+`SLURM_OUTPUT_DIR` in `config.py`. Both `run_task.py` (writer) and
+`merge_results.py` (reader) import it, so an array worker under SLURM and an
+interactive merge on the login node can never look in different directories.
+Change the default there, or override it at runtime by exporting
+`LPG_OUTPUT_DIR` — but if you override it, export it in **both** shells (the
+`submit_array.sh` job *and* the shell you run `merge_results.py` in), otherwise
+the merge falls back to the `config.py` default.
 
-| Variable         | Default         | Purpose                                                                    |
-| ---------------- | --------------- | -------------------------------------------------------------------------- |
-| `LPG_OUTPUT_DIR` | `slurm_output/` | Where per-task `task_NNNNNN.h5` results are written                        |
-| `LPG_WORK_DIR`   | `$TMPDIR`       | Base for each task's `C<task_id>` LPG calc dir; keep on node-local scratch |
+One environment variable (exported in `submit_array.sh`) controls the other path:
 
-Both fall back to in-repo defaults when unset, so local testing works without the cluster.
+| Variable       | Default   | Purpose                                                                    |
+| -------------- | --------- | -------------------------------------------------------------------------- |
+| `LPG_WORK_DIR` | `$TMPDIR` | Base for each task's `C<task_id>` LPG calc dir; keep on node-local scratch |
 
 Logs are written to `logs/task_<jobid>_<arrayid>.out/.err`.

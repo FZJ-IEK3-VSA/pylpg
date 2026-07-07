@@ -6,8 +6,9 @@ Run after **all** array jobs have finished:
 
 Input
 -----
-SLP_Ade/tasks.json   -- task manifest
-slurm_output/        -- directory of task_<NNNNNN>.h5 files written by run_task.py
+SLP_Ade/tasks.json     -- task manifest
+config.SLURM_OUTPUT_DIR -- directory of task_<NNNNNN>.h5 files written by
+                          run_task.py (honours $LPG_OUTPUT_DIR)
 
 Output
 ------
@@ -22,7 +23,6 @@ Also writes multi_runs_output/runs_metadata.csv summarising every merged run.
 from __future__ import annotations
 
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -31,6 +31,7 @@ sys.path.insert(0, str(_REPO_ROOT))
 
 import pandas as pd
 
+from SLP_Ade.config import SLURM_OUTPUT_DIR  # noqa: E402
 from SLP_Ade.simulation import safe_name  # noqa: E402
 
 
@@ -38,7 +39,8 @@ def main() -> None:
     """Merge all per-task HDF5 files into final per-template HDF5 files.
 
     Reads ``tasks.json`` and iterates over every ``task_<NNNNNN>.h5`` in
-    ``$LPG_OUTPUT_DIR`` (default: ``slurm_output/``).  For each task file the
+    :data:`SLP_Ade.config.SLURM_OUTPUT_DIR` (the same location run_task.py writes
+    to; honours ``$LPG_OUTPUT_DIR``).  For each task file the
     simulation DataFrames are copied into
     ``multi_runs_output/<template_name>.h5`` under the hierarchical path
     ``/<climate_tag>/<transport_tag>/run_<N>/<data_type>``.
@@ -57,9 +59,11 @@ def main() -> None:
     tasks: list[dict] = json.loads(tasks_file.read_text())
     tasks_by_id: dict[int, dict] = {t["task_id"]: t for t in tasks}
 
-    # LPG_OUTPUT_DIR mirrors the setting in submit_array.sh / run_task.py.
-    _env_output = os.environ.get("LPG_OUTPUT_DIR")
-    slurm_dir = Path(_env_output) if _env_output else _REPO_ROOT / "slurm_output"
+    # config.SLURM_OUTPUT_DIR is the single source of truth for where run_task.py
+    # writes its per-task files (honours $LPG_OUTPUT_DIR, else the committed
+    # default). Importing the same value means this merge can never look in a
+    # different directory than the array workers wrote to.
+    slurm_dir = SLURM_OUTPUT_DIR
     final_dir = _REPO_ROOT / "multi_runs_output"
     final_dir.mkdir(exist_ok=True)
 

@@ -22,6 +22,23 @@ OUTPUT_DIR = Path("multi_runs_output")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 
+# Single source of truth for the SLURM sweep's per-task output directory.
+# run_task.py writes its task_<NNNNNN>.h5 files here; merge_results.py reads them
+# back. Both import THIS value, so an array worker (running under SLURM) and an
+# interactive merge_results.py run can never look in different directories --
+# the failure mode where the merge fell back to a stale slurm_output/ path
+# because the submit script's `export LPG_OUTPUT_DIR` was not visible in the
+# login shell. Override for a one-off run by exporting LPG_OUTPUT_DIR (it then
+# applies to both scripts consistently).
+SLURM_OUTPUT_DIR = Path(
+    os.environ.get("LPG_OUTPUT_DIR")
+    or "/fast/central/projects/2026-a-tarasenko-SLP_Ade/first_training_set"
+)
+# For local testing, either export LPG_OUTPUT_DIR or change the default above to
+# a portable in-repo path, e.g.:
+#   Path(__file__).resolve().parent.parent / "slurm_output"
+
+
 # Output format options
 SAVE_CSV = False  # Save individual CSV files per run
 SAVE_HDF5 = True  # Save runs to HDF5 files (one file per household template)
