@@ -272,73 +272,63 @@ def execute_lpg_with_householddata_enabled_flex_and_transport_custom(
     lpg_binary_path: Optional[Union[Path, str]] = None,
     working_directory: Optional[Union[Path, str]] = None,
 ):
-    try:
-        print(
-            "Starting calc with "
-            + str(calculation_index)
-            + " for "
-            + (householddata.Name or "nameless household")
-        )
-        lpe: LPGExecutor = LPGExecutor(
-            calculation_index, clear_previous_calc, lpg_binary_path, working_directory
-        )
+    print(
+        "Starting calc with "
+        + str(calculation_index)
+        + " for "
+        + (householddata.Name or "nameless household")
+    )
+    lpe: LPGExecutor = LPGExecutor(
+        calculation_index, clear_previous_calc, lpg_binary_path, working_directory
+    )
 
-        request = lpe.make_default_lpg_settings(year)
-        assert request.House is not None, "Housedata was None"
-        request.House.HouseTypeCode = housetype
-        if random_seed is not None and request.CalcSpec is not None:
-            request.CalcSpec.RandomSeed = random_seed
-        if target_heating_demand is not None:
-            request.House.TargetHeatDemand = target_heating_demand
-        if target_cooling_demand is not None:
-            request.House.TargetCoolingDemand = target_cooling_demand
-        request.House.Households.append(householddata)
-        if request.CalcSpec is None:
-            raise Exception("Failed to initialize the calculation spec")
-        if startdate is not None:
-            request.CalcSpec.set_StartDate(startdate)
-        if enddate is not None:
-            request.CalcSpec.set_EndDate(enddate)
-        request.CalcSpec.GeographicLocation = geographic_location
-        request.CalcSpec.TemperatureProfile = temperature_profile
-        request.CalcSpec.EnergyIntensityType = energy_intensity
-        request.CalcSpec.set_EnableFlexibility(enable_flexibility)
-        request.CalcSpec.set_EnableTransportation(enable_transportation)
-        calcspecfilename = Path(lpe.calculation_directory, "calcspec.json")
-        if enable_transportation:
-            request.CalcSpec.CalcOptions.append(CalcOption.TansportationDeviceJsons)
-        if enable_flexibility:
-            request.CalcSpec.CalcOptions.append(CalcOption.JsonHouseholdSumFiles)
-            request.CalcSpec.CalcOptions.append(CalcOption.JsonHouseholdSumFilesNoFlex)
-            request.CalcSpec.CalcOptions.append(CalcOption.FlexibilityEvents)
+    request = lpe.make_default_lpg_settings(year)
+    assert request.House is not None, "Housedata was None"
+    request.House.HouseTypeCode = housetype
+    if random_seed is not None and request.CalcSpec is not None:
+        request.CalcSpec.RandomSeed = random_seed
+    if target_heating_demand is not None:
+        request.House.TargetHeatDemand = target_heating_demand
+    if target_cooling_demand is not None:
+        request.House.TargetCoolingDemand = target_cooling_demand
+    request.House.Households.append(householddata)
+    if request.CalcSpec is None:
+        raise Exception("Failed to initialize the calculation spec")
+    if startdate is not None:
+        request.CalcSpec.set_StartDate(startdate)
+    if enddate is not None:
+        request.CalcSpec.set_EndDate(enddate)
+    request.CalcSpec.GeographicLocation = geographic_location
+    request.CalcSpec.TemperatureProfile = temperature_profile
+    request.CalcSpec.EnergyIntensityType = energy_intensity
+    request.CalcSpec.set_EnableFlexibility(enable_flexibility)
+    request.CalcSpec.set_EnableTransportation(enable_transportation)
+    calcspecfilename = Path(lpe.calculation_directory, "calcspec.json")
+    if enable_transportation:
+        request.CalcSpec.CalcOptions.append(CalcOption.TansportationDeviceJsons)
+    if enable_flexibility:
+        request.CalcSpec.CalcOptions.append(CalcOption.JsonHouseholdSumFiles)
+        request.CalcSpec.CalcOptions.append(CalcOption.JsonHouseholdSumFilesNoFlex)
+        request.CalcSpec.CalcOptions.append(CalcOption.FlexibilityEvents)
 
-        # Always enable bodily activity output
-        request.CalcSpec.CalcOptions.append(CalcOption.BodilyActivityStatistics)
-        with open(calcspecfilename, "w") as calcspecfile:
-            jsonrequest = request.to_json(indent=4)  # type: ignore
-            calcspecfile.write(jsonrequest)
-        lpe.execute_lpg_binaries()
+    # Always enable bodily activity output
+    request.CalcSpec.CalcOptions.append(CalcOption.BodilyActivityStatistics)
+    with open(calcspecfilename, "w") as calcspecfile:
+        jsonrequest = request.to_json(indent=4)  # type: ignore
+        calcspecfile.write(jsonrequest)
+    lpe.execute_lpg_binaries()
 
-        df = lpe.read_all_json_results_in_directory()
+    df = lpe.read_all_json_results_in_directory()
 
-        # The flexibility event log lives outside the profile results and has a
-        # different shape, so it is attached as frame metadata rather than a
-        # column. Callers (e.g. the SLP_Ade workflow) store it as its own group.
-        if enable_flexibility and df is not None:
-            events_df = lpe.read_flexibility_events()
-            if events_df is not None:
-                df.attrs["flexibility_events"] = events_df
+    # The flexibility event log lives outside the profile results and has a
+    # different shape, so it is attached as frame metadata rather than a
+    # column. Callers (e.g. the SLP_Ade workflow) store it as its own group.
+    if enable_flexibility and df is not None:
+        events_df = lpe.read_flexibility_events()
+        if events_df is not None:
+            df.attrs["flexibility_events"] = events_df
 
-        return df
-    except OSError as why:
-        print("Exception: " + str(why))
-        traceback.print_stack()
-        raise
-    except:  # catch *all* exceptions
-        e = sys.exc_info()[0]
-        print("Exception: " + str(e))
-        traceback.print_stack()
-        raise
+    return df
 
 
 def execute_lpg_with_many_householdata(
@@ -581,9 +571,10 @@ class LPGExecutor:
         self.package_directory = pathlib.Path(__file__).parent.absolute()
         if working_directory is not None:
             self.working_directory = Path(working_directory)
-            self.working_directory.mkdir(parents=True, exist_ok=True)
         else:
-            self.working_directory = self.package_directory
+            self.working_directory = Path()
+        self.working_directory.mkdir(parents=True, exist_ok=True)
+        
         if lpg_binary_path is not None:
             # if a custom binary path is provided, use it instead of the default one
             custom_binary_path = Path(lpg_binary_path)
@@ -612,8 +603,9 @@ class LPGExecutor:
             if not self.are_lpg_binaries_available():
                 # download the binaries for this system
                 LPGExecutor.retrieve_lpg_binaries(self.package_directory)
-                if not self.are_lpg_binaries_available():
-                    raise Exception("Could not install the LPG binaries.")
+
+        if not self.are_lpg_binaries_available():
+            raise Exception("Could not install the LPG binaries.")
 
         self.calculation_directory = Path(self.working_directory, "C" + str(calcidx))
         print("Working in directory: " + str(self.calculation_directory))

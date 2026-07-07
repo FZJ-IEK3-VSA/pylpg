@@ -77,7 +77,7 @@ def run_task(task: dict) -> None:
     task_id: int = task["task_id"]
 
     # --- resolve string keys to LPG objects ------------------------------
-    tmpl = getattr(lpgdata.HouseholdTemplates, task["template_key"])
+    tmpl = getattr(lpgdata.HouseholdTemplates, task["template_key"])            #TODO: replace with JsonReference to avoid get_attr_key() and make it more robust
     geographic_location = getattr(
         lpgdata.GeographicLocations, task["geographic_location_key"]
     )
@@ -130,10 +130,12 @@ def run_task(task: dict) -> None:
     # LPG_OUTPUT_DIR can be set in the environment (e.g. by submit_array.sh on
     # the cluster).  Falls back to slurm_output/ inside the repo for local runs.
     _env_output = os.environ.get("LPG_OUTPUT_DIR")
-    output_dir = Path(_env_output) if _env_output else _REPO_ROOT / "slurm_output"
+    output_dir = Path(_env_output)                      
     output_dir.mkdir(parents=True, exist_ok=True)
     out_path = output_dir / f"task_{task_id:06d}.h5"
 
+    # Regroup the flat <LoadType>_<HHKey> columns into one frame per load type
+    # so each is saved as its own HDF5 group (keeps data types separable on read).
     data_types = split_dataframe_by_type(df)
     # Store the flexibility event log (if any) as its own group.
     attach_flexibility_events(data_types, df)
@@ -162,7 +164,7 @@ def run_task(task: dict) -> None:
         )
         store.put("metadata", meta_df, format="fixed")
 
-    print(f"[task {task_id}] Saved  ->  {out_path.relative_to(_REPO_ROOT)}")
+    print(f"[task {task_id}] Saved  ->  {out_path.relative_to(_REPO_ROOT)}")        #TODO: replace with absolute path
 
 
 def main() -> None:
@@ -188,7 +190,7 @@ def main() -> None:
 
     tasks_file = _REPO_ROOT / "SLP_Ade" / "tasks.json"
     if not tasks_file.exists():
-        sys.exit(f"tasks.json not found at {tasks_file}. Run generate_tasks.py first.")
+        sys.exit(f"tasks.json not found at {tasks_file}. Run generate_tasks.py first.")                 #TODO: replace sys.exit with exception
 
     tasks: list[dict] = json.loads(tasks_file.read_text())
 

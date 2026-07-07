@@ -40,80 +40,73 @@
 # a file. Instead the bootstrap block below reads task_count.txt and re-submits
 # this script with the correct --array range. Cap on concurrent array tasks
 # (tune to cluster's fair-use policy):
-MAX_CONCURRENT=50
+# MAX_CONCURRENT=50
 
 # ---------------------------------------------------------------------------
 # Bootstrap: when launched outside of an array (no $SLURM_ARRAY_TASK_ID),
 # read the task count and re-submit ourselves with the right --array range.
 # ---------------------------------------------------------------------------
-if [ -z "${SLURM_ARRAY_TASK_ID:-}" ]; then
-    # cd to the repo root using this script's real location:
-    # realpath -> absolute path, dirname -> SLP_Ade/, /.. -> repo root.
-    cd "$(dirname "$(realpath "$0")")/.." || exit 1
+# if [ -z "${SLURM_ARRAY_TASK_ID:-}" ]; then
+#     # cd to the repo root using this script's real location:
+#     # realpath -> absolute path, dirname -> SLP_Ade/, /.. -> repo root.
+#     cd "$(dirname "$(realpath "$0")")/.." || exit 1
 
-    COUNT_FILE="SLP_Ade/task_count.txt"
-    if [ ! -f "$COUNT_FILE" ]; then
-        echo "ERROR: $COUNT_FILE not found. Run 'python SLP_Ade/generate_tasks.py' first." >&2
-        exit 1
-    fi
+#     COUNT_FILE="SLP_Ade/task_count.txt"                                     #TODO: count file ersetzen mit len(tasks.json) in submit_array.sh
+#     if [ ! -f "$COUNT_FILE" ]; then
+#         echo "ERROR: $COUNT_FILE not found. Run 'python SLP_Ade/generate_tasks.py' first." >&2
+#         exit 1
+#     fi
 
-    COUNT="$(cat "$COUNT_FILE")"
-    case "$COUNT" in
-        ''|*[!0-9]*)
-            echo "ERROR: invalid task count '$COUNT' in $COUNT_FILE" >&2
-            exit 1
-            ;;
-    esac
-    if [ "$COUNT" -lt 1 ]; then
-        echo "ERROR: task count must be >= 1 (got $COUNT)" >&2
-        exit 1
-    fi
+#     COUNT="$(cat "$COUNT_FILE")"
+#     case "$COUNT" in
+#         ''|*[!0-9]*)
+#             echo "ERROR: invalid task count '$COUNT' in $COUNT_FILE" >&2
+#             exit 1
+#             ;;
+#     esac
+#     if [ "$COUNT" -lt 1 ]; then
+#         echo "ERROR: task count must be >= 1 (got $COUNT)" >&2
+#         exit 1
+#     fi
 
-    # Pre-fetch the LPG binary ONCE, here on the login node. Otherwise the first
-    # wave of concurrent array tasks would all race to download it into pylpg/
-    # and corrupt the folder. Safe to re-run: only downloads when it is missing.
-    echo "Pre-flight: ensuring the LPG binary is present ..."
-    source $HOME/miniforge3/etc/profile.d/conda.sh
-    conda activate pyLPG_env
-    python - <<'PY'
-from pathlib import Path
-from pylpg import lpg_execution as le
-pkg = Path(le.__file__).parent
-src, exe = le._lpg_binary_details_for_platform(pkg)
-if (src / exe).is_file():
-    print(f"  LPG binary already present: {src / exe}")
-else:
-    print(f"  Downloading LPG binary into {pkg} ...")
-    le.LPGExecutor.retrieve_lpg_binaries(pkg)
-PY
-    if [ $? -ne 0 ]; then
-        echo "ERROR: LPG binary pre-flight failed; not submitting." >&2
-        exit 1
-    fi
+#     # Pre-fetch the LPG binary ONCE, here on the login node. Otherwise the first
+#     # wave of concurrent array tasks would all race to download it into pylpg/
+#     # and corrupt the folder. Safe to re-run: only downloads when it is missing.
+#     echo "Pre-flight: ensuring the LPG binary is present ..."
+#     source $HOME/miniforge3/etc/profile.d/conda.sh
+#     conda activate pyLPG_env
+#     python - <<'PY'
+# from pathlib import Path
+# from pylpg import lpg_execution as le
+# pkg = Path(le.__file__).parent
+# src, exe = le._lpg_binary_details_for_platform(pkg)
+# if (src / exe).is_file():
+#     print(f"  LPG binary already present: {src / exe}")
+# else:
+#     print(f"  Downloading LPG binary into {pkg} ...")
+#     le.LPGExecutor.retrieve_lpg_binaries(pkg)
+# PY
+#     if [ $? -ne 0 ]; then
+#         echo "ERROR: LPG binary pre-flight failed; not submitting." >&2
+#         exit 1
+#     fi
 
-    echo "Submitting array 0-$((COUNT - 1))%${MAX_CONCURRENT} (${COUNT} tasks)"
-    exec sbatch --array="0-$((COUNT - 1))%${MAX_CONCURRENT}" SLP_Ade/submit_array.sh
-fi
+#     echo "Submitting array 0-$((COUNT - 1))%${MAX_CONCURRENT} (${COUNT} tasks)"
+#     exec sbatch --array="0-$((COUNT - 1))%${MAX_CONCURRENT}" SLP_Ade/submit_array.sh
+# fi
 
 # ---------------------------------------------------------------------------
 # Array element: this runs once per task with $SLURM_ARRAY_TASK_ID set.
 # ---------------------------------------------------------------------------
 
-# Work from the directory the array was submitted from (the repo root, since the
-# bootstrap above submits from there); fall back to resolving via this script.
-cd "${SLURM_SUBMIT_DIR:-$(dirname "$(realpath "$0")")/..}" || exit 1
 
 # ---------------------------------------------------------------------------
 # Environment setup – adapt to your cluster's module system
 # ---------------------------------------------------------------------------
 
-# Example for a module-based cluster:
-# module purge
-# module load python/3.11
-
 # Activate the project virtual environment (path relative to repo root):
-source $HOME/miniforge3/etc/profile.d/conda.sh
-conda activate pyLPG_env
+source $HOME/.bashrc
+mamba activate pyLPG_env
 
 # Output directory for per-task HDF5 files on the cluster.
 # run_task.py and merge_results.py both read this variable; they fall back to
@@ -124,7 +117,7 @@ export LPG_OUTPUT_DIR="/fast/central/projects/2026-a-tarasenko-SLP_Ade/first_tra
 # node-local scratch so the ~155 MB binary+DB copy each task makes does NOT land
 # on shared storage. $TMPDIR is set per job by SLURM on most clusters; the LPG
 # binary itself is still read from / downloaded into pylpg/ (done in pre-flight).
-export LPG_WORK_DIR="${TMPDIR:-/tmp}"
+export LPG_WORK_DIR="/fast/central/projects/2026-a-tarasenko-SLP_Ade/first_training_set/lpg_results"
 
 # Create log directory if it does not yet exist
 mkdir -p logs

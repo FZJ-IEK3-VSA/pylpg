@@ -53,28 +53,28 @@ class TransportVariantKey:
         tag: Human-readable tag for this variant.
     """
     simulate_transportation: bool
-    charging_set_key: Optional[str]
-    transport_device_set_key: Optional[str]
-    travel_route_set_key: Optional[str]
-    tag: str
+    charging_set_key: str
+    transport_device_set_key: str
+    travel_route_set_key: str
+    tag: str                # TODO: evaluate need for this tag
 
 
 # ---- CONFIG ------------------------------------------------------------------------------------------------------------------------------------------
 YEAR = 2022
 
 # Set to None to use all templates in lpgdata.HouseholdTemplates.
-HOUSEHOLD_TEMPLATE_KEYS = None  # [
-    # get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR01_Couple_both_at_Work),
-    # get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR03_Family_1_child_both_at_work),
-# ]
+HOUSEHOLD_TEMPLATE_KEYS = [
+    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR01_Couple_both_at_Work)
+ ]
 
 # Climate presets keep geographic location and temperature profile separate.
 # (geographic_location_key, temperature_profile_key, tag)
-CLIMATE_SET_KEYS = [
+CLIMATE_SET_KEYS = [            # TODO: make this a dataclass instead of a tuple for clarity
     (
+        #lpgdata.GeographicLocations.Germany_Berlin.Name,        # TODO: remove get_attr_key() and use string from JSONReference
         get_attr_key(lpgdata.GeographicLocations, lpgdata.GeographicLocations.Germany_Berlin),
         get_attr_key(lpgdata.TemperatureProfiles, lpgdata.TemperatureProfiles.Berlin_Germany_1996_from_Deutscher_Wetterdienst_DWD_www_dwd_de),
-        "berlin_loc_berlin_temp",
+        "berlin_loc_berlin_temp",       
     ),
     (
         get_attr_key(lpgdata.GeographicLocations, lpgdata.GeographicLocations.Germany_Hamburg),
@@ -90,7 +90,7 @@ CLIMATE_SET_KEYS = [
 # Set to None to generate all location/temperature-profile combinations.
 
 # Key-based transport presets.
-TRANSPORT_VARIANT_KEYS = [
+TRANSPORT_VARIANT_KEYS = [      #TODO: see above
     TransportVariantKey(False, None, None, None, "no_transport"),
     TransportVariantKey(
         True,
@@ -104,7 +104,8 @@ TRANSPORT_VARIANT_KEYS = [
 HOUSETYPE = lpgdata.HouseTypes.HT20_Single_Family_House_no_heating_cooling
 
 #: Custom binary path for LPG. Set to None to use the official release downloaded automatically by the package.
-LPG_BINARY_PATH = None
+LPG_BINARY_PATH = "/fast/home/a-tarasenko/SLP_Ade/LoadProfileGenerator/SimEngine2/bin/release/net9.0/linux-x64/publish/SimEngine2"
+
 
 # Define runs per combination. You can specify:
 # - A dict mapping combo_tag patterns to run counts

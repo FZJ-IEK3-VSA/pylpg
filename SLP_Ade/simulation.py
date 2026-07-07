@@ -312,7 +312,7 @@ def make_transport_variants(
 def _print_lpg_binary_source() -> None:
     """Print the source of the LPG binary being used.
 
-    :return None: No return value.
+    :return None: No return value.                                                      # TODO: explicitly raise error if missing path, change to check_lpg_binary_source() with exception
     """
     if LPG_BINARY_PATH is None:
         print("LPG binary source: official release downloaded automatically.")
@@ -428,17 +428,6 @@ def run_lpg_simulation(
         HouseholdDataSpecification=lpgdata.HouseholdDataSpecificationType.ByTemplateName,
     )
 
-    # Only forward optional kwargs the installed pylpg actually supports, so an
-    # older package without working_directory/lpg_binary_path still works.
-    execute_params = inspect.signature(
-        lpg_execution.execute_lpg_with_householddata_enabled_flex_and_transport_custom
-    ).parameters
-    execute_kwargs: dict[str, Any] = {}
-    if "lpg_binary_path" in execute_params:
-        execute_kwargs["lpg_binary_path"] = LPG_BINARY_PATH
-    if "working_directory" in execute_params:
-        # Run calculations in node-local scratch when LPG_WORK_DIR is set.
-        execute_kwargs["working_directory"] = os.environ.get("LPG_WORK_DIR") or None
 
     return lpg_execution.execute_lpg_with_householddata_enabled_flex_and_transport_custom(
         YEAR,
@@ -452,7 +441,8 @@ def run_lpg_simulation(
         energy_intensity=EnergyIntensityType.Random,
         calculation_index=calculation_index,
         clear_previous_calc=clear_previous_calc,
-        **execute_kwargs,
+        lpg_binary_path=LPG_BINARY_PATH,
+        working_directory=os.environ.get("LPG_WORK_DIR"),
     )
 
 

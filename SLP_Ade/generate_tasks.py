@@ -27,26 +27,26 @@ import sys
 from pathlib import Path
 
 # Make the repo root importable regardless of CWD
-_REPO_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(_REPO_ROOT))
+# _REPO_ROOT = Path(__file__).resolve().parents[1]
+# sys.path.insert(0, str(_REPO_ROOT))
 
 from pylpg import lpgdata
 from pylpg.lpgpythonbindings import JsonReference
 
 # Configuration lives in config.py; execution helpers in simulation.py.
-from SLP_Ade.config import (  # noqa: E402
+from SLP_Ade.config import (
     CLIMATE_SET_KEYS,
     HOUSEHOLD_TEMPLATE_KEYS,
     TRANSPORT_VARIANT_KEYS,
     get_runs_for_combo,
 )
-from SLP_Ade.simulation import (  # noqa: E402
+from SLP_Ade.simulation import (
     collect_lpg_members,
     create_combo_tag,
 )
 
 
-def _deterministic_seed(combo_tag: str, run_idx: int) -> int:
+def _deterministic_seed(combo_tag: str, run_idx: int) -> int:                           # TODO:  simplify seed generatio, just use run_idx as seed
     """Derive a reproducible 31-bit seed from combo_tag and run index.
 
     Uses MD5 of ``"<combo_tag>_<run_idx>"`` so the same manifest always
@@ -124,8 +124,8 @@ def build_task_list() -> list[dict]:
                             "transport_device_set_key": tvk.transport_device_set_key,
                             "transport_travel_route_key": tvk.travel_route_set_key,
                             "transport_tag": tvk.tag,
-                            "run_idx": run_idx,
-                            "num_runs": num_runs,
+                            # "run_idx": run_idx,
+                            # "num_runs": num_runs,
                             "seed": seed,
                         }
                     )
@@ -144,12 +144,12 @@ def main() -> None:
     :return None: No return value.
     """
     tasks = build_task_list()
-    out = _REPO_ROOT / "SLP_Ade" / "tasks.json"
+    out = Path("SLP_Ade") / "tasks.json"
     out.write_text(json.dumps(tasks, indent=2))
 
     # Write the task count to a machine-readable file so submit_array.sh can
     # derive its --array range automatically (no manual, drift-prone edit).
-    count_file = _REPO_ROOT / "SLP_Ade" / "task_count.txt"
+    count_file = Path("SLP_Ade") / "task_count.txt"                                                 # TODO: count file ersetzen mit len(tasks.json) in submit_array.sh
     count_file.write_text(str(len(tasks)))
 
     print(f"Generated {len(tasks)} tasks  ->  {out}")
