@@ -50,13 +50,18 @@ class TransportVariantKey:
         charging_set_key: Key for charging station set (or None).
         transport_device_set_key: Key for transportation device set (or None).
         travel_route_set_key: Key for travel route set (or None).
-        tag: Human-readable tag for this variant.
+        tag: Short, filesystem-safe identifier for this variant. Load-bearing
+            : it is the transport level of the HDF5 output
+            hierarchy (``/<climate_tag>/<transport_tag>/run_<N>/...``), the
+            substring key that ``RUNS_PER_COMBO_MAP`` / ``get_runs_for_combo()``
+            match against to decide the run count, and part of the ``combo_tag``
+            used for deterministic seeding.
     """
     simulate_transportation: bool
     charging_set_key: str
     transport_device_set_key: str
     travel_route_set_key: str
-    tag: str                # TODO: evaluate need for this tag
+    tag: str
 
 
 # ---- CONFIG ------------------------------------------------------------------------------------------------------------------------------------------
