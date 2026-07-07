@@ -672,9 +672,7 @@ class LPGExecutor:
         ]
         cs.EnergyIntensityType = EnergyIntensityType.Random
         cs.OutputDirectory = "results"
-        hj.PathToDatabase = str(
-            Path(self.calculation_directory, "profilegenerator.db3")
-        )
+        hj.PathToDatabase = "profilegenerator.db3"
         return hj
 
     @staticmethod

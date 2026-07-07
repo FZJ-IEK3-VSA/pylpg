@@ -427,12 +427,16 @@ def run_lpg_simulation(
         None,
         HouseholdDataSpecification=lpgdata.HouseholdDataSpecificationType.ByTemplateName,
     )
-
+    #hardcoded TODO: replace with config variable
+    startdate = "2020-01-01"
+    enddate = "2020-01-31"
 
     return lpg_execution.execute_lpg_with_householddata_enabled_flex_and_transport_custom(
         YEAR,
         household,
         HOUSETYPE,
+        startdate,
+        enddate,
         geographic_location=geographic_location,
         temperature_profile=temperature_profile,
         enable_flexibility=True,

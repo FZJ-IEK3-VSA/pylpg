@@ -105,7 +105,7 @@ HOUSETYPE = lpgdata.HouseTypes.HT20_Single_Family_House_no_heating_cooling
 
 #: Custom binary path for LPG. Set to None to use the official release downloaded automatically by the package.
 LPG_BINARY_PATH = "/fast/home/a-tarasenko/SLP_Ade/LoadProfileGenerator/SimEngine2/bin/release/net9.0/linux-x64/publish/SimEngine2"
-
+# "pylpg/LPG_win" for local testing
 
 # Define runs per combination. You can specify:
 # - A dict mapping combo_tag patterns to run counts
