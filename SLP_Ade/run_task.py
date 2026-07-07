@@ -164,7 +164,7 @@ def run_task(task: dict) -> None:
         )
         store.put("metadata", meta_df, format="fixed")
 
-    print(f"[task {task_id}] Saved  ->  {out_path.relative_to(_REPO_ROOT)}")        #TODO: replace with absolute path
+    print(f"[task {task_id}] Saved  ->  {out_path}")
 
 
 def main() -> None:
