@@ -56,12 +56,14 @@ from pylpg.lpgpythonbindings import EnergyIntensityType, JsonReference
 
 from SLP_Ade.config import (
     CLIMATE_SET_KEYS,
+    END_DATE,
     HOUSEHOLD_TEMPLATE_KEYS,
     HOUSETYPE,
     LPG_BINARY_PATH,
     OUTPUT_DIR,
     SAVE_CSV,
     SAVE_HDF5,
+    START_DATE,
     TRANSPORT_VARIANT_KEYS,
     TransportVariantKey,
     YEAR,
@@ -415,6 +417,13 @@ def run_lpg_simulation(
     :param bool clear_previous_calc: Wipe and re-copy the working directory before running.
     :return Optional[pd.DataFrame]: Simulation result DataFrame, or None on failure.
     """
+    if START_DATE is None or END_DATE is None:
+        raise ValueError(
+            "Simulation date range is not configured: set START_DATE and "
+            "END_DATE in SLP_Ade/config.py (ISO 'YYYY-MM-DD' strings). "
+            f"Got START_DATE={START_DATE!r}, END_DATE={END_DATE!r}."
+        )
+
     household = lpgdata.HouseholdData(
         None,
         lpgdata.HouseholdTemplateSpecification(HouseholdTemplateName=tmpl),
@@ -436,9 +445,8 @@ def run_lpg_simulation(
         # is the only travel-behavior signal.
         PointOfInterestPreferences=None,
     )
-    #hardcoded TODO: replace with config variable
-    startdate = "2020-01-01"
-    enddate = "2020-01-31"
+    startdate = START_DATE
+    enddate = END_DATE
 
     return lpg_execution.execute_lpg_with_householddata_enabled_flex_and_transport_custom(
         YEAR,

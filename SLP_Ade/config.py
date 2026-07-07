@@ -62,6 +62,13 @@ class TransportVariantKey:
 # ---- CONFIG ------------------------------------------------------------------------------------------------------------------------------------------
 YEAR = 2022
 
+# Simulation date range as ISO "YYYY-MM-DD" strings. Both MUST be set before
+# running: they are left as None on purpose so that run_lpg_simulation raises a
+# ValueError if the date range is never addressed, rather than silently falling
+# back to a hardcoded window.
+START_DATE: Optional[str] = "2020-01-01"  # e.g. "2020-01-01"
+END_DATE: Optional[str] = "2020-01-31"    # e.g. "2020-01-31"
+
 # Set to None to use all templates in lpgdata.HouseholdTemplates.
 HOUSEHOLD_TEMPLATE_KEYS = [
     get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR01_Couple_both_at_Work)
