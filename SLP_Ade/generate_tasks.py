@@ -124,8 +124,8 @@ def build_task_list() -> list[dict]:
                             "transport_device_set_key": tvk.transport_device_set_key,
                             "transport_travel_route_key": tvk.travel_route_set_key,
                             "transport_tag": tvk.tag,
-                            # "run_idx": run_idx,
-                            # "num_runs": num_runs,
+                            "run_idx": run_idx,
+                            "num_runs": num_runs,
                             "seed": seed,
                         }
                     )
