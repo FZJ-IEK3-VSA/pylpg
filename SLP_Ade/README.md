@@ -73,7 +73,7 @@ The script reads `task_count.txt`, then re-submits itself as a SLURM array job c
 Each array element runs one independent simulation and writes its result to `slurm_output/task_NNNNNN.h5`.  
 One file per task means there are **no concurrent write conflicts**.
 
-Each task also runs its LPG calculation in its own working directory `C<task_id>` (a ~155 MB binary+DB copy), isolating concurrent runs. To keep that off shared storage, `submit_array.sh` sets `LPG_WORK_DIR` to node-local scratch (`$TMPDIR`); `run_task.py` passes `calculation_index=task_id` so no two tasks share a directory.
+Each task also runs its LPG calculation in its own working directory `C<task_id>`, isolating concurrent runs. The directory holds only that task's `calcspec.json` and `results/` output — the engine runs in place from the source binary directory and all tasks share the read-only `profilegenerator.db3`, so nothing large is copied per task. To keep the result output off shared storage, `submit_array.sh` sets `LPG_WORK_DIR` to node-local scratch (`$TMPDIR`); `run_task.py` passes `calculation_index=task_id` so no two tasks share a directory.
 
 ### 4. Merge results
 

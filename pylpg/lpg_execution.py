@@ -564,10 +564,12 @@ class LPGExecutor:
     ):
         # The package directory is where the bundled LPG binaries live (and are
         # downloaded to on first use).  The working directory is where the
-        # per-calculation C<idx> folders are created and run.  By default they
-        # are the same, but working_directory can be pointed at fast node-local
-        # scratch (e.g. $TMPDIR) so parallel runs do not copy hundreds of MB
-        # into the package directory on shared storage.
+        # per-calculation C<idx> folders are created; each holds only this run's
+        # calcspec.json and its results/ output.  The engine itself runs from the
+        # read-only source binary directory, so the ~155 MB binaries+database are
+        # no longer copied per calc.  By default the working directory is the
+        # current directory, but it can be pointed at fast node-local scratch
+        # (e.g. $TMPDIR) to keep result I/O off shared storage.
         self.package_directory = pathlib.Path(__file__).parent.absolute()
         if working_directory is not None:
             self.working_directory = Path(working_directory)
@@ -614,15 +616,14 @@ class LPGExecutor:
             print("Removing " + str(self.calculation_directory))
             shutil.rmtree(self.calculation_directory)
             time.sleep(1)
+        # Create just an empty working directory. The binaries and (read-only)
+        # profilegenerator.db3 are used in place from the source directory
+        # (make_default_lpg_settings points PathToDatabase at the shared source
+        # db3 by absolute path), so nothing needs to be copied here — the engine
+        # only writes calcspec.json and its results/ subtree into this dir.
         if not os.path.exists(self.calculation_directory):
-            print(
-                "copying from  "
-                + str(self.calculation_src_directory)
-                + " to "
-                + str(self.calculation_directory)
-            )
-            shutil.copytree(self.calculation_src_directory, self.calculation_directory)
-            print("copied to: " + str(self.calculation_directory))
+            print("creating working directory: " + str(self.calculation_directory))
+            os.makedirs(self.calculation_directory)
 
     def error_tolerating_directory_clean(self, path: Union[Path, str]):
         mypath = str(path)
@@ -672,7 +673,13 @@ class LPGExecutor:
         ]
         cs.EnergyIntensityType = EnergyIntensityType.Random
         cs.OutputDirectory = "results"
-        hj.PathToDatabase = "profilegenerator.db3"
+        # Point at the shared source database by absolute path. The engine only
+        # reads profilegenerator.db3 (verified byte-identical before/after a run
+        # and safe for concurrent readers), so every calc can share the single
+        # source db3 instead of copying it into each C<idx> working directory.
+        hj.PathToDatabase = str(
+            Path(self.calculation_src_directory, "profilegenerator.db3").resolve()
+        )
         return hj
 
     @staticmethod

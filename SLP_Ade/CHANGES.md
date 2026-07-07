@@ -63,11 +63,13 @@ calculation runs**:
   defaults to the package directory, but when a `working_directory` argument is passed it
   is used instead (and created with `mkdir(parents=True, exist_ok=True)`).
 
-Why this matters: each calculation copies the ~155 MB binary + database into its own
-`C<idx>/` dir. On a cluster, pointing `working_directory` at fast **node-local scratch**
-(e.g. `$TMPDIR`) keeps those copies off shared storage — while binaries are still read
-from / downloaded into the package dir exactly once. This split is what makes the parallel
-SLURM runs both correct (no shared `C<idx>`) and fast (scratch-local I/O).
+Why this matters: on a cluster, pointing `working_directory` at fast **node-local scratch**
+(e.g. `$TMPDIR`) keeps each calculation's output (its `calcspec.json` and `results/` subtree)
+off shared storage, while binaries are still read from / downloaded into the package dir
+exactly once. This split is what makes the parallel SLURM runs both correct (no shared
+`C<idx>`) and fast (scratch-local I/O). (Originally each `C<idx>` also received a full
+~155 MB copy of the binary + database folder; **§1.6 removed that** — the calc dir now holds
+only the run's own inputs/outputs.)
 
 ### 1.3 Custom binary resolution + `_lpg_binary_details_for_platform()` helper
 
@@ -143,6 +145,39 @@ enabled, `execute_lpg_with_householddata_enabled_flex_and_transport_custom()` at
 to the result frame as `df.attrs["flexibility_events"]` (frame metadata, since its shape
 differs from the profiles). The `SLP_Ade` workflow stores it as its own `FlexibilityEvents`
 group (see §2.2 / §2.4).
+
+### 1.6 No per-calculation copy — run in place, share the read-only database
+
+`LPGExecutor` no longer copies the ~155 MB binary + database folder into each `C<idx>/`
+dir. Two changes in [../pylpg/lpg_execution.py](../pylpg/lpg_execution.py):
+
+- **`__init__`** — the `shutil.copytree(src, C<idx>)` was replaced by an `os.makedirs()`
+  of an **empty** `C<idx>/`. The engine was already invoked *in place* from the source
+  binary directory (`lpg_simengine_filepath()` builds its path from
+  `calculation_src_directory`, not the copy), so the copied DLLs were never actually used —
+  only `C<idx>` as the process `cwd` mattered, for `calcspec.json` and the `results/` output.
+- **`make_default_lpg_settings`** — `PathToDatabase` changed from the relative
+  `"profilegenerator.db3"` (which resolved into the per-calc copy) to the **absolute path of
+  the shared source db3** (`Path(self.calculation_src_directory, "profilegenerator.db3").resolve()`).
+
+**Why this is safe (verified empirically).** The engine opens `profilegenerator.db3`
+**read-only**:
+
+- The db3 is **byte-identical (SHA-256) before and after** a full 31-day flexibility run,
+  and the calc-dir copy was byte-identical to the source — the run never mutates it.
+- No SQLite `-journal` / `-wal` / `-shm` / lock side-files are created next to the db3.
+- **Two concurrent** runs pointed at the *same* source db3 both completed successfully
+  (full 28-profile output each), so shared read-only access is safe for concurrent SLURM
+  array workers.
+
+**Effect.** Every calc / SLURM task now skips the ~155 MB copy — near-instant startup and
+much less I/O. Output isolation is unchanged: each run still gets its own `C<idx>` (unique
+`calculation_index`) holding only its `calcspec.json` + `results/`. `working_directory` /
+`LPG_WORK_DIR` still usefully steers that (smaller) output I/O to node-local scratch.
+
+**Cluster caveat.** The binary + db3 are now read *live* from `LPG_BINARY_PATH` on every
+run instead of being copied to scratch once, so that path (the `linux-x64/publish` build in
+[config.py](config.py)) should live on reasonably fast storage on the cluster.
 
 ---
 
