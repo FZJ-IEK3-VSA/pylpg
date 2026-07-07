@@ -426,6 +426,15 @@ def run_lpg_simulation(
         transport_variant.travel_route_set,
         None,
         HouseholdDataSpecification=lpgdata.HouseholdDataSpecificationType.ByTemplateName,
+        # The HouseholdData binding defaults PointOfInterestPreferences to an
+        # empty dict, which serializes to `{}` (non-null). With transportation
+        # enabled the LPG treats a non-null POI-preferences value as "POI-based
+        # travel requested" (its check is literally `is not null`), so combined
+        # with our TravelRouteSet it sees two conflicting travel-behavior inputs
+        # and aborts ("Two or more properties specifying travel behavior were
+        # set"). Force it to None so it serializes to null and the TravelRouteSet
+        # is the only travel-behavior signal.
+        PointOfInterestPreferences=None,
     )
     #hardcoded TODO: replace with config variable
     startdate = "2020-01-01"
