@@ -190,7 +190,7 @@ tasks, runs each as an array element, and reassembles the outputs.
 ```
 config.py            CONFIG: templates × climate sets × transport variants × runs
       │
-generate_tasks.py    cartesian product → tasks.json (+ task_count.txt)   [FAN-OUT]
+generate_tasks.py    cartesian product → tasks.json                     [FAN-OUT]
       │
       ▼
  ┌────────────── SLURM array (one element per task) ──────────────┐
@@ -255,7 +255,7 @@ sequential runner (`python SLP_Ade/simulation.py`).
 
 [generate_tasks.py](generate_tasks.py) expands the CONFIG cartesian product (templates ×
 climate sets × transport variants × runs-per-combo) into a flat `tasks.json` at the repo
-root, one entry per independent run, plus `task_count.txt`.
+root, one entry per independent run.
 
 - **String-key-only manifest.** Each task stores only string keys into the `lpgdata.*`
   catalogs, keeping `tasks.json` fully JSON-serialisable; the worker resolves keys back to
@@ -265,8 +265,9 @@ root, one entry per independent run, plus `task_count.txt`.
   config always yields the same seeds regardless of when/where it is generated. (Contrast
   with the sequential runner in [simulation.py](simulation.py), which uses a time-based
   seed for interactive exploration.)
-- **`task_count.txt`** is written so `submit_array.sh` can derive its `--array` range
-  automatically instead of a manual, drift-prone edit.
+- **No separate count file.** `submit_array.sh` derives its `--array` range directly from
+  `len(tasks.json)`, so the manifest is the single source of truth for the task count
+  (no manual, drift-prone edit).
 
 ### 2.4 `run_task.py` — the array worker
 
@@ -300,8 +301,8 @@ files under `multi_runs_output/`, reproducing the sequential layout
 
 - **Auto-ranged array via a self-resubmit bootstrap.** `--array` is deliberately **not** a
   `#SBATCH` directive (SLURM parses those before the script body runs, so it cannot read a
-  file). Instead, when launched with no `$SLURM_ARRAY_TASK_ID`, the script reads
-  `task_count.txt` and re-submits itself with
+  file). Instead, when launched with no `$SLURM_ARRAY_TASK_ID`, the script counts the
+  entries in `tasks.json` and re-submits itself with
   `--array=0-(N-1)%MAX_CONCURRENT` (`MAX_CONCURRENT` caps concurrency, default 50).
 - **Login-node binary pre-fetch.** Before submitting, the bootstrap imports
   `_lpg_binary_details_for_platform` (§1.3) and downloads the LPG binary once on the login
@@ -318,7 +319,7 @@ files under `multi_runs_output/`, reproducing the sequential layout
 - **`requirements.txt`** — added `tables` (PyTables). Required for the HDF5 output in
   `SLP_Ade/`; without it, `pd.HDFStore(...)` calls fail.
 - **`.gitignore`** — now ignores `pyLPG_env/`, `SLP_Ade/__pycache__/`, the generated
-  `tasks.json` / `task_count.txt`, and the `multi_runs_output/` output directory.
+  `tasks.json`, and the `multi_runs_output/` output directory.
 - **Tests**
   - [../test/test_slp_ade.py](../test/test_slp_ade.py) — new **fast** tests that never
     invoke LPG: `safe_name`, `split_dataframe_by_type`, `collect_lpg_members`,

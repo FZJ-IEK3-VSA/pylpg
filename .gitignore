@@ -33,7 +33,6 @@ SLP_Ade/__pycache__/
 CLAUDE.md
 # generated SLURM task manifest (written under SLP_Ade/ by generate_tasks.py)
 tasks.json
-task_count.txt
 
 # generated result files and output directories
 *.csv

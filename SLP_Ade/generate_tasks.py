@@ -147,14 +147,10 @@ def main() -> None:
     out = Path("SLP_Ade") / "tasks.json"
     out.write_text(json.dumps(tasks, indent=2))
 
-    # Write the task count to a machine-readable file so submit_array.sh can
-    # derive its --array range automatically (no manual, drift-prone edit).
-    count_file = Path("SLP_Ade") / "task_count.txt"                                                 # TODO: count file ersetzen mit len(tasks.json) in submit_array.sh
-    count_file.write_text(str(len(tasks)))
-
+    # No separate count file: submit_array.sh derives its --array range directly
+    # from len(tasks.json), so there is a single source of truth for the count.
     print(f"Generated {len(tasks)} tasks  ->  {out}")
-    print(f"Wrote task count        ->  {count_file}")
-    print(f"Submit with:  bash SLP_Ade/submit_array.sh   (reads {count_file.name} automatically)")
+    print(f"Submit with:  bash SLP_Ade/submit_array.sh   (reads the count from {out.name} automatically)")
     print(f"Or manually:  sbatch --array=0-{len(tasks) - 1} SLP_Ade/submit_array.sh")
 
 

@@ -51,12 +51,11 @@ Run once on the **login node**:
 python SLP_Ade/generate_tasks.py
 ```
 
-This writes `tasks.json` **and** `task_count.txt` into `SLP_Ade/`, e.g.:
+This writes `tasks.json` into `SLP_Ade/`, e.g.:
 
 ```
 Generated 42 tasks  ->  /path/to/pylpg/SLP_Ade/tasks.json
-Wrote task count        ->  /path/to/pylpg/SLP_Ade/task_count.txt
-Submit with:  bash SLP_Ade/submit_array.sh   (reads task_count.txt automatically)
+Submit with:  bash SLP_Ade/submit_array.sh   (reads the count from tasks.json automatically)
 Or manually:  sbatch --array=0-41 SLP_Ade/submit_array.sh
 ```
 
@@ -68,7 +67,7 @@ No manual range editing needed — just run:
 bash SLP_Ade/submit_array.sh
 ```
 
-The script reads `task_count.txt`, then re-submits itself as a SLURM array job covering `0 .. count-1` (capped at `MAX_CONCURRENT` concurrent tasks, default 50). Launch it with `bash` on the login node; `sbatch SLP_Ade/submit_array.sh` also works but runs the one-line bootstrap inside a compute-node allocation. The bootstrap also **pre-fetches the LPG binary once** on the login node, so the first wave of concurrent tasks doesn't race to download it.
+The script counts the entries in `tasks.json`, then re-submits itself as a SLURM array job covering `0 .. count-1` (capped at `MAX_CONCURRENT` concurrent tasks, default 50). Launch it with `bash` on the login node; `sbatch SLP_Ade/submit_array.sh` also works but runs the one-line bootstrap inside a compute-node allocation. The bootstrap also **pre-fetches the LPG binary once** on the login node, so the first wave of concurrent tasks doesn't race to download it.
 
 Each array element runs one independent simulation and writes its result to `slurm_output/task_NNNNNN.h5`.  
 One file per task means there are **no concurrent write conflicts**.

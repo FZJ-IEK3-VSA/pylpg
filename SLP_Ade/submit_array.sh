@@ -5,9 +5,9 @@
 # --------
 # 1. Generate the task manifest (once, on the login node):
 #       python SLP_Ade/generate_tasks.py
-#    This creates tasks.json AND task_count.txt (the number of tasks).
+#    This creates tasks.json (one entry per task).
 #
-# 2. Submit the array — the range is read automatically from task_count.txt:
+# 2. Submit the array — the range is derived automatically from len(tasks.json):
 #       bash SLP_Ade/submit_array.sh
 #    Launch it with `bash` on the login node (not `sbatch`). The script reads
 #    the count and re-submits itself as an array job with the correct range.
@@ -37,9 +37,9 @@
 
 # NOTE: --array is deliberately NOT a #SBATCH directive. SLURM parses those
 # directives before the script body runs, so it cannot read the task count from
-# a file. Instead the bootstrap block below reads task_count.txt and re-submits
-# this script with the correct --array range. Cap on concurrent array tasks
-# (tune to cluster's fair-use policy):
+# a file. Instead the bootstrap block below counts the entries in tasks.json and
+# re-submits this script with the correct --array range. Cap on concurrent array
+# tasks (tune to cluster's fair-use policy):
 # MAX_CONCURRENT=50
 
 # ---------------------------------------------------------------------------
@@ -51,16 +51,22 @@
 #     # realpath -> absolute path, dirname -> SLP_Ade/, /.. -> repo root.
 #     cd "$(dirname "$(realpath "$0")")/.." || exit 1
 
-#     COUNT_FILE="SLP_Ade/task_count.txt"                                     #TODO: count file ersetzen mit len(tasks.json) in submit_array.sh
-#     if [ ! -f "$COUNT_FILE" ]; then
-#         echo "ERROR: $COUNT_FILE not found. Run 'python SLP_Ade/generate_tasks.py' first." >&2
+#     TASKS_FILE="SLP_Ade/tasks.json"
+#     if [ ! -f "$TASKS_FILE" ]; then
+#         echo "ERROR: $TASKS_FILE not found. Run 'python SLP_Ade/generate_tasks.py' first." >&2
 #         exit 1
 #     fi
 
-#     COUNT="$(cat "$COUNT_FILE")"
+#     # Activate the env up front: it is needed both to count the tasks (python
+#     # reads len(tasks.json) directly) and for the binary pre-flight below.
+#     source $HOME/miniforge3/etc/profile.d/conda.sh
+#     conda activate pyLPG_env
+
+#     # Derive the array size straight from tasks.json — no separate count file.
+#     COUNT="$(python -c 'import json,sys; print(len(json.load(open(sys.argv[1]))))' "$TASKS_FILE")"
 #     case "$COUNT" in
 #         ''|*[!0-9]*)
-#             echo "ERROR: invalid task count '$COUNT' in $COUNT_FILE" >&2
+#             echo "ERROR: could not read task count from $TASKS_FILE (got '$COUNT')" >&2
 #             exit 1
 #             ;;
 #     esac
@@ -73,8 +79,6 @@
 #     # wave of concurrent array tasks would all race to download it into pylpg/
 #     # and corrupt the folder. Safe to re-run: only downloads when it is missing.
 #     echo "Pre-flight: ensuring the LPG binary is present ..."
-#     source $HOME/miniforge3/etc/profile.d/conda.sh
-#     conda activate pyLPG_env
 #     python - <<'PY'
 # from pathlib import Path
 # from pylpg import lpg_execution as le
