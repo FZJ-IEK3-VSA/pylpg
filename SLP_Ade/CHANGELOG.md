@@ -1,9 +1,10 @@
-# SLP_Ade — Change Guide (since `new-python-bindings-for-citysim`)
+# SLP_Ade — Changelog / Change Guide (since `new-python-bindings-for-citysim`)
 
 This document is a **developer-facing** record of the code changes made on this branch
 after it split off from `new-python-bindings-for-citysim` (merge-base `453071d`). It
-explains *what* changed and *why*, at the code level. For **how to run** the workflow, see
-[README.md](README.md).
+explains *what* changed and *why*, at the code level, and is kept current with the branch —
+it is a living description of the branch's final state, not an append-only release log. For
+**how to run** the workflow, see [README.md](README.md).
 
 The work falls into two parts:
 
@@ -179,6 +180,18 @@ much less I/O. Output isolation is unchanged: each run still gets its own `C<idx
 run instead of being copied to scratch once, so that path (the `linux-x64/publish` build in
 [config.py](config.py)) should live on reasonably fast storage on the cluster.
 
+### 1.7 `error_tolerating_directory_clean()` — guard now checks the *resolved* path
+
+`LPGExecutor.error_tolerating_directory_clean()` has a safety net: it refuses to clean a
+path shorter than 10 characters (a crude guard against accidentally wiping `/` or `C:\`).
+That guard was being applied to the **raw** path string. Because §1.2/§1.6 made the
+per-calculation dir a short *relative* path (e.g. `C1` when `working_directory` defaults to
+the current dir), a legitimate calc dir could trip the guard and abort the clean. The method
+now resolves to an **absolute path first** (`str(Path(path).resolve())`) and length-checks
+that: a normal relative calc dir resolves to a long absolute path and passes, while a
+genuinely dangerous short path (the filesystem root) still trips it. A docstring was added
+explaining the intent so the length constant is not mistaken for arbitrary.
+
 ---
 
 ## 2. The `SLP_Ade/` workflow (new subsystem)
@@ -219,12 +232,48 @@ Key design points:
 - **String-key strategy.** `get_attr_key(cls, value)` reverse-looks-up the *attribute
   name* for an `lpgdata` value, so config stores JSON-serialisable **string keys** into
   the `lpgdata.*` catalogs rather than objects.
-- **Decoupled climate presets.** `CLIMATE_SET_KEYS` entries are
-  `(geo_location_key, temperature_profile_key, tag)` triples — location and temperature
-  profile are independent (matching §1.1). `None` means "all combinations".
+- **Decoupled climate presets — now a dataclass.** `CLIMATE_SET_KEYS` entries are
+  **`ClimateSetKey`** (frozen dataclass: `geographic_location_key`,
+  `temperature_profile_key`, `tag`), replacing the earlier `(geo, temp, tag)` tuples — the
+  same treatment `TransportVariantKey` already got, so both swept dimensions read the same
+  way and `.tag` / `.geographic_location_key` are named rather than positional. Location and
+  temperature profile stay independent (matching §1.1); `None` still means "all
+  combinations". The consumers were updated in lockstep: `make_climate_variants()` in
+  [simulation.py](simulation.py) and the fan-out loop in
+  [generate_tasks.py](generate_tasks.py) iterate `ClimateSetKey` fields instead of unpacking
+  a tuple.
 - **Runs per combination.** `RUNS_PER_COMBO_MAP` + `get_runs_for_combo(combo_tag)` decide
   how many stochastic repeats each combination gets (pattern match on the combo tag, with
   a default fallback), so transport variants can be sampled more heavily than baselines.
+- **One `RUN_ON_CLUSTER` flag switches machines.** A single boolean selects every
+  environment-specific value at once, so moving between a laptop and the cluster is a
+  one-line change:
+  - **Output base.** `BASE_OUTPUT_DIR` resolves to `CLUSTER_BASE_OUTPUT_DIR` (shared project
+    storage, outside the repo) when `RUN_ON_CLUSTER` is `True`, else `LOCAL_BASE_OUTPUT_DIR`
+    (the repo root). `$LPG_OUTPUT_DIR` overrides it in either mode. Everything else derives
+    from this one knob (see the output-path bullet below).
+  - **Binary path.** `LPG_BINARY_PATH` selects between `CLUSTER_LPG_BINARY_PATH` (the
+    `linux-x64/publish` build) and `LOCAL_LPG_BINARY_PATH` (the `win-x64/publish` build) off
+    the same flag, replacing the earlier single hard-coded path with a commented alternative.
+- **Single output knob → derived subdirs.** `BASE_OUTPUT_DIR` is the *only* output path
+  anyone sets; the two dirs every script uses derive from it:
+  - `TASK_OUTPUT_DIR = BASE_OUTPUT_DIR / "tasks"` — temporary per-task `task_<NNNNNN>.h5`
+    files ([run_task.py](run_task.py) writes them, [merge_results.py](merge_results.py)
+    reads and deletes them).
+  - `MERGED_OUTPUT_DIR = BASE_OUTPUT_DIR / "multi_runs_output"` — the final merged
+    per-template files + `runs_metadata.csv` (merge step and sequential runner).
+
+  Because both derive from one value (honouring `$LPG_OUTPUT_DIR`), the array worker that
+  *writes* task files and the interactive merge that *reads* them can never look in different
+  directories — the failure mode where a `submit_array.sh` `export` was invisible to a
+  login-shell merge. This replaced the earlier split `OUTPUT_DIR` / `SLURM_OUTPUT_DIR`
+  constants. **Directories are created at point of use** (`mkdir(parents=True,
+  exist_ok=True)`), never at import, so importing config on a laptop never tries to create a
+  cluster path or drops stray dirs into the repo.
+- **Full training set.** `HOUSEHOLD_TEMPLATE_KEYS` is now ten representative archetypes
+  spanning the demographic space (size 1→6, working/non-working, young/retired, with/without
+  children, single parent, student, multigenerational). With three climate sets and the
+  transport variants' run counts, total tasks = `10 × 3 × (1 + 3) = 120`.
 
 ### 2.2 `simulation.py` — shared primitive + sequential runner
 
@@ -278,26 +327,38 @@ calls `run_lpg_simulation()`.
 - **Per-task isolation.** It passes `calculation_index=task_id`, so concurrent array
   elements never share a `C<idx>` working directory. `clear_previous_calc=True` guarantees
   a clean dir if a task id is requeued.
-- **One file per task.** Each task writes a single `slurm_output/task_<NNNNNN>.h5`
-  (`/data/<data_type>` + `/metadata`), so there are **zero concurrent HDF5 write
-  conflicts**. The output directory is overridable via `$LPG_OUTPUT_DIR`. When flexibility
-  is enabled, the flexibility event log rides along as a `/data/FlexibilityEvents` group
-  (§1.5), so the generic `/data/*` copy in the merge step (§2.5) carries it through with no
-  special-casing.
+- **One file per task.** Each task writes a single `TASK_OUTPUT_DIR/task_<NNNNNN>.h5`
+  (i.e. `<base>/tasks/`; `/data/<data_type>` + `/metadata`), so there are **zero concurrent
+  HDF5 write conflicts**. The directory is the derived `TASK_OUTPUT_DIR` from config (§2.1),
+  overridable via `$LPG_OUTPUT_DIR`. When flexibility is enabled, the flexibility event log
+  rides along as a `/data/FlexibilityEvents` group (§1.5), so the generic `/data/*` copy in
+  the merge step (§2.5) carries it through with no special-casing.
 
 ### 2.5 `merge_results.py` — fan-in
 
-[merge_results.py](merge_results.py) assembles all per-task files into per-template HDF5
-files under `multi_runs_output/`, reproducing the sequential layout
-`/<climate_tag>/<transport_tag>/run_<N>/<data_type>` (+ `_metadata`). It also:
+[merge_results.py](merge_results.py) assembles all per-task files from `TASK_OUTPUT_DIR`
+(`<base>/tasks/`) into per-template HDF5 files under `MERGED_OUTPUT_DIR`
+(`<base>/multi_runs_output/`), reproducing the sequential layout
+`/<climate_tag>/<transport_tag>/run_<N>/<data_type>` (+ `_metadata`). Both paths are the
+derived config values (§2.1), so this reader can never diverge from where the workers wrote.
+It also:
 
-- writes `multi_runs_output/runs_metadata.csv` summarising every merged run, and
+- writes `runs_metadata.csv` (same dir) summarising every merged run,
 - **reports missing tasks** — any `task_id` present in `tasks.json` but lacking an output
-  file is listed, so failed/incomplete array elements are visible.
+  file is listed, so failed/incomplete array elements are visible, and
+- **deletes the per-task files after a successful merge.** The task files are temporary:
+  once every one has been folded into the merged files they are removed, so nothing
+  accumulates outside the merged output (the now-empty `tasks/` dir is dropped too, best
+  effort). Only files that were actually merged are deleted — anything skipped (bad name /
+  unknown task id) is left in place for inspection — and deletion happens only after the
+  merge loop finishes without raising, so the merged files are complete on disk first. Pass
+  **`--keep-tasks`** to retain them. To support the flag, the body was split into a
+  `merge_all(keep_tasks=False)` worker and a thin `argparse` `main()`.
 
 ### 2.6 `submit_array.sh` — self-resubmitting batch script
 
-[submit_array.sh](submit_array.sh) is a thin SLURM wrapper with two notable design points:
+[submit_array.sh](submit_array.sh) is a thin SLURM wrapper with several notable design
+points:
 
 - **Auto-ranged array via a self-resubmit bootstrap.** `--array` is deliberately **not** a
   `#SBATCH` directive (SLURM parses those before the script body runs, so it cannot read a
@@ -308,9 +369,18 @@ files under `multi_runs_output/`, reproducing the sequential layout
   `_lpg_binary_details_for_platform` (§1.3) and downloads the LPG binary once on the login
   node if missing — otherwise the first wave of concurrent tasks would all race to
   download into `pylpg/` and corrupt the folder.
-- **Scratch wiring.** It exports `LPG_OUTPUT_DIR` (per-task results) and `LPG_WORK_DIR`
-  (base for `C<task_id>` calc dirs, pointed at `$TMPDIR` node-local scratch). Both fall
-  back to in-repo defaults when unset, so local testing works without a cluster.
+- **Scratch wiring.** Output location is *not* exported here — the single source of truth is
+  `BASE_OUTPUT_DIR` in [config.py](config.py) (§2.1), which both the worker and the merge
+  import; the `export LPG_OUTPUT_DIR=…` line is left commented, precisely because an export
+  in this batch script is invisible to an interactive login-node merge. What it *does*
+  export is `LPG_WORK_DIR` (base for the `C<task_id>` calc dirs), pointed at node-local
+  scratch to keep each run's result I/O off shared storage.
+- **Shared completion log.** Each array element runs on a compute node, so its finish line
+  only reaches that task's own `logs/task_%A_%a.out` — never the login-node terminal, and
+  watching N per-task files is impractical. Every task now *also* appends its finish line
+  (task id, job id, exit code, timestamp) to a single shared `logs/completion.log` under an
+  `flock` (fd 9 opened append-mode so the lock never truncates), so concurrent appends don't
+  interleave and progress can be watched live with `tail -f logs/completion.log`.
 
 ---
 
@@ -319,7 +389,9 @@ files under `multi_runs_output/`, reproducing the sequential layout
 - **`requirements.txt`** — added `tables` (PyTables). Required for the HDF5 output in
   `SLP_Ade/`; without it, `pd.HDFStore(...)` calls fail.
 - **`.gitignore`** — now ignores `pyLPG_env/`, `SLP_Ade/__pycache__/`, the generated
-  `tasks.json`, and the `multi_runs_output/` output directory.
+  `tasks.json`, the `multi_runs_output/` output directory, and `/tasks/` (the local-mode
+  temporary per-task files — normally deleted by the merge, but ignored in case a merge is
+  interrupted).
 - **Tests**
   - [../test/test_slp_ade.py](../test/test_slp_ade.py) — new **fast** tests that never
     invoke LPG: `safe_name`, `split_dataframe_by_type`, `collect_lpg_members`,

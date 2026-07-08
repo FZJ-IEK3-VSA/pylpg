@@ -3,7 +3,7 @@
 This folder contains everything needed to run large-scale LPG household simulations in parallel on a SLURM cluster.  
 All configuration lives in `config.py` and the simulation logic in `simulation.py`; the three SLURM scripts are thin wrappers around them.
 
-> For a detailed developer-facing account of the code changes behind this workflow (the new `LPGExecutor` behaviour, the new execute function, and the whole `SLP_Ade/` subsystem), see [CHANGES.md](CHANGES.md).
+> For a detailed developer-facing account of the code changes behind this workflow (the new `LPGExecutor` behaviour, the new execute function, and the whole `SLP_Ade/` subsystem), see [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
