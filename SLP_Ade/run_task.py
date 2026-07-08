@@ -12,7 +12,7 @@ SLP_Ade/tasks.json  -- task manifest created by generate_tasks.py.
 
 Output
 ------
-config.SLURM_OUTPUT_DIR/task_<NNNNNN>.h5  -- per-task HDF5 file with:
+config.TASK_OUTPUT_DIR/task_<NNNNNN>.h5  -- per-task HDF5 file with:
     /data/<data_type>   -- simulation result DataFrames (per-load-type profiles;
                            with flexibility enabled also the `<LoadType>_NoFlex`
                            baseline profiles and a `FlexibilityEvents` event log)
@@ -38,7 +38,7 @@ import pandas as pd
 
 from pylpg import lpgdata
 
-from SLP_Ade.config import SLURM_OUTPUT_DIR  # noqa: E402
+from SLP_Ade.config import TASK_OUTPUT_DIR  # noqa: E402
 from SLP_Ade.simulation import (  # noqa: E402
     TransportVariant,
     attach_flexibility_events,
@@ -68,7 +68,7 @@ def run_task(task: dict) -> None:
     - ``/data/<data_type>`` — simulation result DataFrames (one per load type)
     - ``/metadata`` — single-row DataFrame with run metadata
 
-    The output directory is :data:`SLP_Ade.config.SLURM_OUTPUT_DIR` — the single
+    The output directory is :data:`SLP_Ade.config.TASK_OUTPUT_DIR` — the single
     source of truth that :mod:`SLP_Ade.merge_results` reads from too, so writer
     and reader can never diverge. Override it for a one-off run by exporting
     ``$LPG_OUTPUT_DIR`` (config resolves that consistently for both scripts).
@@ -130,10 +130,11 @@ def run_task(task: dict) -> None:
         sys.exit(1)
 
     # --- save per-task HDF5 (no concurrent write risk) -------------------
-    # config.SLURM_OUTPUT_DIR is the single source of truth for where task files
-    # go; merge_results.py reads the same value. It honours $LPG_OUTPUT_DIR when
+    # config.TASK_OUTPUT_DIR (= BASE_OUTPUT_DIR / "tasks") is the single source of
+    # truth for where task files go; merge_results.py reads the same value and
+    # deletes these files once they are merged. It honours $LPG_OUTPUT_DIR when
     # set, else falls back to the committed default in config.py.
-    output_dir = SLURM_OUTPUT_DIR
+    output_dir = TASK_OUTPUT_DIR
     output_dir.mkdir(parents=True, exist_ok=True)
     out_path = output_dir / f"task_{task_id:06d}.h5"
 

@@ -60,7 +60,7 @@ from SLP_Ade.config import (
     HOUSEHOLD_TEMPLATE_KEYS,
     HOUSETYPE,
     LPG_BINARY_PATH,
-    OUTPUT_DIR,
+    MERGED_OUTPUT_DIR,
     SAVE_CSV,
     SAVE_HDF5,
     START_DATE,
@@ -74,19 +74,19 @@ from SLP_Ade.config import (
 def prompt_clean_output_dir() -> None:
     """Ask user if they want to delete existing output files.
 
-    Prompts the user interactively to delete CSV and HDF5 files in OUTPUT_DIR.
+    Prompts the user interactively to delete CSV and HDF5 files in MERGED_OUTPUT_DIR.
     Lists existing files and waits for yes/no confirmation.
 
     :return None: No return value.
     """
-    csv_files = list(OUTPUT_DIR.glob("*.csv"))
-    hdf5_files = list(OUTPUT_DIR.glob("*.h5"))
+    csv_files = list(MERGED_OUTPUT_DIR.glob("*.csv"))
+    hdf5_files = list(MERGED_OUTPUT_DIR.glob("*.h5"))
 
     if not csv_files and not hdf5_files:
-        print(f"Output directory '{OUTPUT_DIR}' is empty. Ready to start.")
+        print(f"Output directory '{MERGED_OUTPUT_DIR}' is empty. Ready to start.")
         return
 
-    print(f"\nFound existing output files in '{OUTPUT_DIR}':")
+    print(f"\nFound existing output files in '{MERGED_OUTPUT_DIR}':")
     if csv_files:
         print(f"  - {len(csv_files)} CSV files")
         for f in sorted(csv_files)[:3]:
@@ -350,7 +350,7 @@ def save_as_HDF5(
     :return None: No return value.
     """
     hdf5_filename = f"{safe_name(tmpl_name)}.h5"
-    hdf5_path = OUTPUT_DIR / hdf5_filename
+    hdf5_path = MERGED_OUTPUT_DIR / hdf5_filename
     # Create hierarchical path: /climate/transport/run_N/data_type
     with pd.HDFStore(hdf5_path, mode='a', complevel=9, complib='blosc') as store:
         base_path = f"{safe_name(climate_tag)}/{transport_variant.tag}/run_{run_idx + 1}"
@@ -521,7 +521,7 @@ def execute_single_run(
         # Save to CSV if enabled
         if SAVE_CSV:
             for data_type, type_df in data_types.items():
-                out_csv = OUTPUT_DIR / (safe_name(f"{filename_base}__{data_type}") + ".csv")
+                out_csv = MERGED_OUTPUT_DIR / (safe_name(f"{filename_base}__{data_type}") + ".csv")
                 type_df.to_csv(out_csv)
             print(f"  Saved {len(data_types)} data types to CSV: {', '.join(sorted(data_types.keys()))}")
 
@@ -630,7 +630,7 @@ def print_summary(meta_df: pd.DataFrame, total: int) -> None:
     print(
         f"\nFinished {total} successful runs.\n"
         f"Output: {' and '.join(output_summary)}\n"
-        f"Metadata: {OUTPUT_DIR / 'runs_metadata.csv'}"
+        f"Metadata: {MERGED_OUTPUT_DIR / 'runs_metadata.csv'}"
     )
 
     if SAVE_HDF5:
@@ -654,6 +654,9 @@ def run_all() -> None:
     :return None: No return value.
     """
     _print_lpg_binary_source()
+    # Create the merged-output dir on demand (config no longer does this at
+    # import time, so importing config never touches the filesystem).
+    MERGED_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     prompt_clean_output_dir()
 
     # Collect all available LPG members
@@ -695,7 +698,7 @@ def run_all() -> None:
 
     # Save metadata and print summary
     meta_df = pd.DataFrame(meta_rows)
-    meta_df.to_csv(OUTPUT_DIR / "runs_metadata.csv", index=False)
+    meta_df.to_csv(MERGED_OUTPUT_DIR / "runs_metadata.csv", index=False)
     print_summary(meta_df, total)
 
 

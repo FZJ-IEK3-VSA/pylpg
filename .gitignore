@@ -37,3 +37,7 @@ tasks.json
 # generated result files and output directories
 *.csv
 multi_runs_output/
+# local-mode (RUN_ON_CLUSTER = False) per-task files: <repo>/tasks/ holds the
+# temporary task_<NNNNNN>.h5; merge_results.py deletes them, but ignore in case a
+# merge is interrupted.
+/tasks/

@@ -112,13 +112,15 @@
 source $HOME/.bashrc
 mamba activate pyLPG_env
 
-# Output directory for per-task HDF5 files: the single source of truth now lives
-# in SLP_Ade/config.py (SLURM_OUTPUT_DIR), which both run_task.py and
-# merge_results.py import. Do NOT set it only here -- an `export` in this batch
-# script is invisible to an interactive `merge_results.py` on the login node,
-# which caused the merge to look in the wrong directory. To override for a run,
-# uncomment the line below AND run merge_results.py in a shell with the same
-# value exported (or just change the default in config.py):
+# Output location for all results: the single source of truth is BASE_OUTPUT_DIR
+# in SLP_Ade/config.py. run_task.py writes per-task files to <base>/tasks/ and
+# merge_results.py writes the merged per-template files to <base>/multi_runs_output/
+# and then deletes the per-task files -- both paths derive from that one knob, so
+# nothing lands in the repo. Do NOT set LPG_OUTPUT_DIR only here: an `export` in
+# this batch script is invisible to an interactive `merge_results.py` on the
+# login node, which would make the merge look in the wrong directory. To override
+# for a run, uncomment the line below AND run merge_results.py in a shell with the
+# same value exported (or just change the default in config.py):
 # export LPG_OUTPUT_DIR="/fast/central/projects/2026-a-tarasenko-SLP_Ade/first_training_set"
 
 # Working directory for per-task LPG calc dirs (C<task_id>). Point it at fast

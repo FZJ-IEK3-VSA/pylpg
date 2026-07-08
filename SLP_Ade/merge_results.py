@@ -6,22 +6,29 @@ Run after **all** array jobs have finished:
 
 Input
 -----
-SLP_Ade/tasks.json     -- task manifest
-config.SLURM_OUTPUT_DIR -- directory of task_<NNNNNN>.h5 files written by
-                          run_task.py (honours $LPG_OUTPUT_DIR)
+SLP_Ade/tasks.json      -- task manifest
+config.TASK_OUTPUT_DIR  -- directory of task_<NNNNNN>.h5 files written by
+                           run_task.py (= BASE_OUTPUT_DIR / "tasks";
+                           honours $LPG_OUTPUT_DIR)
 
 Output
 ------
-multi_runs_output/<template_name>.h5  -- one file per household template,
-    with the same hierarchical structure as simulation.py:
+config.MERGED_OUTPUT_DIR/<template_name>.h5  -- one file per household template
+    (= BASE_OUTPUT_DIR / "multi_runs_output"), with the same hierarchical
+    structure as simulation.py:
     /<climate_tag>/<transport_tag>/run_<N>/<data_type>
     /<climate_tag>/<transport_tag>/run_<N>/_metadata
 
-Also writes multi_runs_output/runs_metadata.csv summarising every merged run.
+Also writes runs_metadata.csv (same directory) summarising every merged run.
+
+The per-task files are temporary: once every task has been folded into the
+merged files they are deleted, so nothing accumulates outside the merged output.
+Pass ``--keep-tasks`` to retain them.
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -31,24 +38,27 @@ sys.path.insert(0, str(_REPO_ROOT))
 
 import pandas as pd
 
-from SLP_Ade.config import SLURM_OUTPUT_DIR  # noqa: E402
+from SLP_Ade.config import MERGED_OUTPUT_DIR, TASK_OUTPUT_DIR  # noqa: E402
 from SLP_Ade.simulation import safe_name  # noqa: E402
 
 
-def main() -> None:
+def merge_all(keep_tasks: bool = False) -> None:
     """Merge all per-task HDF5 files into final per-template HDF5 files.
 
     Reads ``tasks.json`` and iterates over every ``task_<NNNNNN>.h5`` in
-    :data:`SLP_Ade.config.SLURM_OUTPUT_DIR` (the same location run_task.py writes
-    to; honours ``$LPG_OUTPUT_DIR``).  For each task file the
-    simulation DataFrames are copied into
-    ``multi_runs_output/<template_name>.h5`` under the hierarchical path
-    ``/<climate_tag>/<transport_tag>/run_<N>/<data_type>``.
+    :data:`SLP_Ade.config.TASK_OUTPUT_DIR` (the same location run_task.py writes
+    to -- ``BASE_OUTPUT_DIR / "tasks"``, honouring ``$LPG_OUTPUT_DIR``). For each
+    task file the simulation DataFrames are copied into
+    :data:`SLP_Ade.config.MERGED_OUTPUT_DIR` ``/<template_name>.h5`` under the
+    hierarchical path ``/<climate_tag>/<transport_tag>/run_<N>/<data_type>``.
 
-    After merging, a ``runs_metadata.csv`` summary is written to
-    ``multi_runs_output/`` and any task ids present in ``tasks.json`` but
-    missing from the output directory are reported as warnings.
+    After merging, a ``runs_metadata.csv`` summary is written next to the merged
+    files, any task ids present in ``tasks.json`` but missing from the input
+    directory are reported as warnings, and -- unless *keep_tasks* is set -- the
+    per-task files that were merged are deleted (they are temporary).
 
+    :param bool keep_tasks: If True, keep the per-task files instead of deleting
+        them after a successful merge.
     :return None: No return value.
     :raises SystemExit: If ``tasks.json`` is missing or no task files are found.
     """
@@ -59,22 +69,21 @@ def main() -> None:
     tasks: list[dict] = json.loads(tasks_file.read_text())
     tasks_by_id: dict[int, dict] = {t["task_id"]: t for t in tasks}
 
-    # config.SLURM_OUTPUT_DIR is the single source of truth for where run_task.py
-    # writes its per-task files (honours $LPG_OUTPUT_DIR, else the committed
-    # default). Importing the same value means this merge can never look in a
-    # different directory than the array workers wrote to.
-    slurm_dir = SLURM_OUTPUT_DIR
-    final_dir = _REPO_ROOT / "multi_runs_output"
-    final_dir.mkdir(exist_ok=True)
+    # TASK_OUTPUT_DIR and MERGED_OUTPUT_DIR both derive from the single
+    # BASE_OUTPUT_DIR knob in config.py (honouring $LPG_OUTPUT_DIR), so this merge
+    # can never look in a different directory than the array workers wrote to.
+    task_dir = TASK_OUTPUT_DIR
+    final_dir = MERGED_OUTPUT_DIR
+    final_dir.mkdir(parents=True, exist_ok=True)
 
-    task_files = sorted(slurm_dir.glob("task_*.h5"))
+    task_files = sorted(task_dir.glob("task_*.h5"))
     if not task_files:
-        sys.exit(f"No task_*.h5 files found in {slurm_dir}")
+        sys.exit(f"No task_*.h5 files found in {task_dir}")
 
-    print(f"Merging {len(task_files)} task file(s) ...")
+    print(f"Merging {len(task_files)} task file(s) from {task_dir} ...")
 
     meta_rows: list[dict] = []
-    missing: list[int] = []
+    merged_files: list[Path] = []
 
     for task_file in task_files:
         # Parse task id from filename, e.g. task_000042.h5 -> 42
@@ -118,10 +127,13 @@ def main() -> None:
                     row["hdf5_path"] = base_path
                     meta_rows.append(row)
 
+        # This file's data now lives inside the merged file, so it is a temporary
+        # that can be deleted once the whole merge has succeeded.
+        merged_files.append(task_file)
         print(f"  task {task_id:>6d}  ->  {hdf5_file.name}:{base_path}")
 
-    # Report tasks from tasks.json that have no matching output file
-    found_ids = {int(f.stem.split("_")[1]) for f in task_files}
+    # Report tasks from tasks.json that were never merged (no matching file).
+    found_ids = {int(f.stem.split("_")[1]) for f in merged_files}
     missing = [t["task_id"] for t in tasks if t["task_id"] not in found_ids]
     if missing:
         print(f"\nWARNING: {len(missing)} task(s) have no output file:")
@@ -139,10 +151,48 @@ def main() -> None:
         meta_df = pd.DataFrame(meta_rows)
         meta_path = final_dir / "runs_metadata.csv"
         meta_df.to_csv(meta_path, index=False)
-        print(f"\nMerged {len(meta_rows)} run(s).")
+        print(f"\nMerged {len(meta_rows)} run(s)  ->  {final_dir}")
         print(f"Metadata: {meta_path}")
     else:
         print("\nNo data merged.")
+
+    # Delete the temporary per-task files now that they are safely merged. Only
+    # files that were actually merged are removed; anything skipped above (bad
+    # name / unknown task id) is left in place for inspection. Reaching this line
+    # means the merge loop did not raise, so the merged files are complete on
+    # disk before any task file is removed.
+    if merged_files and not keep_tasks:
+        for f in merged_files:
+            f.unlink()
+        print(f"Deleted {len(merged_files)} merged task file(s) from {task_dir}.")
+        # Drop the tasks dir too if it is now empty (best effort).
+        try:
+            task_dir.rmdir()
+        except OSError:
+            pass
+    elif merged_files and keep_tasks:
+        print(f"Kept {len(merged_files)} task file(s) in {task_dir} (--keep-tasks).")
+
+
+def main() -> None:
+    """Parse CLI arguments and run the merge.
+
+    Reads ``--keep-tasks`` and dispatches to :func:`merge_all`.
+
+    :return None: No return value.
+    :raises SystemExit: If ``tasks.json`` is missing or no task files are found.
+    """
+    parser = argparse.ArgumentParser(
+        description="Merge per-task HDF5 files into final per-template HDF5 files."
+    )
+    parser.add_argument(
+        "--keep-tasks",
+        action="store_true",
+        help="Keep the per-task task_*.h5 files instead of deleting them after a "
+        "successful merge (they are treated as temporary and removed by default).",
+    )
+    args = parser.parse_args()
+    merge_all(keep_tasks=args.keep_tasks)
 
 
 if __name__ == "__main__":

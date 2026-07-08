@@ -17,26 +17,58 @@ from typing import Any, Optional
 from pylpg import lpgdata
 
 
-# Output directory for the sequential (non-SLURM) runner.
-OUTPUT_DIR = Path("multi_runs_output")
-OUTPUT_DIR.mkdir(exist_ok=True)
+# --- Output paths -------------------------------------------------------------
+# Flip ONE flag to move between cluster and local runs:
+#   RUN_ON_CLUSTER = True  -> results go to the shared project storage on the
+#                             cluster (CLUSTER_BASE_OUTPUT_DIR below).
+#   RUN_ON_CLUSTER = False -> local testing: results go into the repo's own
+#                             multi_runs_output/ folder (base = repo root).
+# Everything else derives from the chosen base, so this single flag is all you
+# change to switch machines.
+RUN_ON_CLUSTER = False
 
+_REPO_ROOT = Path(__file__).resolve().parents[1]
 
-# Single source of truth for the SLURM sweep's per-task output directory.
-# run_task.py writes its task_<NNNNNN>.h5 files here; merge_results.py reads them
-# back. Both import THIS value, so an array worker (running under SLURM) and an
-# interactive merge_results.py run can never look in different directories --
-# the failure mode where the merge fell back to a stale slurm_output/ path
-# because the submit script's `export LPG_OUTPUT_DIR` was not visible in the
-# login shell. Override for a one-off run by exporting LPG_OUTPUT_DIR (it then
-# applies to both scripts consistently).
-SLURM_OUTPUT_DIR = Path(
-    os.environ.get("LPG_OUTPUT_DIR")
-    or "/fast/central/projects/2026-a-tarasenko-SLP_Ade/first_training_set"
+# Cluster: shared, fast project storage (outside the repo).
+CLUSTER_BASE_OUTPUT_DIR = Path(
+    "/fast/central/projects/2026-a-tarasenko-SLP_Ade/first_training_set"
 )
-# For local testing, either export LPG_OUTPUT_DIR or change the default above to
-# a portable in-repo path, e.g.:
-#   Path(__file__).resolve().parent.parent / "slurm_output"
+# Local testing: use the repo root as the base, so merged files land in
+# <repo>/multi_runs_output/ (exactly where local runs wrote before) and the
+# temporary <repo>/tasks/ dir sits alongside it (gitignored, and removed by
+# merge_results.py after each successful merge).
+LOCAL_BASE_OUTPUT_DIR = _REPO_ROOT
+
+# BASE_OUTPUT_DIR is the single knob every script derives its subdirectories
+# from. LPG_OUTPUT_DIR overrides it (in either mode) for one-off runs -- applied
+# to EVERY script at once (the array worker that writes task files AND the
+# interactive merge that reads them), so writer and reader can never look in
+# different directories. If you export it, export it in every shell you use (the
+# submit_array.sh job AND the shell you run merge_results.py in), otherwise that
+# script falls back to the default selected by RUN_ON_CLUSTER here.
+#
+# Layout created on demand under BASE_OUTPUT_DIR:
+#   tasks/              per-task task_<NNNNNN>.h5 files written by run_task.py.
+#                       These are temporary: merge_results.py folds them into the
+#                       merged files and then deletes them.
+#   multi_runs_output/  final merged <template>.h5 files + runs_metadata.csv,
+#                       written by merge_results.py and by the sequential runner.
+BASE_OUTPUT_DIR = Path(
+    os.environ.get("LPG_OUTPUT_DIR")
+    or (CLUSTER_BASE_OUTPUT_DIR if RUN_ON_CLUSTER else LOCAL_BASE_OUTPUT_DIR)
+)
+
+# Temporary per-task files: run_task.py writes one HDF5 per SLURM array task
+# here; merge_results.py reads them and deletes them after a successful merge.
+TASK_OUTPUT_DIR = BASE_OUTPUT_DIR / "tasks"
+
+# Final merged output: one HDF5 per household template plus runs_metadata.csv.
+# Shared by merge_results.py and the sequential runner in simulation.py.
+MERGED_OUTPUT_DIR = BASE_OUTPUT_DIR / "multi_runs_output"
+
+# NOTE: directories are created at their point of use (mkdir(parents=True,
+# exist_ok=True)), never at import time -- importing this config on a laptop must
+# not try to create a cluster path, and must not drop stray dirs into the repo.
 
 
 # Output format options
@@ -132,10 +164,12 @@ TRANSPORT_VARIANT_KEYS = [      #TODO: see above
 
 HOUSETYPE = lpgdata.HouseTypes.HT20_Single_Family_House_no_heating_cooling
 
-#: Custom binary path for LPG. Set to None to use the official release downloaded automatically by the package.
-LPG_BINARY_PATH = "/fast/home/a-tarasenko/SLP_Ade/LoadProfileGenerator/SimEngine2/bin/release/net9.0/linux-x64/publish/SimEngine2"  
-# "/fast/home/a-tarasenko/SLP_Ade/LoadProfileGenerator/SimEngine2/bin/release/net9.0/linux-x64/publish/SimEngine2" for cluster
-# "C:\\Tarasenko\\GitHub\\LoadProfileGenerator\\SimEngine2\\bin\\release\\net9.0\\win-x64\\publish\\SimEngine2.exe" for local windows dev
+#: Custom binary path for LPG. The RUN_ON_CLUSTER flag selects between the two
+#: builds below (Linux on the cluster, Windows locally). Set the relevant one to
+#: None to use the official release downloaded automatically by the package.
+CLUSTER_LPG_BINARY_PATH = "/fast/home/a-tarasenko/SLP_Ade/LoadProfileGenerator/SimEngine2/bin/release/net9.0/linux-x64/publish/SimEngine2"
+LOCAL_LPG_BINARY_PATH = r"C:\Tarasenko\GitHub\LoadProfileGenerator\SimEngine2\bin\release\net9.0\win-x64\publish\SimEngine2.exe"
+LPG_BINARY_PATH = CLUSTER_LPG_BINARY_PATH if RUN_ON_CLUSTER else LOCAL_LPG_BINARY_PATH
 
 # Define runs per combination. You can specify:
 # - A dict mapping combo_tag patterns to run counts
