@@ -25,7 +25,7 @@ from pylpg import lpgdata
 #                             multi_runs_output/ folder (base = repo root).
 # Everything else derives from the chosen base, so this single flag is all you
 # change to switch machines.
-RUN_ON_CLUSTER = False
+RUN_ON_CLUSTER = True
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 
