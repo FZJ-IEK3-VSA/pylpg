@@ -142,8 +142,22 @@ START_DATE: Optional[str] = "2020-01-01"  # e.g. "2020-01-01"
 END_DATE: Optional[str] = "2020-01-31"    # e.g. "2020-01-31"
 
 # Set to None to use all templates in lpgdata.HouseholdTemplates.
+# Ten representative archetypes spanning the demographic space (household size
+# 1 -> 6, working / non-working, young / retired, with / without children,
+# single parent, student, multigenerational). Total tasks = len(templates) x
+# len(CLIMATE_SET_KEYS) x (runs summed over TRANSPORT_VARIANT_KEYS) = 10 x 3 x
+# (1 + 3) = 120.
 HOUSEHOLD_TEMPLATE_KEYS = [
-    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR01_Couple_both_at_Work)
+    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR01_Couple_both_at_Work),
+    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR05_Family_3_children_both_with_work),
+    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR07_Single_with_work),
+    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR08_Single_woman_2_children_with_work),
+    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR13_Student_with_Work),
+    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR15_Multigenerational_Home_working_couple_2_children_2_seniors),
+    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR16_Couple_over_65_years),
+    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR18_Family_2_children_parents_without_work),
+    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR23_Single_man_over_65_years),
+    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR27_Family_both_at_work_2_children),
  ]
 
 # Climate presets keep geographic location and temperature profile separate.

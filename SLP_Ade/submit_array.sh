@@ -140,5 +140,19 @@ echo "Starting task $SLURM_ARRAY_TASK_ID on $(hostname) at $(date)"
 python SLP_Ade/run_task.py --task-id "$SLURM_ARRAY_TASK_ID"
 
 EXIT_CODE=$?
-echo "Task $SLURM_ARRAY_TASK_ID finished with exit code $EXIT_CODE at $(date)"
+FINISH_LINE="Task $SLURM_ARRAY_TASK_ID (job $SLURM_ARRAY_JOB_ID) finished with exit code $EXIT_CODE at $(date)"
+
+# This runs on a compute node, so its stdout goes to this task's own
+# logs/task_%A_%a.out -- it can never reach the login-node terminal, and one
+# file per task means watching progress is chasing N files. So ALSO append the
+# finish line to a single shared logs/completion.log. logs/ is on shared storage
+# (same place you run generate_tasks.py / merge_results.py), so that file is
+# visible on the login node -- watch all tasks finish live with:
+#     tail -f logs/completion.log
+# flock serialises the concurrent array tasks' appends so their lines don't
+# interleave; fd 9 is opened in append mode (>>) on the log itself, so the lock
+# never truncates it.
+echo "$FINISH_LINE"                                    # per-task .out (self-contained)
+( flock 9; echo "$FINISH_LINE" >&9 ) 9>>logs/completion.log
+
 exit $EXIT_CODE
