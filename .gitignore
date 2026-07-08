@@ -31,6 +31,8 @@ dist/
 pyLPG_env/
 SLP_Ade/__pycache__/
 CLAUDE.md
+logs/
+
 # generated SLURM task manifest (written under SLP_Ade/ by generate_tasks.py)
 tasks.json
 
