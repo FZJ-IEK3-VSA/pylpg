@@ -65,6 +65,7 @@ from SLP_Ade.config import (
     SAVE_HDF5,
     START_DATE,
     TRANSPORT_VARIANT_KEYS,
+    ClimateSetKey,
     TransportVariantKey,
     YEAR,
     get_runs_for_combo,
@@ -222,13 +223,13 @@ def resolve_optional_key(
 def make_climate_variants(
     all_geographic_locations: dict[str, JsonReference],
     all_temperature_profiles: dict[str, JsonReference],
-    climate_keys: Optional[list[tuple[str, Optional[str], str]]],
+    climate_keys: Optional[list[ClimateSetKey]],
 ) -> list[tuple[JsonReference, Optional[JsonReference], str]]:
     """Create climate variant combinations.
 
     :param dict[str, JsonReference] all_geographic_locations: Available geographic locations.
     :param dict[str, JsonReference] all_temperature_profiles: Available temperature profiles.
-    :param Optional[list[tuple[str, Optional[str], str]]] climate_keys: List of (location_key, temp_key, tag) tuples, or None for all combinations.
+    :param Optional[list[ClimateSetKey]] climate_keys: Climate variant keys, or None for all combinations.
     :return list[tuple[JsonReference, Optional[JsonReference], str]]: List of (location, temperature_profile, tag) tuples.
     :raises KeyError: If a required location key is missing.
     """
@@ -244,16 +245,20 @@ def make_climate_variants(
         ]
 
     variants = []
-    for location_key, temperature_key, tag in climate_keys:
+    for climate_key in climate_keys:
         location = resolve_optional_key(
-            all_geographic_locations, location_key, "geographic location"
+            all_geographic_locations,
+            climate_key.geographic_location_key,
+            "geographic location",
         )
         if location is None:
             raise KeyError("Climate variants require a geographic location key")
         temperature_profile = resolve_optional_key(
-            all_temperature_profiles, temperature_key, "temperature profile"
+            all_temperature_profiles,
+            climate_key.temperature_profile_key,
+            "temperature profile",
         )
-        variants.append((location, temperature_profile, tag))
+        variants.append((location, temperature_profile, climate_key.tag))
     return variants
 
 

@@ -38,6 +38,7 @@ from SLP_Ade.config import (
     CLIMATE_SET_KEYS,
     HOUSEHOLD_TEMPLATE_KEYS,
     TRANSPORT_VARIANT_KEYS,
+    ClimateSetKey,
     get_runs_for_combo,
 )
 from SLP_Ade.simulation import (
@@ -83,8 +84,9 @@ def build_task_list() -> list[dict]:
         else all_template_keys
     )
 
-    # --- resolve climate key triples -------------------------------------
-    # Each triple: (geographic_location_key, temperature_profile_key, tag)
+    # --- resolve climate keys --------------------------------------------
+    # Each entry is a ClimateSetKey(geographic_location_key,
+    # temperature_profile_key, tag).
     if CLIMATE_SET_KEYS is None:
         all_geo_keys = list(
             collect_lpg_members(lpgdata.GeographicLocations, JsonReference).keys()
@@ -92,22 +94,22 @@ def build_task_list() -> list[dict]:
         all_temp_keys = list(
             collect_lpg_members(lpgdata.TemperatureProfiles, JsonReference).keys()
         )
-        climate_key_triples = [
-            (geo_key, temp_key, f"{geo_key}__{temp_key}")
+        climate_keys = [
+            ClimateSetKey(geo_key, temp_key, f"{geo_key}__{temp_key}")
             for geo_key in all_geo_keys
             for temp_key in all_temp_keys
         ]
     else:
-        climate_key_triples = CLIMATE_SET_KEYS  # already (geo, temp, tag)
+        climate_keys = CLIMATE_SET_KEYS
 
     # --- build task list -------------------------------------------------
     tasks: list[dict] = []
     task_id = 0
 
     for tmpl_key in template_keys:
-        for geo_key, temp_key, climate_tag in climate_key_triples:
+        for climate_key in climate_keys:
             for tvk in TRANSPORT_VARIANT_KEYS:
-                combo_tag = create_combo_tag(tmpl_key, climate_tag, tvk.tag)
+                combo_tag = create_combo_tag(tmpl_key, climate_key.tag, tvk.tag)
                 num_runs = get_runs_for_combo(combo_tag)
 
                 for run_idx in range(num_runs):
@@ -116,9 +118,9 @@ def build_task_list() -> list[dict]:
                         {
                             "task_id": task_id,
                             "template_key": tmpl_key,
-                            "geographic_location_key": geo_key,
-                            "temperature_profile_key": temp_key,
-                            "climate_tag": climate_tag,
+                            "geographic_location_key": climate_key.geographic_location_key,
+                            "temperature_profile_key": climate_key.temperature_profile_key,
+                            "climate_tag": climate_key.tag,
                             "transport_simulate": tvk.simulate_transportation,
                             "transport_charging_set_key": tvk.charging_set_key,
                             "transport_device_set_key": tvk.transport_device_set_key,

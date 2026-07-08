@@ -28,7 +28,7 @@ All parameters are set in `config.py` under `# ---- CONFIG ----`:
 | ------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
 | `YEAR`                    | Simulation year                                                                            | `2022`                                                |
 | `HOUSEHOLD_TEMPLATE_KEYS` | List of template names, or `None` for all                                                  | `None` (all)                                          |
-| `CLIMATE_SET_KEYS`        | List of `(geo_location_key, temp_profile_key, tag)` tuples, or `None` for all combinations | 3 German cities                                       |
+| `CLIMATE_SET_KEYS`        | List of `ClimateSetKey` presets (geo location + temp profile + tag), or `None` for all combinations | 3 German cities                             |
 | `TRANSPORT_VARIANT_KEYS`  | List of `TransportVariantKey` presets                                                      | no-transport + home-charging                          |
 | `RUNS_PER_COMBO_MAP`      | Dict mapping combo-tag patterns to run counts                                              | `{"no_transport": 1, "home_charge_bus_cars_30km": 3}` |
 | `HOUSETYPE`               | LPG house type                                                                             | `HT20_Single_Family_House_no_heating_cooling`         |

@@ -277,8 +277,8 @@ def test_build_task_list_climate_coverage() -> None:
         pytest.skip("CLIMATE_SET_KEYS=None means all combos; count is dynamic")
     tasks = build_task_list()
     climate_tags_in_tasks = {t["climate_tag"] for t in tasks}
-    for _, _, expected_tag in CLIMATE_SET_KEYS:
-        assert expected_tag in climate_tags_in_tasks
+    for climate_key in CLIMATE_SET_KEYS:
+        assert climate_key.tag in climate_tags_in_tasks
 
 
 def test_build_task_list_transport_coverage() -> None:

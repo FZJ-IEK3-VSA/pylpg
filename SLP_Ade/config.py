@@ -113,6 +113,24 @@ class TransportVariantKey:
     tag: str
 
 
+@dataclass(frozen=True)
+class ClimateSetKey:
+    """Configuration key for a climate variant (location + temperature profile).
+
+    Attributes:
+        geographic_location_key: Key into ``lpgdata.GeographicLocations``.
+        temperature_profile_key: Key into ``lpgdata.TemperatureProfiles``, or
+            None to fall back to the location's own default profile.
+        tag: Short, filesystem-safe identifier for this variant. Load-bearing,
+            exactly like ``TransportVariantKey.tag``: it is the climate level of
+            the HDF5 output hierarchy (``/<climate_tag>/<transport_tag>/run_<N>/
+            ...``) and part of the ``combo_tag`` used for deterministic seeding.
+    """
+    geographic_location_key: str
+    temperature_profile_key: Optional[str]
+    tag: str
+
+
 # ---- CONFIG ------------------------------------------------------------------------------------------------------------------------------------------
 YEAR = 2022
 
@@ -130,19 +148,19 @@ HOUSEHOLD_TEMPLATE_KEYS = [
 
 # Climate presets keep geographic location and temperature profile separate.
 # (geographic_location_key, temperature_profile_key, tag)
-CLIMATE_SET_KEYS = [            # TODO: make this a dataclass instead of a tuple for clarity
-    (
+CLIMATE_SET_KEYS = [
+    ClimateSetKey(
         #lpgdata.GeographicLocations.Germany_Berlin.Name,        # TODO: remove get_attr_key() and use string from JSONReference
         get_attr_key(lpgdata.GeographicLocations, lpgdata.GeographicLocations.Germany_Berlin),
         get_attr_key(lpgdata.TemperatureProfiles, lpgdata.TemperatureProfiles.Berlin_Germany_1996_from_Deutscher_Wetterdienst_DWD_www_dwd_de),
-        "berlin_loc_berlin_temp",       
+        "berlin_loc_berlin_temp",
     ),
-    (
+    ClimateSetKey(
         get_attr_key(lpgdata.GeographicLocations, lpgdata.GeographicLocations.Germany_Hamburg),
         get_attr_key(lpgdata.TemperatureProfiles, lpgdata.TemperatureProfiles.Hamburg_Germany_2007_from_Deutscher_Wetterdienst_DWD_www_dwd_de),
         "hamburg_loc_hamburg_temp",
     ),
-    (
+    ClimateSetKey(
         get_attr_key(lpgdata.GeographicLocations, lpgdata.GeographicLocations.Germany_Chemnitz),
         get_attr_key(lpgdata.TemperatureProfiles, lpgdata.TemperatureProfiles.Dresden_Germany_2000_from_Deutscher_Wetterdienst_DWD_www_dwd_de),
         "chemnitz_loc_dresden_temp",
@@ -151,7 +169,7 @@ CLIMATE_SET_KEYS = [            # TODO: make this a dataclass instead of a tuple
 # Set to None to generate all location/temperature-profile combinations.
 
 # Key-based transport presets.
-TRANSPORT_VARIANT_KEYS = [      #TODO: see above
+TRANSPORT_VARIANT_KEYS = [      # TODO: remove get_attr_key() and use string from JSONReference (as noted on CLIMATE_SET_KEYS above)
     TransportVariantKey(False, None, None, None, "no_transport"),
     TransportVariantKey(
         True,
