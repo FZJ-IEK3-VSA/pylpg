@@ -405,6 +405,19 @@ def run_lpg_simulation(
     This is the core execution primitive shared between interactive
     (simulation) and SLURM-array (run_task) modes.
 
+    Idle-mode is always enabled here (``enable_idle_mode=True``). Several of the
+    configured household templates -- specifically the ones with young children
+    -- intermittently leave a person with no available affordance at some
+    timestep, which the LPG treats as a fatal ``DataIntegrityException`` and
+    aborts the whole run (this function then returns ``None`` and the task is
+    lost). Idle-mode gives the stuck person a fallback "Idle" activity so those
+    runs complete instead. Observed impact on the first full sweep: it recovers
+    the tasks that otherwise fail, all of which are child-bearing households; the
+    cost is a minor behavioural artifact (a brief "doing nothing" in place of a
+    real activity). See ``enable_idle_mode`` in
+    :func:`pylpg.lpg_execution.execute_lpg_with_householddata_enabled_flex_and_transport_custom`
+    for the full rationale and trade-off.
+
     Each calculation runs in its own ``C<calculation_index>`` working directory.
     Parallel callers (e.g. the SLURM worker) MUST pass a unique
     ``calculation_index`` per concurrent run, otherwise they collide on the same
@@ -463,6 +476,9 @@ def run_lpg_simulation(
         temperature_profile=temperature_profile,
         enable_flexibility=True,
         enable_transportation=transport_variant.simulate_transportation,
+        # Prevent child-affordance dead-ends from aborting the run; see the
+        # run_lpg_simulation docstring above for why this is unconditionally True.
+        enable_idle_mode=True,
         random_seed=seed,
         energy_intensity=EnergyIntensityType.Random,
         calculation_index=calculation_index,

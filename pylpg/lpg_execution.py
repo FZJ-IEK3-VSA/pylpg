@@ -263,6 +263,7 @@ def execute_lpg_with_householddata_enabled_flex_and_transport_custom(
     temperature_profile: JsonReference = None,
     enable_flexibility: bool = False,
     enable_transportation: bool = False,
+    enable_idle_mode: bool = False,
     target_heating_demand: Optional[float] = None,
     target_cooling_demand: Optional[float] = None,
     calculation_index: int = 1,
@@ -272,6 +273,53 @@ def execute_lpg_with_householddata_enabled_flex_and_transport_custom(
     lpg_binary_path: Optional[Union[Path, str]] = None,
     working_directory: Optional[Union[Path, str]] = None,
 ):
+    """Run one LPG simulation from a fully-specified household.
+
+    Builds the default job spec, attaches ``householddata``, applies the
+    requested options (climate, flexibility, transportation, idle-mode), runs
+    the engine and returns the parsed minute-resolution profile DataFrame. When
+    flexibility is enabled the flattened flexibility event log is attached as
+    ``df.attrs['flexibility_events']``.
+
+    :param int year: Simulation year passed to :meth:`LPGExecutor.make_default_lpg_settings`.
+    :param HouseholdData householddata: The prepared household to simulate.
+    :param str housetype: House type code (a ``HouseTypes.*`` value).
+    :param str startdate: Start date ``"YYYY-MM-DD"`` (None = LPG default).
+    :param str enddate: End date ``"YYYY-MM-DD"`` (None = LPG default).
+    :param JsonReference geographic_location: Geographic location reference (or None).
+    :param JsonReference temperature_profile: Temperature profile reference (or None).
+    :param bool enable_flexibility: Emit the flexible / ``NoFlex`` profile pair and
+        the flexibility event log.
+    :param bool enable_transportation: Simulate transportation (requires the
+        household to carry charging / device / travel-route sets).
+    :param bool enable_idle_mode: Give each person a fallback "Idle" activity so the
+        engine never aborts when a household template leaves someone with no
+        available affordance at a timestep. Without it, the LPG raises a fatal
+        ``DataIntegrityException`` ("0 affordances were available for <person> ...
+        calculation can not continue"), writes no results directory, and this
+        function returns ``None``. That dead-end is stochastic and concentrated in
+        households with young children (children have few permissible affordances,
+        so a random schedule can leave them all simultaneously occupied), so
+        enabling idle-mode is what lets a large parameter sweep complete instead of
+        silently losing those runs. Trade-off: an otherwise-stuck person does
+        nothing for those steps rather than performing a real activity — a minor
+        behavioural artifact (no activity-driven appliance load during them).
+        Defaults to ``False`` to preserve the stricter, artifact-free behaviour for
+        callers that would rather have a broken template fail loudly.
+    :param Optional[float] target_heating_demand: Override the house target heat demand.
+    :param Optional[float] target_cooling_demand: Override the house target cooling demand.
+    :param int calculation_index: Unique index selecting the ``C<idx>`` working
+        directory; parallel callers MUST pass a unique value to avoid colliding.
+    :param bool clear_previous_calc: Wipe the working directory before running.
+    :param int random_seed: Random seed for reproducible results (None = engine default).
+    :param EnergyIntensityType energy_intensity: Device-selection energy intensity mode.
+    :param Optional[Union[Path, str]] lpg_binary_path: Custom LPG binary (file or
+        directory); None downloads / uses the bundled platform binary.
+    :param Optional[Union[Path, str]] working_directory: Base directory for the
+        ``C<idx>`` calc dirs (None = current directory).
+    :return Optional[pd.DataFrame]: Parsed profiles (one column per
+        ``<LoadType>_<HHKey>``), or ``None`` when the engine produced no results.
+    """
     print(
         "Starting calc with "
         + str(calculation_index)
@@ -303,6 +351,12 @@ def execute_lpg_with_householddata_enabled_flex_and_transport_custom(
     request.CalcSpec.EnergyIntensityType = energy_intensity
     request.CalcSpec.set_EnableFlexibility(enable_flexibility)
     request.CalcSpec.set_EnableTransportation(enable_transportation)
+    # When a household template boxes a person into a timestep with zero
+    # available affordances, the engine raises a fatal DataIntegrityException and
+    # writes no results (this function then returns None). Idle-mode injects a
+    # fallback "Idle" activity so the run completes instead. See the
+    # enable_idle_mode parameter docstring for the full rationale and trade-off.
+    request.CalcSpec.set_EnableIdlemode(enable_idle_mode)
     calcspecfilename = Path(lpe.calculation_directory, "calcspec.json")
     if enable_transportation:
         request.CalcSpec.CalcOptions.append(CalcOption.TansportationDeviceJsons)
