@@ -139,7 +139,7 @@ YEAR = 2022
 # ValueError if the date range is never addressed, rather than silently falling
 # back to a hardcoded window.
 START_DATE: Optional[str] = "2020-01-01"  # e.g. "2020-01-01"
-END_DATE: Optional[str] = "2020-01-31"    # e.g. "2020-01-31"
+END_DATE: Optional[str] = "2020-12-31"    # e.g. "2020-01-31"
 
 # Set to None to use all templates in lpgdata.HouseholdTemplates.
 # Ten representative archetypes spanning the demographic space (household size
