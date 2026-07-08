@@ -626,8 +626,18 @@ class LPGExecutor:
             os.makedirs(self.calculation_directory)
 
     def error_tolerating_directory_clean(self, path: Union[Path, str]):
-        mypath = str(path)
-        if len(str(mypath)) < 10:
+        """Delete the top-level files in ``path`` as a pre-clean before rmtree.
+
+        The length guard is a safety net against accidentally wiping a
+        dangerously broad location (e.g. ``/`` or ``C:\\``). It is checked on
+        the *resolved absolute* path: the per-calculation directory is a short
+        relative path like ``C1`` (working_directory defaults to the current
+        dir), so resolving it first keeps the guard meaningful — a genuinely
+        short path such as the filesystem root still trips it, while a normal
+        relative calc dir no longer does.
+        """
+        mypath = str(Path(path).resolve())
+        if len(mypath) < 10:
             raise Exception(
                 "Path too short. This is suspicious. Trying to delete more than you meant to?"
             )
