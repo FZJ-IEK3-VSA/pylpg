@@ -12,7 +12,7 @@ import time
 import traceback
 import zipfile
 from pathlib import Path
-from typing import Any, List, Union, Optional
+from typing import List, Union, Optional
 
 import pandas as pd  # type: ignore
 import requests
@@ -702,14 +702,32 @@ class LPGExecutor:
                 print("Removing " + file)
                 os.remove(file)
 
-    def execute_lpg_binaries(self) -> Any:
-        # execute LPG
+    def execute_lpg_binaries(self) -> None:
+        """Run the LPG engine on ``calcspec.json`` in the calculation directory.
+
+        Invokes ``simengine2 processhousejob -j calcspec.json`` as a subprocess
+        with the calculation directory as its working directory.
+
+        The engine's exit code is checked: a non-zero status means the engine
+        aborted (for example a ``DataIntegrityException`` when a person is left
+        with zero available affordances at a timestep) and wrote no usable
+        results. Rather than let that surface later as a confusing "no results
+        returned", it is raised immediately as a :class:`RuntimeError` naming the
+        exit code and the calculation directory, whose logs hold the details.
+        """
         pathname = self.lpg_simengine_filepath()
         print("executing in " + str(self.calculation_directory))
-        subprocess.run(
+        completed = subprocess.run(
             [pathname, "processhousejob", "-j", "calcspec.json"],
             cwd=str(self.calculation_directory),
         )
+        if completed.returncode != 0:
+            raise RuntimeError(
+                f"LPG engine exited with non-zero status {completed.returncode} "
+                f"in {self.calculation_directory}. The run produced no usable "
+                f"results; see the Log.*.txt files in that directory for the "
+                f"cause (e.g. a DataIntegrityException)."
+            )
 
     def make_default_lpg_settings(self, year: int) -> HouseCreationAndCalculationJob:
         print("Creating")
