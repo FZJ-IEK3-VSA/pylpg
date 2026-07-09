@@ -44,6 +44,9 @@ What it adds over the previous `execute_lpg_with_householdata()`:
     `CalcOption.JsonHouseholdSumFilesNoFlex`, and `CalcOption.FlexibilityEvents`.
   - `CalcOption.BodilyActivityStatistics` is **always** appended (bodily-activity output
     is unconditional).
+- **Idle-mode toggle.** A later addition: `enable_idle_mode` drives
+  `CalcSpec.set_EnableIdlemode(...)` so a household template can no longer abort the run by
+  boxing a person into a timestep with zero available affordances (see §1.8).
 - **`working_directory` passthrough.** Forwards a `working_directory` argument to
   `LPGExecutor` (see §1.2) so per-calculation dirs can be relocated to node-local scratch.
 - **`lpg_binary_path` passthrough.** Like the other execute functions (§1.4), it accepts a
@@ -192,6 +195,41 @@ that: a normal relative calc dir resolves to a long absolute path and passes, wh
 genuinely dangerous short path (the filesystem root) still trips it. A docstring was added
 explaining the intent so the length constant is not mistaken for arbitrary.
 
+### 1.8 Idle-mode — stop child-affordance dead-ends from aborting a run
+
+`execute_lpg_with_householddata_enabled_flex_and_transport_custom()` gained an
+`enable_idle_mode: bool = False` parameter that calls `CalcSpec.set_EnableIdlemode(...)`.
+
+The problem it solves: the LPG treats "a person has **0 available affordances** at some
+timestep" as a fatal `DataIntegrityException` and aborts the whole run (writing no results,
+so the execute function returns `None` and the task is lost). This dead-end is **stochastic
+and concentrated in households with young children** — children have few permissible
+affordances, so a random schedule can leave them all simultaneously occupied. On the first
+full sweep, every task that failed this way was a child-bearing household. Idle-mode injects
+a fallback "Idle" activity so the stuck person does nothing for those steps instead of
+aborting, which is what lets a large parameter sweep complete rather than silently drop those
+runs.
+
+- **Trade-off (documented in the parameter docstring):** the affected steps show a brief
+  "doing nothing" (no activity-driven appliance load) in place of a real activity — a minor
+  behavioural artifact accepted in exchange for the run completing.
+- **Default is `False`** in the core function, preserving the stricter fail-loud behaviour
+  for callers that would rather a broken template error out. The `SLP_Ade` workflow opts in
+  unconditionally (see §2.2).
+
+### 1.9 Engine exit code is now checked — non-zero raises instead of "no results"
+
+`execute_lpg_binaries()` previously fired the `simengine2 processhousejob` subprocess and
+ignored its exit code (its return type was `Any`, effectively `None`). A run that the engine
+aborted (e.g. the `DataIntegrityException` above, or any other fatal error) therefore surfaced
+only much later as a confusing "no results returned" far from the real cause.
+
+It now captures the `subprocess.run(...)` result and, on a non-zero `returncode`, raises a
+`RuntimeError` naming the **exit code** and the **calculation directory** (whose `Log.*.txt`
+files hold the real cause). Return type is now `None`. This turns a silent, misattributed
+failure into an immediate, located one — and pairs with the `SLP_Ade` worker's own no-data
+guard (§2.4), which catches the cases the engine reports as success but with no usable output.
+
 ---
 
 ## 2. The `SLP_Ade/` workflow (new subsystem)
@@ -274,6 +312,14 @@ Key design points:
   spanning the demographic space (size 1→6, working/non-working, young/retired, with/without
   children, single parent, student, multigenerational). With three climate sets and the
   transport variants' run counts, total tasks = `10 × 3 × (1 + 3) = 120`.
+- **Live cluster-run values (currently committed).** Two config knobs are set for a real
+  full-scale run, not a smoke test — worth knowing when reading the repo and before running
+  locally:
+  - `RUN_ON_CLUSTER = True` — output base and binary path both resolve to their **cluster**
+    values (§2.1 flag bullet). Flip to `False` for a laptop run.
+  - `END_DATE = "2020-12-31"` — the simulation window is now a **full calendar year**
+    (was a 31-day January window), matching the DATASET docs' "full calendar year" profiles
+    (§3). This is what drives the ~1.5 GB-per-template output sizes.
 
 ### 2.2 `simulation.py` — shared primitive + sequential runner
 
@@ -288,6 +334,10 @@ sequential runner (`python SLP_Ade/simulation.py`).
     `working_directory` if the installed pylpg actually supports them — so an older pylpg
     without those parameters still works. `working_directory` is taken from the
     `LPG_WORK_DIR` environment variable.
+  - **Idle-mode is always on here** (`enable_idle_mode=True`, hard-coded). The sweep prefers
+    a completed run with a minor artifact over losing every child-bearing-household task to a
+    `DataIntegrityException` (§1.8). The docstring records the observed impact and trade-off
+    and points at the core parameter for the full rationale.
 - **Helper functions** (also reused by the SLURM scripts and tests):
   `collect_lpg_members()` (introspect all members of an `lpgdata` catalog by type),
   `select_by_keys()`, `resolve_optional_key()`, `make_climate_variants()`,
@@ -333,6 +383,21 @@ calls `run_lpg_simulation()`.
   overridable via `$LPG_OUTPUT_DIR`. When flexibility is enabled, the flexibility event log
   rides along as a `/data/FlexibilityEvents` group (§1.5), so the generic `/data/*` copy in
   the merge step (§2.5) carries it through with no special-casing.
+- **No-data guard — never write a file that looks complete but isn't.** Two distinct
+  no-data outcomes are both caught before the HDF5 write:
+  - `df is None` — the engine wrote no `results/Results` directory at all (paired with the
+    exit-code check in §1.9).
+  - `df.empty` — the directory existed but held no `Sum.*.json` profiles: a **silent,
+    exit-0 empty run** (observed occasionally on transport tasks). Without this guard the
+    task would be saved as a metadata-only file that looks successful to the merge step.
+- **Error handling via exceptions, not `sys.exit` scattered mid-code.** A dedicated
+  `NoResultsError(RuntimeError)` is raised for the no-data case; `main()` raises
+  `FileNotFoundError` when `tasks.json` is missing and `IndexError` when the task id is out
+  of range (replacing inline `sys.exit(...)` calls, and clearing the `#TODO: replace
+  sys.exit with exception` note). The single process-boundary `try/except` in `__main__`
+  translates **exactly those anticipated failures** into a one-line stderr message + `exit 1`
+  (which SLURM records as a failed array task), while any *unexpected* exception is left to
+  propagate as a full traceback — more useful than a terse message in cluster logs.
 
 ### 2.5 `merge_results.py` — fan-in
 
@@ -389,9 +454,19 @@ points:
 - **`requirements.txt`** — added `tables` (PyTables). Required for the HDF5 output in
   `SLP_Ade/`; without it, `pd.HDFStore(...)` calls fail.
 - **`.gitignore`** — now ignores `pyLPG_env/`, `SLP_Ade/__pycache__/`, the generated
-  `tasks.json`, the `multi_runs_output/` output directory, and `/tasks/` (the local-mode
+  `tasks.json`, the `multi_runs_output/` output directory, `/tasks/` (the local-mode
   temporary per-task files — normally deleted by the merge, but ignored in case a merge is
-  interrupted).
+  interrupted), and `logs/` (the SLURM per-task `.out` files and the shared
+  `completion.log` from §2.6).
+- **Dataset documentation.** [DATASET.md](DATASET.md) and its German twin
+  [DATASET.de.md](DATASET.de.md) describe the **generated HDF5 dataset** for the currently
+  committed config: the ten per-template files (~1.5 GB each, ≈15.7 GB total), the
+  `/<climate>/<transport>/run_<N>/<data_type>` group layout, the load types and
+  flexibility/`NoFlex`/event data types, `runs_metadata.csv`, and read instructions
+  (PyTables, `blosc`-9 `fixed` format). These are **data-consumer-facing** docs (how to read
+  the output), distinct from this changelog (how the code got there) and the README (how to
+  run it). They describe the full-calendar-year, 120-run sweep, so they must be kept in step
+  with the config knobs in §2.1 if the sweep shape changes.
 - **Tests**
   - [../test/test_slp_ade.py](../test/test_slp_ade.py) — new **fast** tests that never
     invoke LPG: `safe_name`, `split_dataframe_by_type`, `collect_lpg_members`,
@@ -405,10 +480,68 @@ points:
 
 ---
 
-## 4. Known follow-ups
+## 4. Open issues, TODOs, and remarks
+
+Living backlog for whoever picks this branch up next. Kept alongside the change record so the
+"what's left" travels with the "what changed". Line numbers are approximate — grep the marker
+text if they have drifted.
+
+### 4.1 Open `TODO` markers in the code
+
+All four are the same underlying cleanup plus two independent ones. None block a run.
+
+- **Drop `get_attr_key()`; store the `JsonReference` string directly** — the recurring one,
+  marked in four places:
+  - [config.py](config.py#L167) — `CLIMATE_SET_KEYS` wraps every location/temperature in
+    `get_attr_key(lpgdata.X, lpgdata.X.Member)`; the intent is to store the plain
+    `...Member.Name` string instead.
+  - [config.py](config.py#L186) — same for `TRANSPORT_VARIANT_KEYS`.
+  - [run_task.py](run_task.py#L94) — the worker resolves the stored key back with
+    `getattr(lpgdata.HouseholdTemplates, task["template_key"])`; the note wants a
+    `JsonReference` round-trip so the resolve is robust rather than name-string-based.
+  - Doing all four together is the clean unit of work: config stops encoding attribute names,
+    the manifest carries the reference string, and the worker stops doing `getattr`.
+- **Simplify deterministic seeding** — [generate_tasks.py](generate_tasks.py#L50):
+  `_deterministic_seed()` hashes `MD5("<combo_tag>_<run_idx>")`. The TODO suggests just using
+  `run_idx` as the seed. ⚠️ Not a free swap: the current hash makes seeds **distinct across
+  combos** (two combos' `run_0` differ); a bare `run_idx` would give every combo the *same*
+  seed sequence. Decide whether cross-combo seed independence matters before simplifying.
+- **Turn the binary-path check into a raising validator** —
+  [simulation.py](simulation.py#L322): the note proposes replacing the current
+  path-existence handling with a `check_lpg_binary_source()` that raises explicitly on a
+  missing path, instead of the softer current behaviour. Aligns with the exception-first
+  error handling already adopted in [run_task.py](run_task.py) (§2.4) and
+  `execute_lpg_binaries()` (§1.9).
+
+### 4.2 Larger follow-ups (design, not markers)
 
 - **`HOUSETYPE` is still a scalar.** Templates, climate sets, and transport variants all
   iterate over key lists, but the house type is a single value in [config.py](config.py).
   Making it a swept dimension would mean: iterate house-type keys in
   [generate_tasks.py](generate_tasks.py), resolve the key back in [run_task.py](run_task.py),
   and accept the house type as a parameter in [simulation.py](simulation.py).
+- **Root-cause the silent empty transport runs.** The `df.empty` guard (§2.4) currently
+  *tolerates* exit-0 runs that produced no `Sum.*.json` profiles (seen on some transport
+  tasks) by failing the task cleanly. Why the engine reports success with no output is not yet
+  understood — worth investigating before treating the guard as the final answer, since these
+  tasks are silently dropped from the merged dataset (they surface only in
+  `merge_results.py`'s missing-task report).
+
+### 4.3 Operational remarks / caveats
+
+- **The committed config is a live cluster run.** `RUN_ON_CLUSTER = True` and a full-year
+  `END_DATE` are checked in (§2.1). A laptop run needs `RUN_ON_CLUSTER = False`; leaving it
+  `True` points output/binary paths at cluster locations that will not exist locally.
+- **Idle-mode is a deliberate accuracy trade-off, applied to every sweep run.** The
+  `SLP_Ade` output contains brief "Idle" filler activities wherever the LPG would otherwise
+  have dead-ended a child-bearing household (§1.8 / §2.2). This is by design (completeness
+  over a rare artifact) but is a property of the dataset consumers should know — noted here
+  so it is not mistaken for a bug later. The core function still defaults idle-mode `False`.
+- **Binary + db3 are read live on the cluster.** Since §1.6 removed the per-calc copy, the
+  `LPG_BINARY_PATH` build and shared read-only `profilegenerator.db3` are read on every run;
+  they should sit on reasonably fast cluster storage (§1.6 cluster caveat).
+- **Keep the three doc surfaces in step.** README = how to run; this CHANGELOG = how/why the
+  code changed; [DATASET.md](DATASET.md)/[DATASET.de.md](DATASET.de.md) = how to read the
+  output. A change to the sweep shape (templates, climate/transport sets, run counts, date
+  range) touches all three — the DATASET docs in particular hard-code the "120 runs / ten
+  templates / full year" numbers.
