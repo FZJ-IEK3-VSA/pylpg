@@ -141,26 +141,41 @@ YEAR = 2022
 START_DATE: Optional[str] = "2020-01-01"  # e.g. "2020-01-01"
 END_DATE: Optional[str] = "2020-12-31"    # e.g. "2020-01-31"
 
+# The first training set covered these 10 representative archetypes with the
+# full sweep (3 climates x 2 transport variants x multiple runs). Their merged
+# .h5 files already exist in the output dir, so the flat runs skip them.
+DONE_TEMPLATE_KEYS = [
+    "CHR01_Couple_both_at_Work",
+    "CHR05_Family_3_children_both_with_work",
+    "CHR07_Single_with_work",
+    "CHR08_Single_woman_2_children_with_work",
+    "CHR13_Student_with_Work",
+    "CHR15_Multigenerational_Home_working_couple_2_children_2_seniors",
+    "CHR16_Couple_over_65_years",
+    "CHR18_Family_2_children_parents_without_work",
+    "CHR23_Single_man_over_65_years",
+    "CHR27_Family_both_at_work_2_children",
+]
+
+# Flat runs: every REMAINING household template gets exactly ONE run with the
+# single fixed climate + transport below (Berlin, no-transport baseline).
+# Computed as "all templates minus the 10 already done" so it stays correct if
+# the catalog changes; inspect.getmembers is sorted by name, so the resulting
+# order (and hence task ids) is deterministic. Total tasks =
+# len(HOUSEHOLD_TEMPLATE_KEYS) x 1 climate x 1 transport x 1 run = 56.
 # Set to None to use all templates in lpgdata.HouseholdTemplates.
-# Ten representative archetypes spanning the demographic space (household size
-# 1 -> 6, working / non-working, young / retired, with / without children,
-# single parent, student, multigenerational). Total tasks = len(templates) x
-# len(CLIMATE_SET_KEYS) x (runs summed over TRANSPORT_VARIANT_KEYS) = 10 x 3 x
-# (1 + 3) = 120.
 HOUSEHOLD_TEMPLATE_KEYS = [
-    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR01_Couple_both_at_Work),
-    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR05_Family_3_children_both_with_work),
-    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR07_Single_with_work),
-    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR08_Single_woman_2_children_with_work),
-    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR13_Student_with_Work),
-    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR15_Multigenerational_Home_working_couple_2_children_2_seniors),
-    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR16_Couple_over_65_years),
-    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR18_Family_2_children_parents_without_work),
-    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR23_Single_man_over_65_years),
-    get_attr_key(lpgdata.HouseholdTemplates, lpgdata.HouseholdTemplates.CHR27_Family_both_at_work_2_children),
- ]
+    name
+    for name, value in inspect.getmembers(lpgdata.HouseholdTemplates)
+    if not name.startswith("_")
+    and isinstance(value, str)
+    and name not in DONE_TEMPLATE_KEYS
+]
 
 # Climate presets keep geographic location and temperature profile separate.
+# Flat runs use a SINGLE fixed climate (Berlin). The Hamburg and
+# Chemnitz/Dresden presets from the first training set are intentionally dropped
+# here so each template gets exactly one run.
 # (geographic_location_key, temperature_profile_key, tag)
 CLIMATE_SET_KEYS = [
     ClimateSetKey(
@@ -169,29 +184,15 @@ CLIMATE_SET_KEYS = [
         get_attr_key(lpgdata.TemperatureProfiles, lpgdata.TemperatureProfiles.Berlin_Germany_1996_from_Deutscher_Wetterdienst_DWD_www_dwd_de),
         "berlin_loc_berlin_temp",
     ),
-    ClimateSetKey(
-        get_attr_key(lpgdata.GeographicLocations, lpgdata.GeographicLocations.Germany_Hamburg),
-        get_attr_key(lpgdata.TemperatureProfiles, lpgdata.TemperatureProfiles.Hamburg_Germany_2007_from_Deutscher_Wetterdienst_DWD_www_dwd_de),
-        "hamburg_loc_hamburg_temp",
-    ),
-    ClimateSetKey(
-        get_attr_key(lpgdata.GeographicLocations, lpgdata.GeographicLocations.Germany_Chemnitz),
-        get_attr_key(lpgdata.TemperatureProfiles, lpgdata.TemperatureProfiles.Dresden_Germany_2000_from_Deutscher_Wetterdienst_DWD_www_dwd_de),
-        "chemnitz_loc_dresden_temp",
-    ),
 ]
 # Set to None to generate all location/temperature-profile combinations.
 
 # Key-based transport presets.
+# Flat runs use only the no-transport baseline (pure residential load), so each
+# template is a single run. The EV/home-charging variant from the first
+# training set is intentionally dropped here.
 TRANSPORT_VARIANT_KEYS = [      # TODO: remove get_attr_key() and use string from JSONReference (as noted on CLIMATE_SET_KEYS above)
     TransportVariantKey(False, None, None, None, "no_transport"),
-    TransportVariantKey(
-        True,
-        get_attr_key(lpgdata.ChargingStationSets, lpgdata.ChargingStationSets.Charging_At_Home_with_03_7_kW_output_results_to_Car_Electricity),
-        get_attr_key(lpgdata.TransportationDeviceSets, lpgdata.TransportationDeviceSets.Bus_and_two_30_km_h_Cars),
-        get_attr_key(lpgdata.TravelRouteSets, lpgdata.TravelRouteSets.Travel_Route_Set_for_30km_Commuting_Distance),
-        "home_charge_bus_cars_30km",
-    ),
 ]
 
 HOUSETYPE = lpgdata.HouseTypes.HT20_Single_Family_House_no_heating_cooling
