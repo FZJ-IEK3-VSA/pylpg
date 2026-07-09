@@ -42,6 +42,36 @@ from SLP_Ade.config import MERGED_OUTPUT_DIR, TASK_OUTPUT_DIR  # noqa: E402
 from SLP_Ade.simulation import safe_name  # noqa: E402
 
 
+# Fields that jointly identify which (template, climate, transport, run) a task
+# file holds. run_task.py records them in the file's /metadata; the merge
+# cross-checks them against the manifest entry so a stale file left over from a
+# previous tasks.json can never be merged into the wrong place. These are exactly
+# the manifest keys the merge uses to build the destination file + HDF5 path.
+_IDENTITY_FIELDS = ("template_key", "climate_tag", "transport_tag", "run_idx")
+
+
+def _identity_mismatches(task: dict, file_meta: dict) -> list[str]:
+    """Return human-readable descriptions of identity fields that disagree.
+
+    Compares the manifest *task* entry against the *file_meta* recorded in a task
+    file's ``/metadata`` group across :data:`_IDENTITY_FIELDS`. Values are
+    compared as strings so numpy scalar types read back from HDF5 (e.g.
+    ``run_idx`` as ``numpy.int64``) do not cause spurious mismatches. An empty
+    list means the file belongs to this task.
+
+    :param dict task: Manifest task dictionary (from ``tasks.json``).
+    :param dict file_meta: Single-row ``/metadata`` mapping read from the task file.
+    :return list[str]: One ``"field: manifest=... file=..."`` string per mismatch.
+    """
+    mismatches: list[str] = []
+    for field in _IDENTITY_FIELDS:
+        expected = task.get(field)
+        actual = file_meta.get(field)
+        if str(expected) != str(actual):
+            mismatches.append(f"{field}: manifest={expected!r} file={actual!r}")
+    return mismatches
+
+
 def merge_all(keep_tasks: bool = False) -> None:
     """Merge all per-task HDF5 files into final per-template HDF5 files.
 
@@ -51,6 +81,12 @@ def merge_all(keep_tasks: bool = False) -> None:
     task file the simulation DataFrames are copied into
     :data:`SLP_Ade.config.MERGED_OUTPUT_DIR` ``/<template_name>.h5`` under the
     hierarchical path ``/<climate_tag>/<transport_tag>/run_<N>/<data_type>``.
+
+    Before copying, each file's recorded identity (its ``/metadata``) is
+    cross-checked against the manifest entry for its filename-derived task id; a
+    file that does not match -- e.g. a stale leftover from a previous
+    ``tasks.json`` -- is skipped with a warning instead of being merged into the
+    wrong template (see :func:`_identity_mismatches`).
 
     After merging, a ``runs_metadata.csv`` summary is written next to the merged
     files, any task ids present in ``tasks.json`` but missing from the input
@@ -110,6 +146,33 @@ def merge_all(keep_tasks: bool = False) -> None:
 
         with pd.HDFStore(task_file, mode="r") as src:
             keys = src.keys()
+
+            # Identity cross-check: a task file is matched to a manifest entry by
+            # the id parsed from its filename, and that id is otherwise trusted
+            # blindly. A file left over from a *different* tasks.json (e.g. a
+            # previous sweep) can share an id with an unrelated current task and
+            # would then be merged into the wrong template with the wrong
+            # metadata. Guard against that by comparing the file's own recorded
+            # identity (written by run_task.py into /metadata) against the
+            # manifest; on any mismatch skip and report instead of corrupting the
+            # merged output.
+            if "/metadata" not in keys:
+                print(
+                    f"  WARNING: {task_file.name} has no /metadata group; cannot "
+                    f"verify it belongs to task {task_id}, skipping"
+                )
+                continue
+            mismatches = _identity_mismatches(
+                task, src["/metadata"].iloc[0].to_dict()
+            )
+            if mismatches:
+                print(
+                    f"  WARNING: {task_file.name} does not match tasks.json"
+                    f"[{task_id}] ({'; '.join(mismatches)}); likely a stale file "
+                    f"from a previous manifest, skipping"
+                )
+                continue
+
             with pd.HDFStore(hdf5_file, mode="a", complevel=9, complib="blosc") as dst:
                 for key in keys:
                     if key.startswith("/data/"):
@@ -119,13 +182,13 @@ def merge_all(keep_tasks: bool = False) -> None:
                             src[key],
                             format="fixed",
                         )
-                # Copy metadata into the hierarchical path
-                if "/metadata" in keys:
-                    dst.put(f"{base_path}/_metadata", src["/metadata"], format="fixed")
-                    row = src["/metadata"].iloc[0].to_dict()
-                    row["hdf5_file"] = hdf5_file.name
-                    row["hdf5_path"] = base_path
-                    meta_rows.append(row)
+                # Copy metadata into the hierarchical path (its presence is
+                # guaranteed by the cross-check above).
+                dst.put(f"{base_path}/_metadata", src["/metadata"], format="fixed")
+                row = src["/metadata"].iloc[0].to_dict()
+                row["hdf5_file"] = hdf5_file.name
+                row["hdf5_path"] = base_path
+                meta_rows.append(row)
 
         # This file's data now lives inside the merged file, so it is a temporary
         # that can be deleted once the whole merge has succeeded.
