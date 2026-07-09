@@ -75,7 +75,8 @@ def run_task(task: dict) -> None:
 
     :param dict task: Task dictionary as produced by :func:`~SLP_Ade.generate_tasks.build_task_list`.
     :return None: No return value.
-    :raises SystemExit: If the simulation returns no results.
+    :raises SystemExit: If the simulation returns no results (``None``) or an
+        empty result frame (a silent exit-0 run with no profiles).
     """
     task_id: int = task["task_id"]
 
@@ -125,8 +126,15 @@ def run_task(task: dict) -> None:
         clear_previous_calc=True,
     )
 
-    if df is None:
-        print(f"[task {task_id}] No results returned — exiting with error.")
+    # Two distinct no-data outcomes both mean "don't write a useless file":
+    #   df is None  -> the engine wrote no results/Results directory at all.
+    #   df.empty    -> the directory existed but held no Sum.*.json profiles
+    #                  (a silent, exit-0 empty run — seen occasionally on
+    #                  transport tasks). Guarding df.empty keeps these from
+    #                  being saved as metadata-only files that look complete.
+    if df is None or df.empty:
+        reason = "No results returned" if df is None else "Empty result frame"
+        print(f"[task {task_id}] {reason} — exiting with error.")
         sys.exit(1)
 
     # --- save per-task HDF5 (no concurrent write risk) -------------------
