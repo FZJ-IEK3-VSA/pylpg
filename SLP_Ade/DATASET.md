@@ -13,9 +13,25 @@ over a full calendar year, under a chosen climate and transport configuration.
 The simulation is stochastic, so several independent *runs* (different random
 seeds) are provided per configuration to capture behavioural variability.
 
+The dataset has **two parts**:
+
+- **Core sweep — 10 templates.** The full cross-product of 3 climates × 2
+  transport settings, with repeated runs (**12 runs per template, 120 total**).
+  Use this to study climate/transport sensitivity and stochastic spread.
+- **Extended flat set — 56 templates.** Every remaining household template in
+  the LPG catalogue, simulated **once** at a single reference configuration
+  (Berlin climate, no transport) — **1 run per template, 56 total**. Use this
+  for broad household-type coverage.
+
+Together: **66 household templates, 176 runs.**
+
 ---
 
 ## 1. Files
+
+One HDF5 file per household template — **66 files** — plus a CSV index.
+
+### Core sweep — 10 templates (full climate × transport × runs)
 
 | File | Household template | Size |
 |------|--------------------|------|
@@ -29,9 +45,23 @@ seeds) are provided per configuration to capture behavioural variability.
 | `CHR18_Family_2_children_parents_without_work.h5` | Family, 2 children, parents not working | 1.60 GB |
 | `CHR23_Single_man_over_65_years.h5` | Retired single man (65+) | 1.50 GB |
 | `CHR27_Family_both_at_work_2_children.h5` | Family, 2 children, both parents working | 1.60 GB |
-| `runs_metadata.csv` | Index of all 120 runs (see §6) | ~33 KB |
 
-**Total ≈ 15.7 GB.** One HDF5 file per household template (10 templates).
+**Core subtotal ≈ 15.7 GB** (12 runs per file).
+
+### Extended flat set — 56 templates (one reference run each)
+
+Berlin climate, no transport, a single `run_1` group per file (≈ 55–65 MB each;
+**subtotal ≈ 3.5 GB**). The filename encodes the household composition:
+
+`CHR02_Couple_30_64_age_with_work.h5`, `CHR03_Family_1_child_both_at_work.h5`, `CHR04_Couple_30_64_years_1_at_work_1_at_home.h5`, `CHR06_Jak_Jobless.h5`, `CHR09_Single_woman_30_64_years_with_work.h5`, `CHR10_Single_man_30_64_age_shift_worker.h5`, `CHR11_Student_Female_Philosophy.h5`, `CHR12_Student_2_Male_Philosophy.h5`, `CHR14_3_adults_Couple_30_64_years_both_at_work_Senior_at_home.h5`, `CHR17_Shiftworker_Couple.h5`, `CHR19_Couple_30_64_years_both_at_work_with_homehelp.h5`, `CHR20_one_at_work_one_work_home_3_children.h5`, `CHR21_Couple_30_64_years_shift_worker.h5`, `CHR22_Single_woman_1_child_with_work.h5`, `CHR24_Single_woman_over_65_years.h5`, `CHR25_Single_woman_under_30_years_with_work.h5`, `CHR26_Single_woman_under_30_years_without_work.h5`, `CHR28_Single_man_under_30_years_without_work.h5`, `CHR29_Single_man_under_30_years_with_work.h5`, `CHR30_Single_Retired_Man.h5`, `CHR31_Single_Retired_Woman.h5`, `CHR32_Couple_under_30_years_without_work.h5`, `CHR33_Couple_under_30_years_with_work.h5`, `CHR34_Couple_under_30_years_one_at_work_one_at_home.h5`, `CHR35_Single_woman_30_64_years_with_work.h5`, `CHR36_Single_woman_30_64_years_without_work.h5`, `CHR37_Single_man_30_64_years_with_work.h5`, `CHR38_Single_man_30_64_years_without_work.h5`, `CHR39_Couple_30_64_years_with_work.h5`, `CHR40_Couple_30_64_years_without_work.h5`, `CHR41_Family_with_3_children_both_at_work.h5`, `CHR42_Single_man_with_2_children_with_work.h5`, `CHR43_Single_man_with_1_child_with_work.h5`, `CHR44_Family_with_2_children_1_at_work_1_at_home.h5`, `CHR45_Family_with_1_child_1_at_work_1_at_home.h5`, `CHR46_Single_woman_1_child_without_work.h5`, `CHR47_Single_woman_2_children_without_work.h5`, `CHR48_Family_with_2_children_without_work.h5`, `CHR49_Family_with_1_child_without_work.h5`, `CHR50_Single_woman_with_3_children_without_work.h5`, `CHR51_Couple_over_65_years_II.h5`, `CHR52_Student_Flatsharing.h5`, `CHR53_2_Parents_1_Working_2_Children.h5`, `CHR54_Retired_Couple_no_work.h5`, `CHR55_Couple_with_work_around_40.h5`, `CHR56_Couple_with_2_children_husband_at_work.h5`, `CHR57_Family_with_2_Children_Man_at_work.h5`, `CHR58_Retired_Couple_no_work_no_cooking.h5`, `CHR59_Family_3_children_parents_without_work.h5`, `CHR60_Family_1_toddler_one_at_work_one_at_home.h5`, `CHR61_Family_1_child_both_at_work_early_living_pattern.h5`, `CHR62_Couple_both_Working_from_Home.h5`, `CHS01_Couple_with_2_Children_Dad_Employed.h5`, `CHS04_Retired_Couple_no_work.h5`, `CHS12_Shiftworker_Couple.h5`, `OR01_Single_Person_Office.h5`
+
+### Index
+
+| File | Contents | Size |
+|------|----------|------|
+| `runs_metadata.csv` | Flat index of all **176** runs (see §6) | ~50 KB |
+
+**Total ≈ 19 GB** across 66 HDF5 files.
 
 Format: HDF5 written by `pandas.HDFStore`, `format="fixed"`, compressed with
 `blosc` (level 9). Reading requires **PyTables** (`pip install tables`).
@@ -40,7 +70,8 @@ Format: HDF5 written by `pandas.HDFStore`, `format="fixed"`, compressed with
 
 ## 2. What varies (dataset dimensions)
 
-Every file contains the full cross-product of:
+**Core sweep (10 templates)** — each core file contains the full cross-product
+of:
 
 - **Climate** (3) — geographic location + historical DWD temperature year:
   - `berlin_loc_berlin_temp` — Berlin location, Berlin 1996 temperature
@@ -52,8 +83,16 @@ Every file contains the full cross-product of:
     cars + three bicycles, 30 km commuting distance — **3 runs**
 - **Runs** — independent repetitions with different random seeds (see §7).
 
-Per template: 3 climates × (1 + 3) runs = **12 runs**. Across 10 templates =
-**120 runs total**.
+  Per core template: 3 climates × (1 + 3) runs = **12 runs**; over 10 templates
+  = **120 runs**.
+
+**Extended flat set (56 templates)** — a single reference point, no sweep:
+
+- **Climate** — `berlin_loc_berlin_temp` only.
+- **Transport** — `no_transport` only.
+- **Runs** — **1 run** per template → **56 runs**.
+
+**Dataset total: 120 + 56 = 176 runs across 66 templates.**
 
 ---
 
@@ -73,7 +112,9 @@ Example:
 /hamburg_loc_hamburg_temp/no_transport/run_1/_metadata
 ```
 
-`run_<N>` is **1-based** (`run_1` … `run_3`).
+`run_<N>` is **1-based** (`run_1` … `run_3`). In the **extended flat set** each
+file holds a single group — `/berlin_loc_berlin_temp/no_transport/run_1/…` — so
+there is no climate or transport axis to iterate within those files.
 
 ---
 
@@ -146,7 +187,7 @@ fields (`Profiles`, `Device.Loads`) are stored as **JSON-encoded strings**;
 
 ## 6. `runs_metadata.csv`
 
-A 120-row flat index of all runs (one row per run), with columns:
+A 176-row flat index of all runs (one row per run), with columns:
 `task_id, template_key, climate_tag, transport_tag, run_idx, seed,
 geographic_location, temperature_profile, hdf5_file, hdf5_path`.
 Use it to look up which file + key path holds a given configuration without
@@ -182,8 +223,8 @@ individual shifts.
 
 ## 9. Data completeness
 
-**All 120 run-groups contain full profile data** (verified by walking every
-file: 120 runs, 0 empty). Every `/<climate>/<transport>/run_<N>/` group holds
+**All 176 run-groups contain full profile data** (verified by walking every
+file: 176 runs, 0 empty). Every `/<climate>/<transport>/run_<N>/` group holds
 the load profiles, occupancy, flexibility log and — for transport runs — the
 transport channels described in §5.
 
@@ -244,5 +285,8 @@ runs = pd.read_csv("runs_metadata.csv")
   activity that prevents the behaviour engine from aborting when a household —
   typically one with young children — momentarily has no available activity).
 - **House type:** HT20 Single Family House, no heating/cooling (§4).
+- **Dataset structure:** a core sweep (10 templates × 3 climates × 2 transport
+  settings, 120 runs) plus an extended flat set (56 further templates, Berlin /
+  no-transport, 1 run each, 56 runs) = **66 templates, 176 runs**.
 - **Templates, climates, transport, seeds:** as described above and recorded in
   each `_metadata` group / `runs_metadata.csv`.
