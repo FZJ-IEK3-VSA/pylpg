@@ -48,6 +48,16 @@ from SLP_Ade.simulation import (  # noqa: E402
 )
 
 
+class NoResultsError(RuntimeError):
+    """Raised when a simulation task produces no usable result data.
+
+    Signals one of two no-data outcomes — the engine wrote no results
+    directory at all, or the directory held no profiles (a silent exit-0
+    empty run) — so that the caller can fail the task instead of writing a
+    metadata-only file that looks complete.
+    """
+
+
 def _resolve_optional(container: object, key: str | None) -> object | None:
     """Return ``getattr(container, key)`` or ``None`` when *key* is ``None``.
 
@@ -75,7 +85,7 @@ def run_task(task: dict) -> None:
 
     :param dict task: Task dictionary as produced by :func:`~SLP_Ade.generate_tasks.build_task_list`.
     :return None: No return value.
-    :raises SystemExit: If the simulation returns no results (``None``) or an
+    :raises NoResultsError: If the simulation returns no results (``None``) or an
         empty result frame (a silent exit-0 run with no profiles).
     """
     task_id: int = task["task_id"]
@@ -134,8 +144,7 @@ def run_task(task: dict) -> None:
     #                  being saved as metadata-only files that look complete.
     if df is None or df.empty:
         reason = "No results returned" if df is None else "Empty result frame"
-        print(f"[task {task_id}] {reason} — exiting with error.")
-        sys.exit(1)
+        raise NoResultsError(f"[task {task_id}] {reason}")
 
     # --- save per-task HDF5 (no concurrent write risk) -------------------
     # config.TASK_OUTPUT_DIR (= BASE_OUTPUT_DIR / "tasks") is the single source of
@@ -187,7 +196,8 @@ def main() -> None:
     entry.
 
     :return None: No return value.
-    :raises SystemExit: If ``tasks.json`` is missing or the task id is out of range.
+    :raises FileNotFoundError: If ``tasks.json`` is missing.
+    :raises IndexError: If the task id is out of range for ``tasks.json``.
     """
     parser = argparse.ArgumentParser(description="Run one LPG task from tasks.json")
     parser.add_argument(
@@ -202,12 +212,14 @@ def main() -> None:
 
     tasks_file = _REPO_ROOT / "SLP_Ade" / "tasks.json"
     if not tasks_file.exists():
-        sys.exit(f"tasks.json not found at {tasks_file}. Run generate_tasks.py first.")                 #TODO: replace sys.exit with exception
+        raise FileNotFoundError(
+            f"tasks.json not found at {tasks_file}. Run generate_tasks.py first."
+        )
 
     tasks: list[dict] = json.loads(tasks_file.read_text())
 
     if args.task_id >= len(tasks):
-        sys.exit(
+        raise IndexError(
             f"task-id {args.task_id} is out of range (tasks.json has {len(tasks)} entries)"
         )
 
@@ -215,4 +227,13 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    # The process boundary is the one place a non-zero exit belongs. Translate
+    # the anticipated failure conditions into a clean one-line stderr message +
+    # exit 1 (which SLURM records as a failed array task). Anything else — an
+    # unexpected bug — is left to propagate as a full traceback, which is more
+    # useful than a terse message in cluster logs.
+    try:
+        main()
+    except (NoResultsError, FileNotFoundError, IndexError) as exc:
+        print(exc, file=sys.stderr)
+        sys.exit(1)
