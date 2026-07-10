@@ -59,7 +59,13 @@ Berlin climate, no transport, a single `run_1` group per file (≈ 55–65 MB ea
 
 | File | Contents | Size |
 |------|----------|------|
-| `runs_metadata.csv` | Flat index of all **176** runs (see §6) | ~50 KB |
+| **`runs_metadata_all.csv`** | **The full index — all 176 runs** (see §6) | ~47 KB |
+| `runs_metadata.csv` | Partial: only the 56 extended-flat runs | ~14 KB |
+| `runs_metadata_first10.csv` | Partial: only the 120 core-sweep runs | ~33 KB |
+
+> ⚠️ **Use `runs_metadata_all.csv`.** The other two are per-subset leftovers from
+> the two merge passes and each cover only *part* of the dataset. They are kept
+> for traceability; `runs_metadata_all.csv` is simply their concatenation.
 
 **Total ≈ 19 GB** across 66 HDF5 files.
 
@@ -156,7 +162,6 @@ Each appears **twice**: the flexible profile `<LoadType>` and its baseline twin
 | `Cold_Water` | Cold-water draw | L/min |
 | `Hot_water` | Hot-water draw | L/min |
 | `Warm_Water` | Warm-water draw | L/min |
-| `Gasoline` | Fuel use | L/min |
 | `None` | Devices with no assigned load type | — |
 
 ### Occupancy / activity
@@ -183,23 +188,37 @@ fields (`Profiles`, `Device.Loads`) are stored as **JSON-encoded strings**;
 `transport_tag`, `run_idx`, `seed`, `geographic_location`,
 `temperature_profile`. Present for **every** run.
 
+### Group sizes
+A `no_transport` run group holds **22** data types; a
+`home_charge_bus_cars_30km` run group holds **46** — the 24 extra being the 20
+transport channels, `Electricity_for_Car_Charging`, `Elevator_Distance`, and the
+`_NoFlex` twins of those last two.
+
 ---
 
-## 6. `runs_metadata.csv`
+## 6. `runs_metadata_all.csv`
 
 A 176-row flat index of all runs (one row per run), with columns:
 `task_id, template_key, climate_tag, transport_tag, run_idx, seed,
 geographic_location, temperature_profile, hdf5_file, hdf5_path`.
 Use it to look up which file + key path holds a given configuration without
-opening every HDF5 file. **Note:** for robustness, confirm entries against the
-actual HDF5 content (§9) when combining with other datasets.
+opening every HDF5 file.
+
+> **`task_id` is not globally unique.** It indexes into the task manifest of its
+> own merge pass, so the core (120 runs) and flat (56 runs) subsets each number
+> from 0 — 176 rows carry only 120 distinct `task_id` values. The pair
+> (`hdf5_file`, `hdf5_path`) *is* unique and is the reliable key.
+
+**Note:** the sibling `runs_metadata.csv` (56 rows) and `runs_metadata_first10.csv`
+(120 rows) each cover only one subset — see §1. For robustness, confirm entries
+against the actual HDF5 content (§9) when combining with other datasets.
 
 ---
 
 ## 7. Seeds and reproducibility
 
 Each run's random seed is stored in its `_metadata` group and in
-`runs_metadata.csv`. Seeds are derived deterministically from the configuration
+`runs_metadata_all.csv`. Seeds are derived deterministically from the configuration
 (MD5 of `combo_tag + run_idx`), so the manifest — and thus the intended dataset —
 is reproducible from the `SLP_Ade` code at the pinned pyLPG revision.
 
@@ -230,7 +249,7 @@ transport channels described in §5.
 
 As a defensive check (e.g. when combining this with other sweeps), confirm a
 profile group actually exists under a run path rather than trusting
-`runs_metadata.csv` alone:
+`runs_metadata_all.csv` alone:
 
 ```python
 def run_has_data(store, run_path):
@@ -256,7 +275,7 @@ with pd.HDFStore(path, mode="r") as store:
 # --- load one profile ------------------------------------------------------
 with pd.HDFStore(path, mode="r") as store:
     el = store["/hamburg_loc_hamburg_temp/home_charge_bus_cars_30km/run_2/Electricity"]
-# el.index -> minute DatetimeIndex; el.columns -> ['Electricity_House', 'Electricity_HH1']
+# el.index -> minute DatetimeIndex; el.columns -> ['Electricity_HH1', 'Electricity_House']
 print(el.shape, list(el.columns))
 
 # --- iterate all runs that actually have data ------------------------------
@@ -271,8 +290,8 @@ with pd.HDFStore(path, mode="r") as store:
         elec = store[f"{rp}/Electricity"]["Electricity_HH1"]
         print(rp, "seed=", meta["seed"], "mean W=", round(elec.mean(), 1))
 
-# --- the flat run index ----------------------------------------------------
-runs = pd.read_csv("runs_metadata.csv")
+# --- the flat run index (all 176 runs) -------------------------------------
+runs = pd.read_csv("runs_metadata_all.csv")
 ```
 
 ---
@@ -289,4 +308,4 @@ runs = pd.read_csv("runs_metadata.csv")
   settings, 120 runs) plus an extended flat set (56 further templates, Berlin /
   no-transport, 1 run each, 56 runs) = **66 templates, 176 runs**.
 - **Templates, climates, transport, seeds:** as described above and recorded in
-  each `_metadata` group / `runs_metadata.csv`.
+  each `_metadata` group / `runs_metadata_all.csv`.

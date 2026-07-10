@@ -62,7 +62,14 @@ Haushaltszusammensetzung:
 
 | Datei | Inhalt | Größe |
 |-------|--------|-------|
-| `runs_metadata.csv` | Flacher Index aller **176** Durchläufe (siehe §6) | ~50 KB |
+| **`runs_metadata_all.csv`** | **Der vollständige Index — alle 176 Durchläufe** (siehe §6) | ~47 KB |
+| `runs_metadata.csv` | Teilmenge: nur die 56 Durchläufe des flachen Satzes | ~14 KB |
+| `runs_metadata_first10.csv` | Teilmenge: nur die 120 Durchläufe des Kern-Sweeps | ~33 KB |
+
+> ⚠️ **`runs_metadata_all.csv` verwenden.** Die beiden anderen Dateien sind
+> Überbleibsel der zwei Merge-Durchgänge und decken jeweils nur *einen Teil* des
+> Datensatzes ab. Sie bleiben zur Nachvollziehbarkeit erhalten;
+> `runs_metadata_all.csv` ist schlicht ihre Verkettung.
 
 **Gesamt ≈ 19 GB** über 66 HDF5-Dateien.
 
@@ -164,7 +171,6 @@ Basis-Gegenstück `<LoadType>_NoFlex` (siehe §8).
 | `Cold_Water` | Kaltwasserentnahme | L/min |
 | `Hot_water` | Heißwasserentnahme | L/min |
 | `Warm_Water` | Warmwasserentnahme | L/min |
-| `Gasoline` | Kraftstoffverbrauch | L/min |
 | `None` | Geräte ohne zugeordneten Lasttyp | — |
 
 ### Anwesenheit / Aktivität
@@ -192,24 +198,39 @@ expandieren.
 `climate_tag`, `transport_tag`, `run_idx`, `seed`, `geographic_location`,
 `temperature_profile`. Für **jeden** Durchlauf vorhanden.
 
+### Gruppengrößen
+Eine `no_transport`-Durchlaufgruppe enthält **22** Datentypen; eine
+`home_charge_bus_cars_30km`-Gruppe enthält **46** — die 24 zusätzlichen sind die
+20 Verkehrskanäle, `Electricity_for_Car_Charging`, `Elevator_Distance` sowie die
+`_NoFlex`-Gegenstücke der beiden letztgenannten.
+
 ---
 
-## 6. `runs_metadata.csv`
+## 6. `runs_metadata_all.csv`
 
 Ein flacher Index aller Durchläufe mit 176 Zeilen (eine Zeile pro Durchlauf),
 mit den Spalten: `task_id, template_key, climate_tag, transport_tag, run_idx,
 seed, geographic_location, temperature_profile, hdf5_file, hdf5_path`.
 Damit lässt sich nachschlagen, welche Datei + welcher Schlüsselpfad eine
-bestimmte Konfiguration enthält, ohne jede HDF5-Datei zu öffnen. **Hinweis:**
-Zur Sicherheit die Einträge gegen den tatsächlichen HDF5-Inhalt prüfen (§9),
-wenn mit anderen Datensätzen kombiniert wird.
+bestimmte Konfiguration enthält, ohne jede HDF5-Datei zu öffnen.
+
+> **`task_id` ist nicht global eindeutig.** Die ID bezieht sich auf das
+> Task-Manifest des jeweiligen Merge-Durchgangs, daher zählen der Kern-Satz (120
+> Durchläufe) und der flache Satz (56 Durchläufe) jeweils ab 0 — die 176 Zeilen
+> enthalten nur 120 verschiedene `task_id`-Werte. Eindeutig und damit als
+> Schlüssel geeignet ist das Paar (`hdf5_file`, `hdf5_path`).
+
+**Hinweis:** Die Geschwisterdateien `runs_metadata.csv` (56 Zeilen) und
+`runs_metadata_first10.csv` (120 Zeilen) decken jeweils nur eine Teilmenge ab —
+siehe §1. Zur Sicherheit die Einträge gegen den tatsächlichen HDF5-Inhalt prüfen
+(§9), wenn mit anderen Datensätzen kombiniert wird.
 
 ---
 
 ## 7. Zufallsstartwerte und Reproduzierbarkeit
 
 Der Zufallsstartwert (Seed) jedes Durchlaufs ist in seiner `_metadata`-Gruppe
-und in `runs_metadata.csv` gespeichert. Die Seeds werden deterministisch aus der
+und in `runs_metadata_all.csv` gespeichert. Die Seeds werden deterministisch aus der
 Konfiguration abgeleitet (MD5 von `combo_tag + run_idx`), sodass das Manifest —
 und damit der beabsichtigte Datensatz — aus dem `SLP_Ade`-Code bei der
 festgelegten pyLPG-Revision reproduzierbar ist.
@@ -243,7 +264,7 @@ Anwesenheit, das Flexibilitätsprotokoll und — bei Verkehrsdurchläufen — di
 
 Als Absicherung (z. B. beim Kombinieren mit anderen Sweeps) prüfen, ob unter
 einem Durchlaufpfad tatsächlich eine Profilgruppe existiert, statt sich allein
-auf `runs_metadata.csv` zu verlassen:
+auf `runs_metadata_all.csv` zu verlassen:
 
 ```python
 def run_has_data(store, run_path):
@@ -269,7 +290,7 @@ with pd.HDFStore(path, mode="r") as store:
 # --- ein Profil laden ------------------------------------------------------
 with pd.HDFStore(path, mode="r") as store:
     el = store["/hamburg_loc_hamburg_temp/home_charge_bus_cars_30km/run_2/Electricity"]
-# el.index -> Minuten-DatetimeIndex; el.columns -> ['Electricity_House', 'Electricity_HH1']
+# el.index -> Minuten-DatetimeIndex; el.columns -> ['Electricity_HH1', 'Electricity_House']
 print(el.shape, list(el.columns))
 
 # --- alle Durchläufe mit tatsächlichen Daten durchlaufen -------------------
@@ -283,8 +304,8 @@ with pd.HDFStore(path, mode="r") as store:
         elec = store[f"{rp}/Electricity"]["Electricity_HH1"]
         print(rp, "seed=", meta["seed"], "mean W=", round(elec.mean(), 1))
 
-# --- der flache Durchlauf-Index --------------------------------------------
-runs = pd.read_csv("runs_metadata.csv")
+# --- der flache Durchlauf-Index (alle 176 Durchläufe) ----------------------
+runs = pd.read_csv("runs_metadata_all.csv")
 ```
 
 ---
@@ -304,4 +325,4 @@ runs = pd.read_csv("runs_metadata.csv")
   weitere Vorlagen, Berlin / kein Verkehr, je 1 Durchlauf, 56 Durchläufe) =
   **66 Vorlagen, 176 Durchläufe**.
 - **Vorlagen, Klimata, Verkehr, Seeds:** wie oben beschrieben und in jeder
-  `_metadata`-Gruppe / in `runs_metadata.csv` festgehalten.
+  `_metadata`-Gruppe / in `runs_metadata_all.csv` festgehalten.
