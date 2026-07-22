@@ -267,9 +267,15 @@ Key design points:
 - **`TransportVariantKey`** (frozen dataclass) — a named preset for a transport variant
   (`simulate_transportation`, charging/device/route set keys, `tag`), replacing earlier
   ad-hoc tuples.
-- **String-key strategy.** `get_attr_key(cls, value)` reverse-looks-up the *attribute
-  name* for an `lpgdata` value, so config stores JSON-serialisable **string keys** into
-  the `lpgdata.*` catalogs rather than objects.
+- **String-key strategy.** Config stores JSON-serialisable **string keys** into the
+  `lpgdata.*` catalogs rather than objects. Household templates (plain strings in
+  `lpgdata`) are keyed by their Python attribute name; the `JsonReference` catalogs
+  (locations, temperature profiles, transport sets) are keyed by their `.Name` reference
+  string (e.g. `lpgdata.GeographicLocations.Germany_Berlin.Name` → `"(Germany) Berlin"`).
+  `collect_lpg_references_by_name()` in [simulation.py](simulation.py) resolves a `.Name`
+  back to the **full `JsonReference`** (Name **and** Guid), so the exact catalog object
+  reaches the LPG request. This replaced the earlier `get_attr_key()` reverse-lookup, which
+  is gone.
 - **Decoupled climate presets — now a dataclass.** `CLIMATE_SET_KEYS` entries are
   **`ClimateSetKey`** (frozen dataclass: `geographic_location_key`,
   `temperature_profile_key`, `tag`), replacing the earlier `(geo, temp, tag)` tuples — the
@@ -488,19 +494,16 @@ text if they have drifted.
 
 ### 4.1 Open `TODO` markers in the code
 
-All four are the same underlying cleanup plus two independent ones. None block a run.
+Two remaining, independent of each other. None block a run.
 
-- **Drop `get_attr_key()`; store the `JsonReference` string directly** — the recurring one,
-  marked in four places:
-  - [config.py](config.py#L167) — `CLIMATE_SET_KEYS` wraps every location/temperature in
-    `get_attr_key(lpgdata.X, lpgdata.X.Member)`; the intent is to store the plain
-    `...Member.Name` string instead.
-  - [config.py](config.py#L186) — same for `TRANSPORT_VARIANT_KEYS`.
-  - [run_task.py](run_task.py#L94) — the worker resolves the stored key back with
-    `getattr(lpgdata.HouseholdTemplates, task["template_key"])`; the note wants a
-    `JsonReference` round-trip so the resolve is robust rather than name-string-based.
-  - Doing all four together is the clean unit of work: config stops encoding attribute names,
-    the manifest carries the reference string, and the worker stops doing `getattr`.
+- **~~Drop `get_attr_key()`; store the `JsonReference` string directly~~** — *Done.* Config
+  now stores each location/temperature/transport set as its `JsonReference.Name` string
+  (`CLIMATE_SET_KEYS` in [config.py](config.py)), the manifest carries those `.Name`
+  strings, and both the worker ([run_task.py](run_task.py)) and the sequential runner
+  ([simulation.py](simulation.py)) resolve them back to the full reference via
+  `collect_lpg_references_by_name()`. `get_attr_key()` was removed. Household templates stay
+  keyed by attribute name (they are plain strings, not `JsonReference`s), so their `getattr`
+  resolve is unchanged.
 - **Simplify deterministic seeding** — [generate_tasks.py](generate_tasks.py#L50):
   `_deterministic_seed()` hashes `MD5("<combo_tag>_<run_idx>")`. The TODO suggests just using
   `run_idx` as the seed. ⚠️ Not a free swap: the current hash makes seeds **distinct across

@@ -12,7 +12,7 @@ import os
 from pathlib import Path
 from dataclasses import dataclass
 import inspect
-from typing import Any, Optional
+from typing import Optional
 
 from pylpg import lpgdata
 
@@ -76,29 +76,18 @@ SAVE_CSV = False  # Save individual CSV files per run
 SAVE_HDF5 = True  # Save runs to HDF5 files (one file per household template)
 
 
-def get_attr_key(cls: type, attr_value: Any) -> str:
-    """Get the attribute name from a class for a given attribute value.
-
-    :param type cls: The class to search for the attribute.
-    :param Any attr_value: The attribute value to find the name for.
-    :return str: The attribute name.
-    :raises ValueError: If the attribute is not found in the class.
-    """
-    for name, value in inspect.getmembers(cls):
-        if not name.startswith("_") and value is attr_value:
-            return name
-    raise ValueError(f"Attribute not found in {cls.__name__}")
-
-
 @dataclass(frozen=True)
 class TransportVariantKey:
     """Configuration key for a transport variant.
 
     Attributes:
         simulate_transportation: Whether to enable transportation simulation.
-        charging_set_key: Key for charging station set (or None).
-        transport_device_set_key: Key for transportation device set (or None).
-        travel_route_set_key: Key for travel route set (or None).
+        charging_set_key: The ``.Name`` of a ``lpgdata.ChargingStationSets``
+            reference (or None).
+        transport_device_set_key: The ``.Name`` of a
+            ``lpgdata.TransportationDeviceSets`` reference (or None).
+        travel_route_set_key: The ``.Name`` of a ``lpgdata.TravelRouteSets``
+            reference (or None).
         tag: Short, filesystem-safe identifier for this variant. Load-bearing
             : it is the transport level of the HDF5 output
             hierarchy (``/<climate_tag>/<transport_tag>/run_<N>/...``), the
@@ -118,9 +107,13 @@ class ClimateSetKey:
     """Configuration key for a climate variant (location + temperature profile).
 
     Attributes:
-        geographic_location_key: Key into ``lpgdata.GeographicLocations``.
-        temperature_profile_key: Key into ``lpgdata.TemperatureProfiles``, or
-            None to fall back to the location's own default profile.
+        geographic_location_key: The ``.Name`` of a
+            ``lpgdata.GeographicLocations`` reference (e.g. ``"(Germany) Berlin"``).
+            The runner resolves it back to the full ``JsonReference`` (Name +
+            Guid) at runtime.
+        temperature_profile_key: The ``.Name`` of a
+            ``lpgdata.TemperatureProfiles`` reference, or None to fall back to the
+            location's own default profile.
         tag: Short, filesystem-safe identifier for this variant. Load-bearing,
             exactly like ``TransportVariantKey.tag``: it is the climate level of
             the HDF5 output hierarchy (``/<climate_tag>/<transport_tag>/run_<N>/
@@ -179,9 +172,8 @@ HOUSEHOLD_TEMPLATE_KEYS = [
 # (geographic_location_key, temperature_profile_key, tag)
 CLIMATE_SET_KEYS = [
     ClimateSetKey(
-        #lpgdata.GeographicLocations.Germany_Berlin.Name,        # TODO: remove get_attr_key() and use string from JSONReference
-        get_attr_key(lpgdata.GeographicLocations, lpgdata.GeographicLocations.Germany_Berlin),
-        get_attr_key(lpgdata.TemperatureProfiles, lpgdata.TemperatureProfiles.Berlin_Germany_1996_from_Deutscher_Wetterdienst_DWD_www_dwd_de),
+        lpgdata.GeographicLocations.Germany_Berlin.Name,
+        lpgdata.TemperatureProfiles.Berlin_Germany_1996_from_Deutscher_Wetterdienst_DWD_www_dwd_de.Name,
         "berlin_loc_berlin_temp",
     ),
 ]
@@ -191,7 +183,11 @@ CLIMATE_SET_KEYS = [
 # Flat runs use only the no-transport baseline (pure residential load), so each
 # template is a single run. The EV/home-charging variant from the first
 # training set is intentionally dropped here.
-TRANSPORT_VARIANT_KEYS = [      # TODO: remove get_attr_key() and use string from JSONReference (as noted on CLIMATE_SET_KEYS above)
+# When a variant enables transport, give each set as its ``.Name`` string (e.g.
+# ``lpgdata.ChargingStationSets.Charging_At_Home_with_11_kW.Name``), exactly like
+# CLIMATE_SET_KEYS above. The flat runs use the no-transport baseline, so every
+# set key is None here.
+TRANSPORT_VARIANT_KEYS = [
     TransportVariantKey(False, None, None, None, "no_transport"),
 ]
 

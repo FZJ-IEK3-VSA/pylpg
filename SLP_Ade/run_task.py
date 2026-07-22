@@ -42,6 +42,8 @@ from SLP_Ade.config import TASK_OUTPUT_DIR  # noqa: E402
 from SLP_Ade.simulation import (  # noqa: E402
     TransportVariant,
     attach_flexibility_events,
+    collect_lpg_references_by_name,
+    resolve_optional_key,
     run_lpg_simulation,
     safe_name,
     split_dataframe_by_type,
@@ -56,16 +58,6 @@ class NoResultsError(RuntimeError):
     empty run) — so that the caller can fail the task instead of writing a
     metadata-only file that looks complete.
     """
-
-
-def _resolve_optional(container: object, key: str | None) -> object | None:
-    """Return ``getattr(container, key)`` or ``None`` when *key* is ``None``.
-
-    :param object container: The object to look up the attribute on.
-    :param str | None key: Attribute name to retrieve, or ``None``.
-    :return object | None: The resolved attribute value, or ``None`` if key is ``None``.
-    """
-    return getattr(container, key) if key is not None else None
 
 
 def run_task(task: dict) -> None:
@@ -91,24 +83,39 @@ def run_task(task: dict) -> None:
     task_id: int = task["task_id"]
 
     # --- resolve string keys to LPG objects ------------------------------
-    tmpl = getattr(lpgdata.HouseholdTemplates, task["template_key"])            #TODO: replace with JsonReference to avoid get_attr_key() and make it more robust
-    geographic_location = getattr(
-        lpgdata.GeographicLocations, task["geographic_location_key"]
+    # Household templates are plain strings in lpgdata, so the manifest stores
+    # the Python attribute name and getattr yields the template string.
+    tmpl = getattr(lpgdata.HouseholdTemplates, task["template_key"])
+    # The JsonReference catalogs (locations, temperature profiles, transport
+    # sets) are stored by their .Name reference string; resolve each back to the
+    # full JsonReference (Name + Guid) so the exact catalog object reaches LPG.
+    geographic_location = resolve_optional_key(
+        collect_lpg_references_by_name(lpgdata.GeographicLocations),
+        task["geographic_location_key"],
+        "geographic location",
     )
-    temperature_profile = _resolve_optional(
-        lpgdata.TemperatureProfiles, task["temperature_profile_key"]
+    temperature_profile = resolve_optional_key(
+        collect_lpg_references_by_name(lpgdata.TemperatureProfiles),
+        task["temperature_profile_key"],
+        "temperature profile",
     )
 
     transport_variant = TransportVariant(
         simulate_transportation=task["transport_simulate"],
-        charging_set=_resolve_optional(
-            lpgdata.ChargingStationSets, task["transport_charging_set_key"]
+        charging_set=resolve_optional_key(
+            collect_lpg_references_by_name(lpgdata.ChargingStationSets),
+            task["transport_charging_set_key"],
+            "charging set",
         ),
-        transport_device_set=_resolve_optional(
-            lpgdata.TransportationDeviceSets, task["transport_device_set_key"]
+        transport_device_set=resolve_optional_key(
+            collect_lpg_references_by_name(lpgdata.TransportationDeviceSets),
+            task["transport_device_set_key"],
+            "transportation device set",
         ),
-        travel_route_set=_resolve_optional(
-            lpgdata.TravelRouteSets, task["transport_travel_route_key"]
+        travel_route_set=resolve_optional_key(
+            collect_lpg_references_by_name(lpgdata.TravelRouteSets),
+            task["transport_travel_route_key"],
+            "travel route set",
         ),
         tag=task["transport_tag"],
     )

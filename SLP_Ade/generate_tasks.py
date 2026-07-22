@@ -9,9 +9,10 @@ Output
 tasks.json  -- one entry per independent simulation run, indexed 0 .. N-1.
                The job array should cover indices 0 .. N-1.
 
-Each task stores only string keys (attribute names in lpgdata.*) so the
-manifest is fully JSON-serialisable.  The worker resolves them back to LPG
-objects at runtime.
+Each task stores only string keys so the manifest is fully JSON-serialisable:
+household templates by their lpgdata attribute name, and the JsonReference
+catalogs (locations, temperature profiles, transport sets) by their ``.Name``
+reference string.  The worker resolves them back to LPG objects at runtime.
 
 Seed strategy
 -------------
@@ -31,7 +32,6 @@ from pathlib import Path
 # sys.path.insert(0, str(_REPO_ROOT))
 
 from pylpg import lpgdata
-from pylpg.lpgpythonbindings import JsonReference
 
 # Configuration lives in config.py; execution helpers in simulation.py.
 from SLP_Ade.config import (
@@ -43,6 +43,7 @@ from SLP_Ade.config import (
 )
 from SLP_Ade.simulation import (
     collect_lpg_members,
+    collect_lpg_references_by_name,
     create_combo_tag,
 )
 
@@ -89,10 +90,10 @@ def build_task_list() -> list[dict]:
     # temperature_profile_key, tag).
     if CLIMATE_SET_KEYS is None:
         all_geo_keys = list(
-            collect_lpg_members(lpgdata.GeographicLocations, JsonReference).keys()
+            collect_lpg_references_by_name(lpgdata.GeographicLocations).keys()
         )
         all_temp_keys = list(
-            collect_lpg_members(lpgdata.TemperatureProfiles, JsonReference).keys()
+            collect_lpg_references_by_name(lpgdata.TemperatureProfiles).keys()
         )
         climate_keys = [
             ClimateSetKey(geo_key, temp_key, f"{geo_key}__{temp_key}")

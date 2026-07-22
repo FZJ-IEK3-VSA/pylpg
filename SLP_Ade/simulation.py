@@ -176,6 +176,27 @@ def collect_lpg_members(container: Any, expected_type: type) -> dict[str, Any]:
     }
 
 
+def collect_lpg_references_by_name(container: Any) -> dict[str, JsonReference]:
+    """Collect ``JsonReference`` members of `container` keyed by their ``.Name``.
+
+    The companion to :func:`collect_lpg_members`, but keyed by the LPG reference
+    string (``JsonReference.Name``, e.g. ``"(Germany) Berlin"``) rather than the
+    Python attribute name. The config stores these ``.Name`` strings, so both the
+    task manifest and the sequential runner resolve them back to the full
+    ``JsonReference`` (Name **and** Guid) through this map — the exact catalog
+    object, Guid included, reaches the LPG request.
+
+    :param Any container: The class or object to collect references from.
+    :return dict[str, JsonReference]: Mapping from each reference's ``.Name`` to
+        the reference object.
+    """
+    return {
+        value.Name: value
+        for _, value in inspect.getmembers(container)
+        if isinstance(value, JsonReference)
+    }
+
+
 def select_by_keys(
     available: dict[str, Any],
     keys: Optional[Iterable[str]],
@@ -682,17 +703,20 @@ def run_all() -> None:
 
     # Collect all available LPG members
     all_templates = collect_lpg_members(lpgdata.HouseholdTemplates, str)
-    all_geographic_locations = collect_lpg_members(
-        lpgdata.GeographicLocations, JsonReference
+    # JsonReference catalogs are keyed by .Name (matching the strings the config
+    # stores), so make_climate_variants / make_transport_variants resolve the
+    # config keys straight back to the full reference (Name + Guid).
+    all_geographic_locations = collect_lpg_references_by_name(
+        lpgdata.GeographicLocations
     )
-    all_temperature_profiles = collect_lpg_members(
-        lpgdata.TemperatureProfiles, JsonReference
+    all_temperature_profiles = collect_lpg_references_by_name(
+        lpgdata.TemperatureProfiles
     )
-    all_charging_sets = collect_lpg_members(lpgdata.ChargingStationSets, JsonReference)
-    all_transport_device_sets = collect_lpg_members(
-        lpgdata.TransportationDeviceSets, JsonReference
+    all_charging_sets = collect_lpg_references_by_name(lpgdata.ChargingStationSets)
+    all_transport_device_sets = collect_lpg_references_by_name(
+        lpgdata.TransportationDeviceSets
     )
-    all_travel_route_sets = collect_lpg_members(lpgdata.TravelRouteSets, JsonReference)
+    all_travel_route_sets = collect_lpg_references_by_name(lpgdata.TravelRouteSets)
 
     # Create parameter combinations
     household_templates = select_by_keys(
