@@ -7,13 +7,16 @@
 #       python SLP_Ade/generate_tasks.py
 #    This creates tasks.json (one entry per task).
 #
-# 2. Submit the array — the range is derived automatically from len(tasks.json):
-#       bash SLP_Ade/submit_array.sh
-#    Launch it with `bash` on the login node (not `sbatch`). The script reads
-#    the count and re-submits itself as an array job with the correct range.
-#    (`sbatch SLP_Ade/submit_array.sh` also works, but then the one-line
-#     bootstrap runs inside a compute-node allocation instead of on the login
-#     node.)
+# 2. Submit the array, passing the index range explicitly with sbatch --array.
+#    Indices are 0-based and index into tasks.json, so N tasks span 0..N-1
+#    (get N with: python -c 'import json;print(len(json.load(open("SLP_Ade/tasks.json"))))'):
+#       sbatch --array=0-10    SLP_Ade/submit_array.sh   # all 11 tasks
+#       sbatch --array=0-10%50 SLP_Ade/submit_array.sh   # ... capped at 50 concurrent
+#       sbatch --array=3,7,9   SLP_Ade/submit_array.sh   # re-run just these tasks
+#
+#    Before the FIRST submission, ensure the LPG binary is already in pylpg/
+#    (run one task locally, or `python SLP_Ade/simulation.py` once). Otherwise
+#    the first wave of array tasks all race to download it and corrupt pylpg/.
 #
 # 3. After all jobs finish, merge per-task outputs into the final HDF5 files:
 #       python SLP_Ade/merge_results.py
@@ -35,69 +38,10 @@
 #SBATCH --output=logs/task_%A_%a.out
 #SBATCH --error=logs/task_%A_%a.err
 
-# NOTE: --array is deliberately NOT a #SBATCH directive. SLURM parses those
-# directives before the script body runs, so it cannot read the task count from
-# a file. Instead the bootstrap block below counts the entries in tasks.json and
-# re-submits this script with the correct --array range. Cap on concurrent array
-# tasks (tune to cluster's fair-use policy):
-# MAX_CONCURRENT=50
-
-# ---------------------------------------------------------------------------
-# Bootstrap: when launched outside of an array (no $SLURM_ARRAY_TASK_ID),
-# read the task count and re-submit ourselves with the right --array range.
-# ---------------------------------------------------------------------------
-# if [ -z "${SLURM_ARRAY_TASK_ID:-}" ]; then
-#     # cd to the repo root using this script's real location:
-#     # realpath -> absolute path, dirname -> SLP_Ade/, /.. -> repo root.
-#     cd "$(dirname "$(realpath "$0")")/.." || exit 1
-
-#     TASKS_FILE="SLP_Ade/tasks.json"
-#     if [ ! -f "$TASKS_FILE" ]; then
-#         echo "ERROR: $TASKS_FILE not found. Run 'python SLP_Ade/generate_tasks.py' first." >&2
-#         exit 1
-#     fi
-
-#     # Activate the env up front: it is needed both to count the tasks (python
-#     # reads len(tasks.json) directly) and for the binary pre-flight below.
-#     source $HOME/miniforge3/etc/profile.d/conda.sh
-#     conda activate pyLPG_env
-
-#     # Derive the array size straight from tasks.json — no separate count file.
-#     COUNT="$(python -c 'import json,sys; print(len(json.load(open(sys.argv[1]))))' "$TASKS_FILE")"
-#     case "$COUNT" in
-#         ''|*[!0-9]*)
-#             echo "ERROR: could not read task count from $TASKS_FILE (got '$COUNT')" >&2
-#             exit 1
-#             ;;
-#     esac
-#     if [ "$COUNT" -lt 1 ]; then
-#         echo "ERROR: task count must be >= 1 (got $COUNT)" >&2
-#         exit 1
-#     fi
-
-#     # Pre-fetch the LPG binary ONCE, here on the login node. Otherwise the first
-#     # wave of concurrent array tasks would all race to download it into pylpg/
-#     # and corrupt the folder. Safe to re-run: only downloads when it is missing.
-#     echo "Pre-flight: ensuring the LPG binary is present ..."
-#     python - <<'PY'
-# from pathlib import Path
-# from pylpg import lpg_execution as le
-# pkg = Path(le.__file__).parent
-# src, exe = le._lpg_binary_details_for_platform(pkg)
-# if (src / exe).is_file():
-#     print(f"  LPG binary already present: {src / exe}")
-# else:
-#     print(f"  Downloading LPG binary into {pkg} ...")
-#     le.LPGExecutor.retrieve_lpg_binaries(pkg)
-# PY
-#     if [ $? -ne 0 ]; then
-#         echo "ERROR: LPG binary pre-flight failed; not submitting." >&2
-#         exit 1
-#     fi
-
-#     echo "Submitting array 0-$((COUNT - 1))%${MAX_CONCURRENT} (${COUNT} tasks)"
-#     exec sbatch --array="0-$((COUNT - 1))%${MAX_CONCURRENT}" SLP_Ade/submit_array.sh
-# fi
+# NOTE: --array is deliberately NOT a #SBATCH directive. The number of tasks
+# varies per manifest, so the range is passed on the sbatch command line
+# instead (see the examples in the header). Append %K to cap concurrency, e.g.
+# --array=0-10%50, tuned to the cluster's fair-use policy.
 
 # ---------------------------------------------------------------------------
 # Array element: this runs once per task with $SLURM_ARRAY_TASK_ID set.
