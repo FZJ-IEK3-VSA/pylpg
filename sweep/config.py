@@ -1,4 +1,4 @@
-"""Configuration for the SLP_Ade multi-simulation sweep.
+"""Configuration for the multi-simulation sweep.
 
 All tunable parameters for the parameter sweep live here, isolated from the
 execution logic in ``simulation.py``.  ``generate_tasks.py``, ``run_task.py``
@@ -29,10 +29,9 @@ RUN_ON_CLUSTER = True
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 
-# Cluster: shared, fast project storage (outside the repo).
-CLUSTER_BASE_OUTPUT_DIR = Path(
-    "/fast/central/projects/2026-a-tarasenko-SLP_Ade/first_training_set"
-)
+# Cluster: shared, fast project storage (outside the repo). Set this to your own
+# output location, or override it at runtime via the LPG_OUTPUT_DIR env var.
+CLUSTER_BASE_OUTPUT_DIR = Path("/path/to/cluster/output")
 # Local testing: use the repo root as the base, so merged files land in
 # <repo>/multi_runs_output/ (exactly where local runs wrote before) and the
 # temporary <repo>/tasks/ dir sits alongside it (gitignored, and removed by
@@ -194,10 +193,11 @@ TRANSPORT_VARIANT_KEYS = [
 HOUSETYPE = lpgdata.HouseTypes.HT20_Single_Family_House_no_heating_cooling
 
 #: Custom binary path for LPG. The RUN_ON_CLUSTER flag selects between the two
-#: builds below (Linux on the cluster, Windows locally). Set the relevant one to
-#: None to use the official release downloaded automatically by the package.
-CLUSTER_LPG_BINARY_PATH = "/fast/home/a-tarasenko/SLP_Ade/LoadProfileGenerator/SimEngine2/bin/release/net9.0/linux-x64/publish/SimEngine2"
-LOCAL_LPG_BINARY_PATH = r"C:\Tarasenko\GitHub\LoadProfileGenerator\SimEngine2\bin\release\net9.0\win-x64\publish\SimEngine2.exe"
+#: builds below (Linux on the cluster, Windows locally). Set each to the path of
+#: your own built SimEngine2 binary, or leave it as None to use the official
+#: release downloaded automatically by the package.
+CLUSTER_LPG_BINARY_PATH = None  # e.g. "/path/to/linux-x64/publish/SimEngine2"; None -> auto-download
+LOCAL_LPG_BINARY_PATH = None    # e.g. r"C:\path\to\win-x64\publish\SimEngine2.exe"; None -> auto-download
 LPG_BINARY_PATH = CLUSTER_LPG_BINARY_PATH if RUN_ON_CLUSTER else LOCAL_LPG_BINARY_PATH
 
 # Define runs per combination. You can specify:

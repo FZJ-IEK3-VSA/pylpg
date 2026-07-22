@@ -26,7 +26,7 @@ If you want to use a different database than the one that comes with the package
 
 By default, pyLPG uses the LPG binary that ships with the package. On the first run, it checks whether the platform-specific binary is already available in the local package directory. If it is missing, pyLPG downloads the official LPG release for your operating system, stores it locally, and then executes that bundled binary for the calculation.
 
-In some setups, you may want to run a different LPG build instead of the bundled release. This is now supported per execution call through the optional `lpg_binary_path` argument on the public execution helpers, such as `execute_lpg_with_householddata_custom(...)`, `execute_lpg_with_householdata(...)`, `execute_lpg_single_household(...)`, `execute_lpg_tsib(...)`, and `execute_grid_calc(...)`.
+In some setups, you may want to run a different LPG build instead of the bundled release. This is now supported per execution call through the optional `lpg_binary_path` argument on the public execution helpers, such as `execute_lpg_with_householddata_enabled_flex_and_transport_custom(...)`, `execute_lpg_with_householdata(...)`, `execute_lpg_single_household(...)`, `execute_lpg_tsib(...)`, and `execute_grid_calc(...)`.
 
 ### How the override works
 
@@ -61,6 +61,31 @@ lpg_binary_path=r"C:\Tools\LPG"
 ```
 
 The rest of the calculation flow stays the same: pyLPG still writes the calculation JSON, runs the LPG executable from the calculation directory, and reads the generated results back into a pandas dataframe.
+
+## Parallel parameter sweeps on SLURM (`sweep/`)
+
+The [`sweep/`](sweep/) folder is a general-purpose fan-out/fan-in workflow for
+running large numbers of LPG simulations in parallel on a SLURM cluster — parameter
+sweeps over household templates, climates, transport variants, and repeated runs.
+It builds one job per parameter combination, runs them as an independent SLURM array
+(one result file per task, so there are no concurrent-write conflicts), and merges
+the per-task outputs into per-template HDF5 files.
+
+All sweep parameters live in a single source of truth, `sweep/config.py`. The basic
+pipeline is three steps:
+
+```bash
+python sweep/generate_tasks.py                 # expand the config sweep into tasks.json
+sbatch --array=0-<N-1> sweep/submit_array.sh   # run the array (one task per combination)
+python sweep/merge_results.py                  # assemble the per-template .h5 files
+```
+
+It also runs without a cluster: `python sweep/simulation.py` for a sequential run, or
+`python sweep/run_task.py --task-id 0` for a single task.
+
+See **[`sweep/README.md`](sweep/README.md)** for the full pipeline, the configuration
+table, the output layout, and cluster setup (copying `submit_array.example.sh` to your
+own git-ignored `submit_array.sh`).
 
 ## Installation
 

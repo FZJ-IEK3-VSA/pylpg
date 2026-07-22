@@ -1,4 +1,4 @@
-"""Tests for the SLP_Ade SLURM-array workflow.
+"""Tests for the sweep SLURM-array workflow.
 
 All tests here are fast and do NOT execute LPG simulations.
 They cover:
@@ -16,12 +16,12 @@ import pytest
 from pylpg import lpgdata
 from pylpg.lpgpythonbindings import JsonReference
 
-from SLP_Ade.config import (
+from sweep.config import (
     CLIMATE_SET_KEYS,
     TRANSPORT_VARIANT_KEYS,
     get_runs_for_combo,
 )
-from SLP_Ade.simulation import (
+from sweep.simulation import (
     attach_flexibility_events,
     collect_lpg_members,
     create_combo_tag,
@@ -29,7 +29,7 @@ from SLP_Ade.simulation import (
     select_by_keys,
     split_dataframe_by_type,
 )
-from SLP_Ade.generate_tasks import _deterministic_seed, build_task_list
+from sweep.generate_tasks import _deterministic_seed, build_task_list
 
 
 # ---------------------------------------------------------------------------

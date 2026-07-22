@@ -2,11 +2,11 @@
 
 Run after **all** array jobs have finished:
 
-    python SLP_Ade/merge_results.py
+    python sweep/merge_results.py
 
 Input
 -----
-SLP_Ade/tasks.json      -- task manifest
+sweep/tasks.json      -- task manifest
 config.TASK_OUTPUT_DIR  -- directory of task_<NNNNNN>.h5 files written by
                            run_task.py (= BASE_OUTPUT_DIR / "tasks";
                            honours $LPG_OUTPUT_DIR)
@@ -38,8 +38,8 @@ sys.path.insert(0, str(_REPO_ROOT))
 
 import pandas as pd
 
-from SLP_Ade.config import MERGED_OUTPUT_DIR, TASK_OUTPUT_DIR  # noqa: E402
-from SLP_Ade.simulation import safe_name  # noqa: E402
+from sweep.config import MERGED_OUTPUT_DIR, TASK_OUTPUT_DIR  # noqa: E402
+from sweep.simulation import safe_name  # noqa: E402
 
 
 # Fields that jointly identify which (template, climate, transport, run) a task
@@ -76,10 +76,10 @@ def merge_all(keep_tasks: bool = False) -> None:
     """Merge all per-task HDF5 files into final per-template HDF5 files.
 
     Reads ``tasks.json`` and iterates over every ``task_<NNNNNN>.h5`` in
-    :data:`SLP_Ade.config.TASK_OUTPUT_DIR` (the same location run_task.py writes
+    :data:`sweep.config.TASK_OUTPUT_DIR` (the same location run_task.py writes
     to -- ``BASE_OUTPUT_DIR / "tasks"``, honouring ``$LPG_OUTPUT_DIR``). For each
     task file the simulation DataFrames are copied into
-    :data:`SLP_Ade.config.MERGED_OUTPUT_DIR` ``/<template_name>.h5`` under the
+    :data:`sweep.config.MERGED_OUTPUT_DIR` ``/<template_name>.h5`` under the
     hierarchical path ``/<climate_tag>/<transport_tag>/run_<N>/<data_type>``.
 
     Before copying, each file's recorded identity (its ``/metadata``) is
@@ -98,7 +98,7 @@ def merge_all(keep_tasks: bool = False) -> None:
     :return None: No return value.
     :raises SystemExit: If ``tasks.json`` is missing or no task files are found.
     """
-    tasks_file = _REPO_ROOT / "SLP_Ade" / "tasks.json"
+    tasks_file = _REPO_ROOT / "sweep" / "tasks.json"
     if not tasks_file.exists():
         sys.exit(f"tasks.json not found at {tasks_file}")
 

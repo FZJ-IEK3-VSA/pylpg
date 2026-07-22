@@ -1,4 +1,4 @@
-# SLP_Ade — Changelog / Change Guide (since `new-python-bindings-for-citysim`)
+# sweep — Changelog / Change Guide (since `new-python-bindings-for-citysim`)
 
 This document is a **developer-facing** record of the code changes made on this branch
 after it split off from `new-python-bindings-for-citysim` (merge-base `453071d`). It
@@ -11,7 +11,7 @@ The work falls into two parts:
 1. **Core library changes** to [../pylpg/lpg_execution.py](../pylpg/lpg_execution.py) that
    made the parallel workflow possible (a new execution primitive and a reworked
    `LPGExecutor`).
-2. **A new subsystem**, the entire `SLP_Ade/` folder — a fan-out/fan-in SLURM workflow for
+2. **A new subsystem**, the entire `sweep/` folder — a fan-out/fan-in SLURM workflow for
    running thousands of LPG simulations in parallel.
 
 Pure docstring/comment/formatting/rename commits are intentionally omitted here; only
@@ -22,12 +22,12 @@ behaviour-relevant changes are documented.
 ## 1. Core library changes — `pylpg/lpg_execution.py`
 
 All changes here live in [../pylpg/lpg_execution.py](../pylpg/lpg_execution.py). They are
-the foundation the `SLP_Ade/` workflow is built on.
+the foundation the `sweep/` workflow is built on.
 
 ### 1.1 New execution primitive: `execute_lpg_with_householddata_enabled_flex_and_transport_custom()`
 
 A new public function was added alongside the existing `execute_lpg_with_householdata()`.
-It is the **single execution primitive** that the entire `SLP_Ade/` workflow calls (via
+It is the **single execution primitive** that the entire `sweep/` workflow calls (via
 `run_lpg_simulation()` in [simulation.py](simulation.py)).
 
 What it adds over the previous `execute_lpg_with_householdata()`:
@@ -147,7 +147,7 @@ events — an event log, not a minute profile. A new
 JSON-encoded so the frame is HDF5-`fixed`-safe) into one DataFrame. When flexibility is
 enabled, `execute_lpg_with_householddata_enabled_flex_and_transport_custom()` attaches it
 to the result frame as `df.attrs["flexibility_events"]` (frame metadata, since its shape
-differs from the profiles). The `SLP_Ade` workflow stores it as its own `FlexibilityEvents`
+differs from the profiles). The `sweep` workflow stores it as its own `FlexibilityEvents`
 group (see §2.2 / §2.4).
 
 ### 1.6 No per-calculation copy — run in place, share the read-only database
@@ -214,7 +214,7 @@ runs.
   "doing nothing" (no activity-driven appliance load) in place of a real activity — a minor
   behavioural artifact accepted in exchange for the run completing.
 - **Default is `False`** in the core function, preserving the stricter fail-loud behaviour
-  for callers that would rather a broken template error out. The `SLP_Ade` workflow opts in
+  for callers that would rather a broken template error out. The `sweep` workflow opts in
   unconditionally (see §2.2).
 
 ### 1.9 Engine exit code is now checked — non-zero raises instead of "no results"
@@ -227,14 +227,14 @@ only much later as a confusing "no results returned" far from the real cause.
 It now captures the `subprocess.run(...)` result and, on a non-zero `returncode`, raises a
 `RuntimeError` naming the **exit code** and the **calculation directory** (whose `Log.*.txt`
 files hold the real cause). Return type is now `None`. This turns a silent, misattributed
-failure into an immediate, located one — and pairs with the `SLP_Ade` worker's own no-data
+failure into an immediate, located one — and pairs with the `sweep` worker's own no-data
 guard (§2.4), which catches the cases the engine reports as success but with no usable output.
 
 ---
 
-## 2. The `SLP_Ade/` workflow (new subsystem)
+## 2. The `sweep/` workflow (new subsystem)
 
-`SLP_Ade/` is an entirely new fan-out/fan-in pipeline for large parameter sweeps on a
+`sweep/` is an entirely new fan-out/fan-in pipeline for large parameter sweeps on a
 SLURM cluster. Python never simulates anything — it expands a config into independent
 tasks, runs each as an array element, and reassembles the outputs.
 
@@ -324,13 +324,12 @@ Key design points:
   - `RUN_ON_CLUSTER = True` — output base and binary path both resolve to their **cluster**
     values (§2.1 flag bullet). Flip to `False` for a laptop run.
   - `END_DATE = "2020-12-31"` — the simulation window is now a **full calendar year**
-    (was a 31-day January window), matching the DATASET docs' "full calendar year" profiles
-    (§3). This is what drives the ~1.5 GB-per-template output sizes.
+    (was a 31-day January window). This is what drives the ~1.5 GB-per-template output sizes.
 
 ### 2.2 `simulation.py` — shared primitive + sequential runner
 
 [simulation.py](simulation.py) holds the shared execution primitive and a standalone
-sequential runner (`python SLP_Ade/simulation.py`).
+sequential runner (`python sweep/simulation.py`).
 
 - **`run_lpg_simulation()`** — the one primitive called by *both* the sequential
   `execute_single_run()` and the SLURM worker [run_task.py](run_task.py). It builds a
@@ -458,23 +457,14 @@ points:
 ## 3. Supporting changes
 
 - **`requirements.txt`** — added `tables` (PyTables). Required for the HDF5 output in
-  `SLP_Ade/`; without it, `pd.HDFStore(...)` calls fail.
-- **`.gitignore`** — now ignores `pyLPG_env/`, `SLP_Ade/__pycache__/`, the generated
+  `sweep/`; without it, `pd.HDFStore(...)` calls fail.
+- **`.gitignore`** — now ignores `pyLPG_env/`, `sweep/__pycache__/`, the generated
   `tasks.json`, the `multi_runs_output/` output directory, `/tasks/` (the local-mode
   temporary per-task files — normally deleted by the merge, but ignored in case a merge is
   interrupted), and `logs/` (the SLURM per-task `.out` files and the shared
   `completion.log` from §2.6).
-- **Dataset documentation.** [DATASET.md](DATASET.md) and its German twin
-  [DATASET.de.md](DATASET.de.md) describe the **generated HDF5 dataset** for the currently
-  committed config: the ten per-template files (~1.5 GB each, ≈15.7 GB total), the
-  `/<climate>/<transport>/run_<N>/<data_type>` group layout, the load types and
-  flexibility/`NoFlex`/event data types, `runs_metadata.csv`, and read instructions
-  (PyTables, `blosc`-9 `fixed` format). These are **data-consumer-facing** docs (how to read
-  the output), distinct from this changelog (how the code got there) and the README (how to
-  run it). They describe the full-calendar-year, 120-run sweep, so they must be kept in step
-  with the config knobs in §2.1 if the sweep shape changes.
 - **Tests**
-  - [../test/test_slp_ade.py](../test/test_slp_ade.py) — new **fast** tests that never
+  - [../test/test_sweep.py](../test/test_sweep.py) — new **fast** tests that never
     invoke LPG: `safe_name`, `split_dataframe_by_type`, `collect_lpg_members`,
     `select_by_keys`, `create_combo_tag`, `get_runs_for_combo`, deterministic-seed
     behaviour, and `build_task_list` coverage (sequential ids, key presence, run-index
@@ -494,7 +484,7 @@ text if they have drifted.
 
 ### 4.1 Open `TODO` markers in the code
 
-Two remaining, independent of each other. None block a run.
+One remaining, independent of the rest. It does not block a run.
 
 - **~~Drop `get_attr_key()`; store the `JsonReference` string directly~~** — *Done.* Config
   now stores each location/temperature/transport set as its `JsonReference.Name` string
@@ -509,12 +499,17 @@ Two remaining, independent of each other. None block a run.
   `run_idx` as the seed. ⚠️ Not a free swap: the current hash makes seeds **distinct across
   combos** (two combos' `run_0` differ); a bare `run_idx` would give every combo the *same*
   seed sequence. Decide whether cross-combo seed independence matters before simplifying.
-- **Turn the binary-path check into a raising validator** —
-  [simulation.py](simulation.py#L322): the note proposes replacing the current
-  path-existence handling with a `check_lpg_binary_source()` that raises explicitly on a
-  missing path, instead of the softer current behaviour. Aligns with the exception-first
-  error handling already adopted in [run_task.py](run_task.py) (§2.4) and
-  `execute_lpg_binaries()` (§1.9).
+- **~~Turn the binary-path check into a raising validator~~** — *Done.* The former
+  print-only `_print_lpg_binary_source()` is now
+  [`check_lpg_binary_source()`](simulation.py) in [simulation.py](simulation.py): with
+  `LPG_BINARY_PATH is None` it just reports the auto-download (nothing to validate); with a
+  custom path configured it raises `FileNotFoundError` up front unless the path exists (a
+  file or a directory, mirroring what `LPGExecutor` accepts), instead of failing deep inside
+  the first simulation. Both entry points call it as a pre-flight gate: `run_all()` for the
+  sequential runner, and `run_task.py`'s `main()` for every array task (where the existing
+  `__main__` guard turns the raise into a clean exit 1 that SLURM records as a failed task).
+  Matches the exception-first error handling already adopted in [run_task.py](run_task.py)
+  (§2.4) and `execute_lpg_binaries()` (§1.9).
 
 ### 4.2 Larger follow-ups (design, not markers)
 
@@ -536,15 +531,13 @@ Two remaining, independent of each other. None block a run.
   `END_DATE` are checked in (§2.1). A laptop run needs `RUN_ON_CLUSTER = False`; leaving it
   `True` points output/binary paths at cluster locations that will not exist locally.
 - **Idle-mode is a deliberate accuracy trade-off, applied to every sweep run.** The
-  `SLP_Ade` output contains brief "Idle" filler activities wherever the LPG would otherwise
+  `sweep` output contains brief "Idle" filler activities wherever the LPG would otherwise
   have dead-ended a child-bearing household (§1.8 / §2.2). This is by design (completeness
   over a rare artifact) but is a property of the dataset consumers should know — noted here
   so it is not mistaken for a bug later. The core function still defaults idle-mode `False`.
 - **Binary + db3 are read live on the cluster.** Since §1.6 removed the per-calc copy, the
   `LPG_BINARY_PATH` build and shared read-only `profilegenerator.db3` are read on every run;
   they should sit on reasonably fast cluster storage (§1.6 cluster caveat).
-- **Keep the three doc surfaces in step.** README = how to run; this CHANGELOG = how/why the
-  code changed; [DATASET.md](DATASET.md)/[DATASET.de.md](DATASET.de.md) = how to read the
-  output. A change to the sweep shape (templates, climate/transport sets, run counts, date
-  range) touches all three — the DATASET docs in particular hard-code the "120 runs / ten
-  templates / full year" numbers.
+- **Keep the two doc surfaces in step.** README = how to run; this CHANGELOG = how/why the
+  code changed. A change to the sweep shape (templates, climate/transport sets, run counts,
+  date range) touches both.

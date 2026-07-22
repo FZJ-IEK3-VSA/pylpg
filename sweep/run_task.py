@@ -1,14 +1,14 @@
 """SLURM array worker: execute one LPG simulation task.
 
 Usage (called automatically by the batch script):
-    python SLP_Ade/run_task.py --task-id $SLURM_ARRAY_TASK_ID
+    python sweep/run_task.py --task-id $SLURM_ARRAY_TASK_ID
 
 Or for local testing of a single task:
-    python SLP_Ade/run_task.py --task-id 0
+    python sweep/run_task.py --task-id 0
 
 Input
 -----
-SLP_Ade/tasks.json  -- task manifest created by generate_tasks.py.
+sweep/tasks.json  -- task manifest created by generate_tasks.py.
 
 Output
 ------
@@ -38,10 +38,11 @@ import pandas as pd
 
 from pylpg import lpgdata
 
-from SLP_Ade.config import TASK_OUTPUT_DIR  # noqa: E402
-from SLP_Ade.simulation import (  # noqa: E402
+from sweep.config import TASK_OUTPUT_DIR  # noqa: E402
+from sweep.simulation import (  # noqa: E402
     TransportVariant,
     attach_flexibility_events,
+    check_lpg_binary_source,
     collect_lpg_references_by_name,
     resolve_optional_key,
     run_lpg_simulation,
@@ -64,18 +65,18 @@ def run_task(task: dict) -> None:
     """Execute one simulation task and write the result to a per-task HDF5 file.
 
     Resolves all string keys in *task* back to LPG objects, calls
-    :func:`~SLP_Ade.simulation.run_lpg_simulation`, and writes one
+    :func:`~sweep.simulation.run_lpg_simulation`, and writes one
     ``task_<NNNNNN>.h5`` file containing:
 
     - ``/data/<data_type>`` — simulation result DataFrames (one per load type)
     - ``/metadata`` — single-row DataFrame with run metadata
 
-    The output directory is :data:`SLP_Ade.config.TASK_OUTPUT_DIR` — the single
-    source of truth that :mod:`SLP_Ade.merge_results` reads from too, so writer
+    The output directory is :data:`sweep.config.TASK_OUTPUT_DIR` — the single
+    source of truth that :mod:`sweep.merge_results` reads from too, so writer
     and reader can never diverge. Override it for a one-off run by exporting
     ``$LPG_OUTPUT_DIR`` (config resolves that consistently for both scripts).
 
-    :param dict task: Task dictionary as produced by :func:`~SLP_Ade.generate_tasks.build_task_list`.
+    :param dict task: Task dictionary as produced by :func:`~sweep.generate_tasks.build_task_list`.
     :return None: No return value.
     :raises NoResultsError: If the simulation returns no results (``None``) or an
         empty result frame (a silent exit-0 run with no profiles).
@@ -199,11 +200,12 @@ def main() -> None:
     """Parse CLI arguments and dispatch to :func:`run_task`.
 
     Reads ``--task-id`` (falls back to ``$SLURM_ARRAY_TASK_ID``, then 0),
-    loads ``SLP_Ade/tasks.json``, and calls :func:`run_task` for the selected
-    entry.
+    validates the configured LPG binary source, loads ``sweep/tasks.json``, and
+    calls :func:`run_task` for the selected entry.
 
     :return None: No return value.
-    :raises FileNotFoundError: If ``tasks.json`` is missing.
+    :raises FileNotFoundError: If a custom ``LPG_BINARY_PATH`` is configured but
+        does not exist, or if ``tasks.json`` is missing.
     :raises IndexError: If the task id is out of range for ``tasks.json``.
     """
     parser = argparse.ArgumentParser(description="Run one LPG task from tasks.json")
@@ -217,7 +219,13 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    tasks_file = _REPO_ROOT / "SLP_Ade" / "tasks.json"
+    # Fail fast if a custom LPG_BINARY_PATH is configured but missing, before any
+    # simulation work begins. run_all() does the same for the sequential runner;
+    # here it guards every array task. The __main__ guard turns the resulting
+    # FileNotFoundError into a clean exit 1 that SLURM records as a failed task.
+    check_lpg_binary_source()
+
+    tasks_file = _REPO_ROOT / "sweep" / "tasks.json"
     if not tasks_file.exists():
         raise FileNotFoundError(
             f"tasks.json not found at {tasks_file}. Run generate_tasks.py first."

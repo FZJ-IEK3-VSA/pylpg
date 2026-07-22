@@ -1,9 +1,9 @@
-# SLP_Ade — Parallelised LPG Simulations on SLURM
+# sweep — Parallelised LPG Simulations on SLURM
 
 This folder contains everything needed to run large-scale LPG household simulations in parallel on a SLURM cluster.  
 All configuration lives in `config.py` and the simulation logic in `simulation.py`; the three SLURM scripts are thin wrappers around them.
 
-> For a detailed developer-facing account of the code changes behind this workflow (the new `LPGExecutor` behaviour, the new execute function, and the whole `SLP_Ade/` subsystem), see [CHANGELOG.md](CHANGELOG.md).
+> For a detailed developer-facing account of the code changes behind this workflow (the new `LPGExecutor` behaviour, the new execute function, and the whole `sweep/` subsystem), see [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -16,7 +16,7 @@ All configuration lives in `config.py` and the simulation logic in `simulation.p
 | `generate_tasks.py` | Enumerates all parameter combinations, writes `tasks.json`                                                       |
 | `run_task.py`       | SLURM array worker — executes one task from `tasks.json`                                                         |
 | `merge_results.py`  | Assembles per-task HDF5 files into final per-template HDF5 files                                                 |
-| `submit_array.sh`   | SLURM batch script                                                                                               |
+| `submit_array.sh`   | SLURM batch script — **git-ignored**; copy from `submit_array.example.sh`                                                                                               |
 
 ---
 
@@ -48,26 +48,35 @@ Edit `config.py` to set your templates, climate presets, transport variants, and
 Run once on the **login node**:
 
 ```bash
-python SLP_Ade/generate_tasks.py
+python sweep/generate_tasks.py
 ```
 
-This writes `tasks.json` into `SLP_Ade/`, e.g.:
+This writes `tasks.json` into `sweep/`, e.g.:
 
 ```
-Generated 42 tasks  ->  /path/to/pylpg/SLP_Ade/tasks.json
-Submit with:  bash SLP_Ade/submit_array.sh   (reads the count from tasks.json automatically)
-Or manually:  sbatch --array=0-41 SLP_Ade/submit_array.sh
+Generated 42 tasks  ->  /path/to/pylpg/sweep/tasks.json
+Submit with:  bash sweep/submit_array.sh   (reads the count from tasks.json automatically)
+Or manually:  sbatch --array=0-41 sweep/submit_array.sh
 ```
 
 ### 3. Submit the job array
 
+**First-time setup:** `submit_array.sh` is git-ignored (it holds your
+cluster-specific paths). Create it once from the tracked template, then edit the
+paths inside it:
+
+```bash
+cp sweep/submit_array.example.sh sweep/submit_array.sh
+# then set LPG_WORK_DIR (and optionally LPG_OUTPUT_DIR) in sweep/submit_array.sh
+```
+
 No manual range editing needed — just run:
 
 ```bash
-bash SLP_Ade/submit_array.sh
+bash sweep/submit_array.sh
 ```
 
-The script counts the entries in `tasks.json`, then re-submits itself as a SLURM array job covering `0 .. count-1` (capped at `MAX_CONCURRENT` concurrent tasks, default 50). Launch it with `bash` on the login node; `sbatch SLP_Ade/submit_array.sh` also works but runs the one-line bootstrap inside a compute-node allocation. The bootstrap also **pre-fetches the LPG binary once** on the login node, so the first wave of concurrent tasks doesn't race to download it.
+The script counts the entries in `tasks.json`, then re-submits itself as a SLURM array job covering `0 .. count-1` (capped at `MAX_CONCURRENT` concurrent tasks, default 50). Launch it with `bash` on the login node; `sbatch sweep/submit_array.sh` also works but runs the one-line bootstrap inside a compute-node allocation. The bootstrap also **pre-fetches the LPG binary once** on the login node, so the first wave of concurrent tasks doesn't race to download it.
 
 Each array element runs one independent simulation and writes its result to `<base>/tasks/task_NNNNNN.h5`, where `<base>` is `BASE_OUTPUT_DIR` from `config.py` (see [Output location](#output-location)).  
 One file per task means there are **no concurrent write conflicts**. These per-task files are temporary — `merge_results.py` deletes them once they are merged.
@@ -79,7 +88,7 @@ Each task also runs its LPG calculation in its own working directory `C<task_id>
 After all jobs finish:
 
 ```bash
-python SLP_Ade/merge_results.py
+python sweep/merge_results.py
 ```
 
 Output (under `<base>/multi_runs_output/`, where `<base>` is `BASE_OUTPUT_DIR`):
@@ -110,13 +119,13 @@ When flexibility is enabled (it is by default in `run_lpg_simulation`), two extr
 **Sequential** (original multi-run mode):
 
 ```bash
-python SLP_Ade/simulation.py
+python sweep/simulation.py
 ```
 
 **Single task** (for testing one array element):
 
 ```bash
-python SLP_Ade/run_task.py --task-id 0
+python sweep/run_task.py --task-id 0
 ```
 
 ---

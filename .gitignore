@@ -29,11 +29,14 @@ __pycache__/
 build/
 dist/
 pyLPG_env/
-SLP_Ade/__pycache__/
+sweep/__pycache__/
 CLAUDE.md
 logs/
 
-# generated SLURM task manifest (written under SLP_Ade/ by generate_tasks.py)
+# user-specific SLURM submit script (copy of sweep/submit_array.example.sh)
+sweep/submit_array.sh
+
+# generated SLURM task manifest (written under sweep/ by generate_tasks.py)
 tasks.json
 
 # generated result files and output directories

@@ -28,10 +28,10 @@ execute_kwargs = {
     "enable_flexibility": True,
     "enable_transportation": True,
 }
-if utils.supports_lpg_binary_path(lpg_execution.execute_lpg_with_householddata_custom):
+if utils.supports_lpg_binary_path(lpg_execution.execute_lpg_with_householddata_enabled_flex_and_transport_custom):
     execute_kwargs["lpg_binary_path"] = LPG_BINARY_PATH
 
-data = lpg_execution.execute_lpg_with_householddata_custom(
+data = lpg_execution.execute_lpg_with_householddata_enabled_flex_and_transport_custom(
     2022,
     household,
     lpgdata.HouseTypes.HT20_Single_Family_House_no_heating_cooling,

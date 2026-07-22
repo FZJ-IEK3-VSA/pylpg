@@ -376,7 +376,7 @@ def execute_lpg_with_householddata_enabled_flex_and_transport_custom(
 
     # The flexibility event log lives outside the profile results and has a
     # different shape, so it is attached as frame metadata rather than a
-    # column. Callers (e.g. the SLP_Ade workflow) store it as its own group.
+    # column. Callers (e.g. the sweep workflow) store it as its own group.
     if enable_flexibility and df is not None:
         events_df = lpe.read_flexibility_events()
         if events_df is not None:

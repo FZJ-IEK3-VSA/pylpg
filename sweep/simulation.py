@@ -30,7 +30,7 @@ Outputs
 - `runs_metadata.csv` summarizes all successful runs.
 
 Run
-    python SLP_Ade/simulation.py
+    python sweep/simulation.py
 """
 
 import os
@@ -44,7 +44,7 @@ from typing import Any, Iterable, Optional
 
 import pandas as pd
 
-# Make the repo root importable so `from SLP_Ade.config import ...` works both
+# Make the repo root importable so `from sweep.config import ...` works both
 # when this module is imported as part of the package and when it is run
 # directly as a script.
 _REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -54,7 +54,7 @@ if str(_REPO_ROOT) not in sys.path:
 from pylpg import lpg_execution, lpgdata
 from pylpg.lpgpythonbindings import EnergyIntensityType, JsonReference
 
-from SLP_Ade.config import (
+from sweep.config import (
     CLIMATE_SET_KEYS,
     END_DATE,
     HOUSEHOLD_TEMPLATE_KEYS,
@@ -337,15 +337,30 @@ def make_transport_variants(
     ]
 
 
-def _print_lpg_binary_source() -> None:
-    """Print the source of the LPG binary being used.
+def check_lpg_binary_source() -> None:
+    """Validate and report the source of the LPG binary being used.
 
-    :return None: No return value.                                                      # TODO: explicitly raise error if missing path, change to check_lpg_binary_source() with exception
+    When ``LPG_BINARY_PATH`` is ``None`` no path is configured: the official
+    release is downloaded to the package directory on first use (handled by
+    ``LPGExecutor``), so there is nothing to validate here. When a custom path is
+    configured it must already exist — either the ``SimEngine2`` binary file
+    itself or a directory containing it, mirroring what ``LPGExecutor`` accepts —
+    otherwise a ``FileNotFoundError`` is raised up front rather than letting the
+    run fail deep inside the first simulation.
+
+    :raises FileNotFoundError: If ``LPG_BINARY_PATH`` is set but does not exist.
+    :return None: No return value.
     """
     if LPG_BINARY_PATH is None:
         print("LPG binary source: official release downloaded automatically.")
-    else:
-        print(f"LPG binary source: custom binary path {LPG_BINARY_PATH}")
+        return
+
+    binary_path = Path(LPG_BINARY_PATH)
+    if not binary_path.exists():
+        raise FileNotFoundError(
+            f"Configured LPG_BINARY_PATH does not exist: {binary_path}"
+        )
+    print(f"LPG binary source: custom binary path {binary_path}")
 
 
 def save_as_HDF5(
@@ -459,7 +474,7 @@ def run_lpg_simulation(
     if START_DATE is None or END_DATE is None:
         raise ValueError(
             "Simulation date range is not configured: set START_DATE and "
-            "END_DATE in SLP_Ade/config.py (ISO 'YYYY-MM-DD' strings). "
+            "END_DATE in sweep/config.py (ISO 'YYYY-MM-DD' strings). "
             f"Got START_DATE={START_DATE!r}, END_DATE={END_DATE!r}."
         )
 
@@ -695,7 +710,7 @@ def run_all() -> None:
 
     :return None: No return value.
     """
-    _print_lpg_binary_source()
+    check_lpg_binary_source()
     # Create the merged-output dir on demand (config no longer does this at
     # import time, so importing config never touches the filesystem).
     MERGED_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

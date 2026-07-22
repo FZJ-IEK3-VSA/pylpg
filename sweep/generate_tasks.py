@@ -2,7 +2,7 @@
 
 Run once on the login node **before** submitting the job array:
 
-    python SLP_Ade/generate_tasks.py
+    python sweep/generate_tasks.py
 
 Output
 ------
@@ -34,14 +34,14 @@ from pathlib import Path
 from pylpg import lpgdata
 
 # Configuration lives in config.py; execution helpers in simulation.py.
-from SLP_Ade.config import (
+from sweep.config import (
     CLIMATE_SET_KEYS,
     HOUSEHOLD_TEMPLATE_KEYS,
     TRANSPORT_VARIANT_KEYS,
     ClimateSetKey,
     get_runs_for_combo,
 )
-from SLP_Ade.simulation import (
+from sweep.simulation import (
     collect_lpg_members,
     collect_lpg_references_by_name,
     create_combo_tag,
@@ -140,21 +140,21 @@ def build_task_list() -> list[dict]:
 def main() -> None:
     """Generate tasks.json and print submission guidance.
 
-    Calls :func:`build_task_list`, writes the result to ``SLP_Ade/tasks.json``,
+    Calls :func:`build_task_list`, writes the result to ``sweep/tasks.json``,
     and prints the total task count together with the ``--array`` range to use
     when submitting the SLURM job array.
 
     :return None: No return value.
     """
     tasks = build_task_list()
-    out = Path("SLP_Ade") / "tasks.json"
+    out = Path("sweep") / "tasks.json"
     out.write_text(json.dumps(tasks, indent=2))
 
     # No separate count file: submit_array.sh derives its --array range directly
     # from len(tasks.json), so there is a single source of truth for the count.
     print(f"Generated {len(tasks)} tasks  ->  {out}")
-    print(f"Submit with:  bash SLP_Ade/submit_array.sh   (reads the count from {out.name} automatically)")
-    print(f"Or manually:  sbatch --array=0-{len(tasks) - 1} SLP_Ade/submit_array.sh")
+    print(f"Submit with:  bash sweep/submit_array.sh   (reads the count from {out.name} automatically)")
+    print(f"Or manually:  sbatch --array=0-{len(tasks) - 1} sweep/submit_array.sh")
 
 
 if __name__ == "__main__":
