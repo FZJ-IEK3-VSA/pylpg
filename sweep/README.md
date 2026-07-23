@@ -70,13 +70,23 @@ cp sweep/submit_array.example.sh sweep/submit_array.sh
 # then set LPG_WORK_DIR (and optionally LPG_OUTPUT_DIR) in sweep/submit_array.sh
 ```
 
-No manual range editing needed — just run:
+**Before the first submission,** make sure the LPG binary is already in `pylpg/`
+(run one task locally, or `python sweep/simulation.py` once). Otherwise the first
+wave of array tasks all race to download it and corrupt `pylpg/`.
+
+Then submit the array, passing the index range explicitly. Indices are 0-based
+and index into `tasks.json`, so N tasks span `0 .. N-1` (the exact range is
+printed by `generate_tasks.py`):
 
 ```bash
-bash sweep/submit_array.sh
+sbatch --array=0-55    sweep/submit_array.sh   # all 56 tasks
+sbatch --array=0-55%50 sweep/submit_array.sh   # ... capped at 50 concurrent
+sbatch --array=3,7,9   sweep/submit_array.sh   # re-run just these tasks
 ```
 
-The script counts the entries in `tasks.json`, then re-submits itself as a SLURM array job covering `0 .. count-1` (capped at `MAX_CONCURRENT` concurrent tasks, default 50). Launch it with `bash` on the login node; `sbatch sweep/submit_array.sh` also works but runs the one-line bootstrap inside a compute-node allocation. The bootstrap also **pre-fetches the LPG binary once** on the login node, so the first wave of concurrent tasks doesn't race to download it.
+`--array` is passed on the command line rather than as a `#SBATCH` directive
+because the task count changes per manifest; append `%K` to cap how many run
+concurrently, tuned to your cluster's fair-use policy.
 
 Each array element runs one independent simulation and writes its result to `<base>/tasks/task_NNNNNN.h5`, where `<base>` is `BASE_OUTPUT_DIR` from `config.py` (see [Output location](#output-location)).  
 One file per task means there are **no concurrent write conflicts**. These per-task files are temporary — `merge_results.py` deletes them once they are merged.
@@ -158,10 +168,10 @@ Defined in `submit_array.sh` — adjust to your cluster limits:
 
 | Directive         | Default           | Notes                                                                                          |
 | ----------------- | ----------------- | ---------------------------------------------------------------------------------------------- |
-| `--cpus-per-task` | `1`               | LPG runs are single-threaded                                                                   |
-| `--mem`           | `4G`              | Typical usage <2 GB; 4 GB gives headroom                                                       |
-| `--time`          | `2:00:00`         | Safe default for a single-year simulation                                                      |
-| `MAX_CONCURRENT`  | max 50 concurrent | Concurrency cap applied to the auto-generated `--array` range; tune to cluster fair-use policy |
+| `--cpus-per-task` | `1`         | LPG runs are single-threaded                                                        |
+| `--mem`           | `2G`        | Typical usage <2 GB; raise for headroom on complex households                       |
+| `--time`          | `2:00:00`   | Safe default for a single-year simulation                                           |
+| `--array` cap `%K` | (you choose) | Concurrency cap appended to the `sbatch --array` range; tune to cluster fair-use policy |
 
 ## Output location
 
