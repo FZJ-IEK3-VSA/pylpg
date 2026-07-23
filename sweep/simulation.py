@@ -6,7 +6,7 @@ What this module does
 - For each template it iterates over `CLIMATE_SET_KEYS` and
     `TRANSPORT_VARIANT_KEYS`.
 - For each (template, climate, transport) combination it runs
-  `RUNS_PER_COMBO` independent simulations with different random seeds to
+  `get_runs_for_combo()` independent simulations with different random seeds to
   inspect stochastic variability.
 
 All tunable parameters live in `config.py`. This module holds the shared
