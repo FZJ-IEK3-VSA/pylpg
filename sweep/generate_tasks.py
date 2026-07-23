@@ -27,9 +27,11 @@ import json
 import sys
 from pathlib import Path
 
-# Make the repo root importable regardless of CWD
-# _REPO_ROOT = Path(__file__).resolve().parents[1]
-# sys.path.insert(0, str(_REPO_ROOT))
+# Make the repo root importable so `from sweep.config import ...` works when this
+# module is run directly as a script (python sweep/generate_tasks.py), matching
+# run_task.py and merge_results.py.
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(_REPO_ROOT))
 
 from pylpg import lpgdata
 
@@ -48,7 +50,7 @@ from sweep.simulation import (
 )
 
 
-def _deterministic_seed(combo_tag: str, run_idx: int) -> int:                           # TODO:  simplify seed generatio, just use run_idx as seed
+def _deterministic_seed(combo_tag: str, run_idx: int) -> int:                           # TODO:  simplify seed generation
     """Derive a reproducible 31-bit seed from combo_tag and run index.
 
     Uses MD5 of ``"<combo_tag>_<run_idx>"`` so the same manifest always
@@ -147,14 +149,17 @@ def main() -> None:
     :return None: No return value.
     """
     tasks = build_task_list()
-    out = Path("sweep") / "tasks.json"
+    # Write to the same repo-root-absolute path run_task.py / merge_results.py
+    # read from, so the manifest lands in the right place regardless of CWD.
+    out = _REPO_ROOT / "sweep" / "tasks.json"
     out.write_text(json.dumps(tasks, indent=2))
 
-    # No separate count file: submit_array.sh derives its --array range directly
-    # from len(tasks.json), so there is a single source of truth for the count.
+    # The --array range is passed explicitly on the sbatch command line (the
+    # submit script is a plain array-element worker), so print the exact range.
+    last = len(tasks) - 1
     print(f"Generated {len(tasks)} tasks  ->  {out}")
-    print(f"Submit with:  bash sweep/submit_array.sh   (reads the count from {out.name} automatically)")
-    print(f"Or manually:  sbatch --array=0-{len(tasks) - 1} sweep/submit_array.sh")
+    print(f"Submit with:  sbatch --array=0-{last} sweep/submit_array.sh")
+    print(f"Cap concurrency by appending %K, e.g.  sbatch --array=0-{last}%50 sweep/submit_array.sh")
 
 
 if __name__ == "__main__":
