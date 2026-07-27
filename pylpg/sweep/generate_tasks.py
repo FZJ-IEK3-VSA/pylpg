@@ -18,14 +18,16 @@ reference string.  The worker resolves them back to LPG objects at runtime.
 
 Seed strategy
 -------------
-Seeds are derived deterministically from the combo tag + run index via MD5
-so that tasks.json is reproducible and re-runnable with identical parameters.
+Each task gets a fresh random 31-bit seed, drawn once when the manifest is
+generated and then frozen in tasks.json. Re-running a task (or the whole
+array) therefore reproduces exactly the same simulation, since the worker
+reads the seed from the manifest; only regenerating tasks.json draws new ones.
 """
 
 from __future__ import annotations
 
-import hashlib
 import json
+import random
 import sys
 from pathlib import Path
 
@@ -53,20 +55,6 @@ from pylpg.sweep.simulation import (
 )
 
 
-def _deterministic_seed(combo_tag: str, run_idx: int) -> int:                           # TODO:  simplify seed generation
-    """Derive a reproducible 31-bit seed from combo_tag and run index.
-
-    Uses MD5 of ``"<combo_tag>_<run_idx>"`` so the same manifest always
-    produces the same seeds regardless of when or where it is generated.
-
-    :param str combo_tag: Combined identifier tag for the parameter combination.
-    :param int run_idx: Zero-based run index within the combination.
-    :return int: A reproducible seed value in the range [0, 2**31).
-    """
-    raw = f"{combo_tag}_{run_idx}".encode()
-    return int(hashlib.md5(raw).hexdigest(), 16) % (2**31)
-
-
 def build_task_list() -> list[dict]:
     """Build the full list of independent simulation tasks.
 
@@ -75,8 +63,8 @@ def build_task_list() -> list[dict]:
     task stores only string keys so the manifest is JSON-serialisable; the
     worker resolves them back to LPG objects at runtime.
 
-    Seeds are derived deterministically via :func:`_deterministic_seed` so the
-    manifest is reproducible.
+    Every task gets its own random 31-bit seed, frozen into the manifest so
+    each run is independent and any task can be replayed from tasks.json.
 
     :return list[dict]: Ordered list of task dictionaries, one per simulation run.
     """
@@ -119,7 +107,9 @@ def build_task_list() -> list[dict]:
                 num_runs = get_runs_for_combo(combo_tag)
 
                 for run_idx in range(num_runs):
-                    seed = _deterministic_seed(combo_tag, run_idx)
+                    # 31 bits so the seed fits the engine's 32-bit signed
+                    # RandomSeed field.
+                    seed = random.randrange(2**31)
                     tasks.append(
                         {
                             "task_id": task_id,

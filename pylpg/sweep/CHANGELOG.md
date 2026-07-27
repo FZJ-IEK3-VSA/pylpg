@@ -364,11 +364,13 @@ root, one entry per independent run.
 - **String-key-only manifest.** Each task stores only string keys into the `lpgdata.*`
   catalogs, keeping `tasks.json` fully JSON-serialisable; the worker resolves keys back to
   objects at runtime.
-- **Deterministic seeding.** `_deterministic_seed(combo_tag, run_idx)` derives a 31-bit
-  seed from `MD5("<combo_tag>_<run_idx>")`, so the manifest is **reproducible** — the same
-  config always yields the same seeds regardless of when/where it is generated. (Contrast
-  with the sequential runner in [simulation.py](simulation.py), which uses a time-based
-  seed for interactive exploration.)
+- **Seeding.** Each task gets a fresh `random.randrange(2**31)` seed (31 bits, to fit the
+  engine's 32-bit signed `RandomSeed`), drawn once at generation time and then **frozen in
+  `tasks.json`**. The manifest — not the seeding rule — is what makes a run reproducible:
+  the worker reads the seed from the task entry, so re-running a straggler or the whole
+  array replays the identical simulation, while regenerating `tasks.json` draws new seeds.
+  (Contrast with the sequential runner in [simulation.py](simulation.py), which derives a
+  time-based seed per run because it writes no manifest.)
 - **No separate count file.** `submit_array.sh` derives its `--array` range directly from
   `len(tasks.json)`, so the manifest is the single source of truth for the task count
   (no manual, drift-prone edit).
@@ -467,9 +469,9 @@ points:
 - **Tests**
   - [../../test/test_sweep.py](../../test/test_sweep.py) — new **fast** tests that never
     invoke LPG: `safe_name`, `split_dataframe_by_type`, `collect_lpg_members`,
-    `select_by_keys`, `create_combo_tag`, `get_runs_for_combo`, deterministic-seed
-    behaviour, and `build_task_list` coverage (sequential ids, key presence, run-index
-    completeness, reproducibility, JSON-serialisability, climate/transport coverage).
+    `select_by_keys`, `create_combo_tag`, `get_runs_for_combo`, and `build_task_list`
+    coverage (sequential ids, key presence, run-index completeness, seed range and
+    distinctness, JSON-serialisability, climate/transport coverage).
   - [../../test/test_pylpg.py](../../test/test_pylpg.py) — new `LPGExecutor` tests for the
     core changes: `test_lpg_executor_uses_custom_binary_path`,
     `test_lpg_executor_custom_working_directory`, and
@@ -485,7 +487,8 @@ text if they have drifted.
 
 ### 4.1 Open `TODO` markers in the code
 
-One remaining, independent of the rest. It does not block a run.
+None remaining — all three are resolved; kept here as a record of what they were and how
+they were settled.
 
 - **~~Drop `get_attr_key()`; store the `JsonReference` string directly~~** — *Done.* Config
   now stores each location/temperature/transport set as its `JsonReference.Name` string
@@ -495,11 +498,13 @@ One remaining, independent of the rest. It does not block a run.
   `collect_lpg_references_by_name()`. `get_attr_key()` was removed. Household templates stay
   keyed by attribute name (they are plain strings, not `JsonReference`s), so their `getattr`
   resolve is unchanged.
-- **Simplify deterministic seeding** — [generate_tasks.py](generate_tasks.py#L50):
-  `_deterministic_seed()` hashes `MD5("<combo_tag>_<run_idx>")`. The TODO suggests just using
-  `run_idx` as the seed. ⚠️ Not a free swap: the current hash makes seeds **distinct across
-  combos** (two combos' `run_0` differ); a bare `run_idx` would give every combo the *same*
-  seed sequence. Decide whether cross-combo seed independence matters before simplifying.
+- **~~Simplify deterministic seeding~~** — *Done.* The MD5-based `_deterministic_seed()`
+  helper was removed from [generate_tasks.py](generate_tasks.py); `build_task_list()` now
+  draws each seed inline with `random.randrange(2**31)`. Seeds stay **distinct across
+  combos and runs** (the property that ruled out the bare-`run_idx` alternative), and the
+  manifest is still fully replayable because the drawn seeds are frozen into `tasks.json`.
+  What is given up: regenerating `tasks.json` from the same config no longer reproduces the
+  previous seeds — keep the manifest if a sweep must be re-run bit-for-bit.
 - **~~Turn the binary-path check into a raising validator~~** — *Done.* The former
   print-only `_print_lpg_binary_source()` is now
   [`check_lpg_binary_source()`](simulation.py) in [simulation.py](simulation.py): with

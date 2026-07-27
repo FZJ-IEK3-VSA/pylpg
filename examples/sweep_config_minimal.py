@@ -82,7 +82,7 @@ HOUSEHOLD_TEMPLATE_KEYS = [
 
 # Exactly one climate. The tag is load-bearing: it becomes the climate level of
 # the HDF5 hierarchy (/<climate_tag>/<transport_tag>/run_<N>/...) and part of
-# the combo_tag used for deterministic seeding, so keep it filesystem-safe.
+# the combo_tag used to name per-run output files, so keep it filesystem-safe.
 # Set to None to generate all location/temperature-profile combinations.
 CLIMATE_SET_KEYS = [
     ClimateSetKey(

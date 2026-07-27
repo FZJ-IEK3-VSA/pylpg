@@ -23,7 +23,7 @@ class TransportVariantKey:
             hierarchy (``/<climate_tag>/<transport_tag>/run_<N>/...``), the
             substring key that ``RUNS_PER_COMBO_MAP`` / ``get_runs_for_combo()``
             match against to decide the run count, and part of the ``combo_tag``
-            used for deterministic seeding.
+            used to name per-run output files.
     """
     simulate_transportation: bool
     charging_set_key: str
@@ -47,7 +47,7 @@ class ClimateSetKey:
         tag: Short, filesystem-safe identifier for this variant. Load-bearing,
             exactly like ``TransportVariantKey.tag``: it is the climate level of
             the HDF5 output hierarchy (``/<climate_tag>/<transport_tag>/run_<N>/
-            ...``) and part of the ``combo_tag`` used for deterministic seeding.
+            ...``) and part of the ``combo_tag`` used to name per-run output files.
     """
     geographic_location_key: str
     temperature_profile_key: Optional[str]

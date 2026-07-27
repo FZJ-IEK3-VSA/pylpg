@@ -29,7 +29,7 @@ from pylpg.sweep.simulation import (
     select_by_keys,
     split_dataframe_by_type,
 )
-from pylpg.sweep.generate_tasks import _deterministic_seed, build_task_list
+from pylpg.sweep.generate_tasks import build_task_list
 
 
 # ---------------------------------------------------------------------------
@@ -185,27 +185,6 @@ def test_get_runs_for_combo_unknown_tag_returns_default() -> None:
 
 
 # ---------------------------------------------------------------------------
-# _deterministic_seed
-# ---------------------------------------------------------------------------
-
-def test_deterministic_seed_is_reproducible() -> None:
-    assert _deterministic_seed("combo_tag", 0) == _deterministic_seed("combo_tag", 0)
-
-
-def test_deterministic_seed_differs_by_run_index() -> None:
-    assert _deterministic_seed("combo_tag", 0) != _deterministic_seed("combo_tag", 1)
-
-
-def test_deterministic_seed_differs_by_combo_tag() -> None:
-    assert _deterministic_seed("combo_a", 0) != _deterministic_seed("combo_b", 0)
-
-
-def test_deterministic_seed_fits_in_31_bits() -> None:
-    seed = _deterministic_seed("any_combo", 42)
-    assert 0 <= seed < 2**31
-
-
-# ---------------------------------------------------------------------------
 # build_task_list (integration, no LPG execution)
 # ---------------------------------------------------------------------------
 
@@ -257,11 +236,16 @@ def test_build_task_list_run_indices_complete() -> None:
         assert sorted(t["run_idx"] for t in group) == list(range(num_runs))
 
 
-def test_build_task_list_deterministic() -> None:
-    """Two consecutive calls must produce identical seeds."""
-    tasks1 = build_task_list()
-    tasks2 = build_task_list()
-    assert [t["seed"] for t in tasks1] == [t["seed"] for t in tasks2]
+def test_build_task_list_seeds_fit_in_31_bits() -> None:
+    """Seeds must fit the engine's 32-bit signed RandomSeed field."""
+    for task in build_task_list():
+        assert 0 <= task["seed"] < 2**31
+
+
+def test_build_task_list_seeds_are_distinct() -> None:
+    """Every run must get its own seed, otherwise runs would duplicate."""
+    seeds = [t["seed"] for t in build_task_list()]
+    assert len(set(seeds)) == len(seeds)
 
 
 def test_build_task_list_json_serialisable() -> None:
