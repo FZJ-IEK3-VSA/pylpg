@@ -2,11 +2,11 @@
 
 Run after **all** array jobs have finished:
 
-    python sweep/merge_results.py
+    python -m pylpg.sweep.merge_results
 
 Input
 -----
-sweep/tasks.json      -- task manifest
+config.TASKS_FILE       -- task manifest (= BASE_OUTPUT_DIR / "tasks.json")
 config.TASK_OUTPUT_DIR  -- directory of task_<NNNNNN>.h5 files written by
                            run_task.py (= BASE_OUTPUT_DIR / "tasks";
                            honours $LPG_OUTPUT_DIR)
@@ -33,13 +33,17 @@ import json
 import sys
 from pathlib import Path
 
-_REPO_ROOT = Path(__file__).resolve().parents[1]
+_REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_REPO_ROOT))
 
 import pandas as pd
 
-from sweep.config import MERGED_OUTPUT_DIR, TASK_OUTPUT_DIR  # noqa: E402
-from sweep.simulation import safe_name  # noqa: E402
+from pylpg.sweep.config import (  # noqa: E402
+    MERGED_OUTPUT_DIR,
+    TASK_OUTPUT_DIR,
+    TASKS_FILE,
+)
+from pylpg.sweep.simulation import safe_name  # noqa: E402
 
 
 # Fields that jointly identify which (template, climate, transport, run) a task
@@ -75,12 +79,13 @@ def _identity_mismatches(task: dict, file_meta: dict) -> list[str]:
 def merge_all(keep_tasks: bool = False) -> None:
     """Merge all per-task HDF5 files into final per-template HDF5 files.
 
-    Reads ``tasks.json`` and iterates over every ``task_<NNNNNN>.h5`` in
-    :data:`sweep.config.TASK_OUTPUT_DIR` (the same location run_task.py writes
-    to -- ``BASE_OUTPUT_DIR / "tasks"``, honouring ``$LPG_OUTPUT_DIR``). For each
-    task file the simulation DataFrames are copied into
-    :data:`sweep.config.MERGED_OUTPUT_DIR` ``/<template_name>.h5`` under the
-    hierarchical path ``/<climate_tag>/<transport_tag>/run_<N>/<data_type>``.
+    Reads the manifest from :data:`pylpg.sweep.config.TASKS_FILE` and iterates
+    over every ``task_<NNNNNN>.h5`` in
+    :data:`pylpg.sweep.config.TASK_OUTPUT_DIR` (the same location run_task.py
+    writes to -- ``BASE_OUTPUT_DIR / "tasks"``, honouring ``$LPG_OUTPUT_DIR``).
+    For each task file the simulation DataFrames are copied into
+    :data:`pylpg.sweep.config.MERGED_OUTPUT_DIR` ``/<template_name>.h5`` under
+    the hierarchical path ``/<climate_tag>/<transport_tag>/run_<N>/<data_type>``.
 
     Before copying, each file's recorded identity (its ``/metadata``) is
     cross-checked against the manifest entry for its filename-derived task id; a
@@ -98,7 +103,9 @@ def merge_all(keep_tasks: bool = False) -> None:
     :return None: No return value.
     :raises SystemExit: If ``tasks.json`` is missing or no task files are found.
     """
-    tasks_file = _REPO_ROOT / "sweep" / "tasks.json"
+    # Same TASKS_FILE generate_tasks.py wrote and run_task.py read, so a merge
+    # can never pick up a manifest from a different base than the workers used.
+    tasks_file = TASKS_FILE
     if not tasks_file.exists():
         sys.exit(f"tasks.json not found at {tasks_file}")
 

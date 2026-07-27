@@ -16,12 +16,12 @@ import pytest
 from pylpg import lpgdata
 from pylpg.lpgpythonbindings import JsonReference
 
-from sweep.config import (
+from pylpg.sweep.config import (
     CLIMATE_SET_KEYS,
     TRANSPORT_VARIANT_KEYS,
     get_runs_for_combo,
 )
-from sweep.simulation import (
+from pylpg.sweep.simulation import (
     attach_flexibility_events,
     collect_lpg_members,
     create_combo_tag,
@@ -29,7 +29,7 @@ from sweep.simulation import (
     select_by_keys,
     split_dataframe_by_type,
 )
-from sweep.generate_tasks import _deterministic_seed, build_task_list
+from pylpg.sweep.generate_tasks import _deterministic_seed, build_task_list
 
 
 # ---------------------------------------------------------------------------

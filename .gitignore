@@ -29,15 +29,19 @@ __pycache__/
 build/
 dist/
 pyLPG_env/
-sweep/__pycache__/
-CLAUDE.md
 logs/
 
-# user-specific SLURM submit script (copy of sweep/submit_array.example.sh)
-sweep/submit_array.sh
+# user-specific SLURM submit script (copy of examples/submit_array.example.sh);
+# ignored wherever you keep your copy
+submit_array.sh
 
-# generated SLURM task manifest (written under sweep/ by generate_tasks.py)
+# generated SLURM task manifest. generate_tasks.py writes it to
+# BASE_OUTPUT_DIR/tasks.json, which normally sits outside the repo -- this only
+# catches the case where BASE_OUTPUT_DIR is pointed at the repo for local testing.
 tasks.json
+
+# user-specific instruction files
+CLAUDE.md
 
 # generated result files and output directories
 *.csv

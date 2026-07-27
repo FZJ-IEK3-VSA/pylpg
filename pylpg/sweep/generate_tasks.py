@@ -2,12 +2,14 @@
 
 Run once on the login node **before** submitting the job array:
 
-    python sweep/generate_tasks.py
+    python -m pylpg.sweep.generate_tasks
 
 Output
 ------
-tasks.json  -- one entry per independent simulation run, indexed 0 .. N-1.
-               The job array should cover indices 0 .. N-1.
+config.TASKS_FILE  -- one entry per independent simulation run, indexed 0 .. N-1
+                      (= BASE_OUTPUT_DIR / "tasks.json"; honours
+                      $LPG_OUTPUT_DIR). The job array should cover indices
+                      0 .. N-1.
 
 Each task stores only string keys so the manifest is fully JSON-serialisable:
 household templates by their lpgdata attribute name, and the JsonReference
@@ -27,23 +29,24 @@ import json
 import sys
 from pathlib import Path
 
-# Make the repo root importable so `from sweep.config import ...` works when this
-# module is run directly as a script (python sweep/generate_tasks.py), matching
-# run_task.py and merge_results.py.
-_REPO_ROOT = Path(__file__).resolve().parents[1]
+# Make the repo root importable so `from pylpg.sweep.config import ...` works when
+# this module is run directly as a script (python pylpg/sweep/generate_tasks.py),
+# matching run_task.py and merge_results.py.
+_REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_REPO_ROOT))
 
 from pylpg import lpgdata
 
 # Configuration lives in config.py; execution helpers in simulation.py.
-from sweep.config import (
+from pylpg.sweep.config import (
     CLIMATE_SET_KEYS,
     HOUSEHOLD_TEMPLATE_KEYS,
+    TASKS_FILE,
     TRANSPORT_VARIANT_KEYS,
-    ClimateSetKey,
     get_runs_for_combo,
 )
-from sweep.simulation import (
+from pylpg.sweep.keys import ClimateSetKey
+from pylpg.sweep.simulation import (
     collect_lpg_members,
     collect_lpg_references_by_name,
     create_combo_tag,
@@ -140,26 +143,29 @@ def build_task_list() -> list[dict]:
 
 
 def main() -> None:
-    """Generate tasks.json and print submission guidance.
+    """Generate the task manifest and print submission guidance.
 
-    Calls :func:`build_task_list`, writes the result to ``sweep/tasks.json``,
-    and prints the total task count together with the ``--array`` range to use
-    when submitting the SLURM job array.
+    Calls :func:`build_task_list`, writes the result to
+    :data:`~pylpg.sweep.config.TASKS_FILE`, and prints the total task count
+    together with the ``--array`` range to use when submitting the SLURM job
+    array.
 
     :return None: No return value.
     """
     tasks = build_task_list()
-    # Write to the same repo-root-absolute path run_task.py / merge_results.py
-    # read from, so the manifest lands in the right place regardless of CWD.
-    out = _REPO_ROOT / "sweep" / "tasks.json"
+    # Write to the same absolute path run_task.py / merge_results.py read from
+    # (both import TASKS_FILE), so the manifest lands in the right place
+    # regardless of CWD and generator and readers can never diverge.
+    out = TASKS_FILE
+    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(tasks, indent=2))
 
     # The --array range is passed explicitly on the sbatch command line (the
     # submit script is a plain array-element worker), so print the exact range.
     last = len(tasks) - 1
     print(f"Generated {len(tasks)} tasks  ->  {out}")
-    print(f"Submit with:  sbatch --array=0-{last} sweep/submit_array.sh")
-    print(f"Cap concurrency by appending %K, e.g.  sbatch --array=0-{last}%50 sweep/submit_array.sh")
+    print(f"Submit with:  sbatch --array=0-{last} submit_array.sh")
+    print(f"Cap concurrency by appending %K, e.g.  sbatch --array=0-{last}%50 submit_array.sh")
 
 
 if __name__ == "__main__":

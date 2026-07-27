@@ -1,9 +1,11 @@
-# sweep — Parallelised LPG Simulations on SLURM
+# pylpg.sweep — Parallelised LPG Simulations on SLURM
 
-This folder contains everything needed to run large-scale LPG household simulations in parallel on a SLURM cluster.  
-All configuration lives in `config.py` and the simulation logic in `simulation.py`; the three SLURM scripts are thin wrappers around them.
+This package contains everything needed to run large-scale LPG household simulations in parallel on a SLURM cluster.  
+All configuration lives in `config.py` and the simulation logic in `simulation.py`; the SLURM entry points are thin wrappers around them.
 
-> For a detailed developer-facing account of the code changes behind this workflow (the new `LPGExecutor` behaviour, the new execute function, and the whole `sweep/` subsystem), see [CHANGELOG.md](CHANGELOG.md).
+Every entry point is a module, so run them with `python -m pylpg.sweep.<name>` from the repo root (running the files directly, e.g. `python pylpg/sweep/generate_tasks.py`, also works).
+
+> For a detailed developer-facing account of the code changes behind this workflow (the new `LPGExecutor` behaviour, the new execute function, and the whole `pylpg/sweep/` subsystem), see [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -11,18 +13,20 @@ All configuration lives in `config.py` and the simulation logic in `simulation.p
 
 | File                | Purpose                                                                                                          |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `config.py`         | All tunable sweep parameters (the `# ---- CONFIG ----` block)                                                    |
+| `config.py`         | All tunable sweep parameters (the `# ---- CONFIG ----` block) and the output paths derived from `BASE_OUTPUT_DIR` |
+| `keys.py`           | The `ClimateSetKey` / `TransportVariantKey` types a config is written in                                         |
 | `simulation.py`     | Helper functions, the shared `run_lpg_simulation()` primitive, and the sequential runner (also works standalone) |
 | `generate_tasks.py` | Enumerates all parameter combinations, writes `tasks.json`                                                       |
 | `run_task.py`       | SLURM array worker — executes one task from `tasks.json`                                                         |
 | `merge_results.py`  | Assembles per-task HDF5 files into final per-template HDF5 files                                                 |
-| `submit_array.sh`   | SLURM batch script — **git-ignored**; copy from `submit_array.example.sh`                                                                                               |
+
+The SLURM batch script is **not** part of the package: it is a per-cluster file you own. Copy it from [`examples/submit_array.example.sh`](../../examples/submit_array.example.sh) — see [step 3](#3-submit-the-job-array).
 
 ---
 
 ## Configuration
 
-All parameters are set in `config.py` under `# ---- CONFIG ----`:
+All parameters are set in `config.py` under `# ---- CONFIG ----`. For the smallest sweep that still runs end to end (one template × one climate × one transport variant × one run), copy [`examples/sweep_config_minimal.py`](../../examples/sweep_config_minimal.py) over `config.py` and edit from there:
 
 | Variable                  | Description                                                                                | Default                                               |
 | ------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
@@ -48,30 +52,30 @@ Edit `config.py` to set your templates, climate presets, transport variants, and
 Run once on the **login node**:
 
 ```bash
-python sweep/generate_tasks.py
+python -m pylpg.sweep.generate_tasks
 ```
 
-This writes `tasks.json` into `sweep/`, e.g.:
+This writes `tasks.json` to `BASE_OUTPUT_DIR` — alongside the sweep's other output, never inside the repo or the installed package — and prints the exact path and `--array` range:
 
 ```
-Generated 42 tasks  ->  /path/to/pylpg/sweep/tasks.json
-Submit with:  bash sweep/submit_array.sh   (reads the count from tasks.json automatically)
-Or manually:  sbatch --array=0-41 sweep/submit_array.sh
+Generated 42 tasks  ->  /path/to/output/tasks.json
+Submit with:  sbatch --array=0-41 submit_array.sh
+Cap concurrency by appending %K, e.g.  sbatch --array=0-41%50 submit_array.sh
 ```
 
 ### 3. Submit the job array
 
-**First-time setup:** `submit_array.sh` is git-ignored (it holds your
-cluster-specific paths). Create it once from the tracked template, then edit the
-paths inside it:
+**First-time setup:** the batch script holds your cluster-specific paths, so it
+is not tracked — any `submit_array.sh` is git-ignored. Create it once from the
+tracked example in `examples/`, then edit the paths inside it:
 
 ```bash
-cp sweep/submit_array.example.sh sweep/submit_array.sh
-# then set LPG_WORK_DIR (and optionally LPG_OUTPUT_DIR) in sweep/submit_array.sh
+cp examples/submit_array.example.sh submit_array.sh
+# then set LPG_WORK_DIR (and optionally LPG_OUTPUT_DIR) in submit_array.sh
 ```
 
 **Before the first submission,** make sure the LPG binary is already in `pylpg/`
-(run one task locally, or `python sweep/simulation.py` once). Otherwise the first
+(run one task locally, or `python -m pylpg.sweep.simulation` once). Otherwise the first
 wave of array tasks all race to download it and corrupt `pylpg/`.
 
 Then submit the array, passing the index range explicitly. Indices are 0-based
@@ -79,9 +83,9 @@ and index into `tasks.json`, so N tasks span `0 .. N-1` (the exact range is
 printed by `generate_tasks.py`):
 
 ```bash
-sbatch --array=0-55    sweep/submit_array.sh   # all 56 tasks
-sbatch --array=0-55%50 sweep/submit_array.sh   # ... capped at 50 concurrent
-sbatch --array=3,7,9   sweep/submit_array.sh   # re-run just these tasks
+sbatch --array=0-55    submit_array.sh   # all 56 tasks
+sbatch --array=0-55%50 submit_array.sh   # ... capped at 50 concurrent
+sbatch --array=3,7,9   submit_array.sh   # re-run just these tasks
 ```
 
 `--array` is passed on the command line rather than as a `#SBATCH` directive
@@ -98,7 +102,7 @@ Each task also runs its LPG calculation in its own working directory `C<task_id>
 After all jobs finish:
 
 ```bash
-python sweep/merge_results.py
+python -m pylpg.sweep.merge_results
 ```
 
 Output (under `<base>/multi_runs_output/`, where `<base>` is `BASE_OUTPUT_DIR`):
@@ -129,13 +133,13 @@ When flexibility is enabled (it is by default in `run_lpg_simulation`), two extr
 **Sequential** (original multi-run mode):
 
 ```bash
-python sweep/simulation.py
+python -m pylpg.sweep.simulation
 ```
 
 **Single task** (for testing one array element):
 
 ```bash
-python sweep/run_task.py --task-id 0
+python -m pylpg.sweep.run_task --task-id 0
 ```
 
 ---
@@ -143,17 +147,19 @@ python sweep/run_task.py --task-id 0
 ## How the scripts relate
 
 ```
-config.py               CONFIG (all sweep parameters)
+keys.py                 ClimateSetKey / TransportVariantKey
+│
+config.py               CONFIG (all sweep parameters) + BASE_OUTPUT_DIR paths
 │
 simulation.py           helper functions, run_lpg_simulation()
 │  (imports config.py)
 │
-├── generate_tasks.py   reads CONFIG → writes tasks.json
+├── generate_tasks.py   reads CONFIG → writes <base>/tasks.json
 │
-├── run_task.py         reads tasks.json[N] → calls run_lpg_simulation()
-│                                           → writes <base>/tasks/task_N.h5
+├── run_task.py         reads <base>/tasks.json[N] → calls run_lpg_simulation()
+│                                                  → writes <base>/tasks/task_N.h5
 │
-└── merge_results.py    reads <base>/tasks/*.h5 + tasks.json
+└── merge_results.py    reads <base>/tasks/*.h5 + <base>/tasks.json
                         → writes <base>/multi_runs_output/<template>.h5
                         → deletes the merged <base>/tasks/*.h5
 ```
@@ -185,14 +191,16 @@ Defined in `submit_array.sh` — adjust to your cluster limits:
 Every result path derives from that one base, `BASE_OUTPUT_DIR`, and the scripts
 create these subdirectories inside it on demand:
 
-| Subdirectory of `BASE_OUTPUT_DIR` | Written by         | Contents                                                     |
-| --------------------------------- | ------------------ | ------------------------------------------------------------ |
-| `tasks/`                          | `run_task.py`      | temporary `task_<NNNNNN>.h5` (deleted by `merge_results.py`) |
-| `multi_runs_output/`              | `merge_results.py` | final `<template>.h5` + `runs_metadata.csv`                  |
+| Path under `BASE_OUTPUT_DIR` | Written by          | Contents                                                     |
+| ---------------------------- | ------------------- | ------------------------------------------------------------ |
+| `tasks.json`                 | `generate_tasks.py` | the task manifest, read by `run_task.py` + `merge_results.py` |
+| `tasks/`                     | `run_task.py`       | temporary `task_<NNNNNN>.h5` (deleted by `merge_results.py`) |
+| `multi_runs_output/`         | `merge_results.py`  | final `<template>.h5` + `runs_metadata.csv`                  |
 
-Because both the writer (`run_task.py`) and the reader (`merge_results.py`)
-import the same `BASE_OUTPUT_DIR`, an array worker under SLURM and an interactive
-merge on the login node can never look in different directories. `LPG_OUTPUT_DIR`
+Because all three scripts import the same `BASE_OUTPUT_DIR` — the generator
+(`generate_tasks.py`), the writer (`run_task.py`) and the reader
+(`merge_results.py`) — an array worker under SLURM and an interactive merge on
+the login node can never look in different directories. `LPG_OUTPUT_DIR`
 overrides the base in either mode for one-off runs — if you export it, do so in
 **both** shells (the `submit_array.sh` job *and* the shell you run
 `merge_results.py` in), otherwise the merge falls back to the `config.py` default.

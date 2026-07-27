@@ -30,7 +30,7 @@ Outputs
 - `runs_metadata.csv` summarizes all successful runs.
 
 Run
-    python sweep/simulation.py
+    python -m pylpg.sweep.simulation
 """
 
 import os
@@ -44,17 +44,18 @@ from typing import Any, Iterable, Optional
 
 import pandas as pd
 
-# Make the repo root importable so `from sweep.config import ...` works both
+# Make the repo root importable so `from pylpg.sweep.config import ...` works both
 # when this module is imported as part of the package and when it is run
-# directly as a script.
-_REPO_ROOT = Path(__file__).resolve().parents[1]
+# directly as a script (python pylpg/sweep/simulation.py), where sys.path[0] is
+# this folder rather than the repo root.
+_REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 from pylpg import lpg_execution, lpgdata
 from pylpg.lpgpythonbindings import EnergyIntensityType, JsonReference
 
-from sweep.config import (
+from pylpg.sweep.config import (
     CLIMATE_SET_KEYS,
     END_DATE,
     HOUSEHOLD_TEMPLATE_KEYS,
@@ -65,11 +66,14 @@ from sweep.config import (
     SAVE_HDF5,
     START_DATE,
     TRANSPORT_VARIANT_KEYS,
-    ClimateSetKey,
-    TransportVariantKey,
     YEAR,
     get_runs_for_combo,
 )
+
+# The structural key types live outside config.py so that a user-supplied config
+# (copied from examples/sweep_config_minimal.py) can import them without
+# importing the module it replaces.
+from pylpg.sweep.keys import ClimateSetKey, TransportVariantKey
 
 
 def prompt_clean_output_dir() -> None:
@@ -474,7 +478,7 @@ def run_lpg_simulation(
     if START_DATE is None or END_DATE is None:
         raise ValueError(
             "Simulation date range is not configured: set START_DATE and "
-            "END_DATE in sweep/config.py (ISO 'YYYY-MM-DD' strings). "
+            "END_DATE in pylpg/sweep/config.py (ISO 'YYYY-MM-DD' strings). "
             f"Got START_DATE={START_DATE!r}, END_DATE={END_DATE!r}."
         )
 

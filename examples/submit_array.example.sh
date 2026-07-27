@@ -1,30 +1,32 @@
 #!/bin/bash
 # SLURM job-array submission script for pylpg parameter sweeps.
 #
-# This is a TEMPLATE. Copy it to `submit_array.sh` (git-ignored, so your
-# cluster-specific paths stay out of the repo) and edit the lines marked [EDIT]:
+# This is a TEMPLATE. Copy it to `submit_array.sh` (git-ignored wherever you put
+# it, so your cluster-specific paths stay out of the repo), then edit the lines
+# marked [EDIT]. Run it from the repo root:
 #
-#     cp sweep/submit_array.example.sh sweep/submit_array.sh
+#     cp examples/submit_array.example.sh submit_array.sh
 #
 # Workflow
 # --------
 # 1. Generate the task manifest (once, on the login node):
-#       python sweep/generate_tasks.py
-#    This creates tasks.json (one entry per task).
+#       python -m pylpg.sweep.generate_tasks
+#    This creates tasks.json (one entry per task) under BASE_OUTPUT_DIR; the
+#    exact path and the --array range are printed.
 #
 # 2. Submit the array, passing the index range explicitly with sbatch --array.
 #    Indices are 0-based and index into tasks.json, so N tasks span 0..N-1
-#    (get N with: python -c 'import json;print(len(json.load(open("sweep/tasks.json"))))'):
-#       sbatch --array=0-10    sweep/submit_array.sh   # all 11 tasks
-#       sbatch --array=0-10%50 sweep/submit_array.sh   # ... capped at 50 concurrent
-#       sbatch --array=3,7,9   sweep/submit_array.sh   # re-run just these tasks
+#    (generate_tasks.py prints the exact range to use):
+#       sbatch --array=0-10    submit_array.sh   # all 11 tasks
+#       sbatch --array=0-10%50 submit_array.sh   # ... capped at 50 concurrent
+#       sbatch --array=3,7,9   submit_array.sh   # re-run just these tasks
 #
 #    Before the FIRST submission, ensure the LPG binary is already in pylpg/
-#    (run one task locally, or `python sweep/simulation.py` once). Otherwise
+#    (run one task locally, or `python -m pylpg.sweep.simulation` once). Otherwise
 #    the first wave of array tasks all race to download it and corrupt pylpg/.
 #
 # 3. After all jobs finish, merge per-task outputs into the final HDF5 files:
-#       python sweep/merge_results.py
+#       python -m pylpg.sweep.merge_results
 #
 # Resource guidance
 # -----------------
@@ -55,12 +57,13 @@ source "$HOME/.bashrc"
 mamba activate pyLPG_env
 
 # ---------------------------------------------------------------------------
-# Output location   [EDIT - or set the defaults in sweep/config.py instead]
+# Output location   [EDIT - or set the defaults in pylpg/sweep/config.py instead]
 # ---------------------------------------------------------------------------
-# All results derive from the single BASE_OUTPUT_DIR knob in sweep/config.py:
-# run_task.py writes per-task files to <base>/tasks/ and merge_results.py writes
-# the merged per-template files to <base>/multi_runs_output/, then deletes the
-# per-task files. To override the config default for this run, uncomment and set:
+# All results derive from the single BASE_OUTPUT_DIR knob in pylpg/sweep/config.py:
+# generate_tasks.py writes the manifest to <base>/tasks.json, run_task.py writes
+# per-task files to <base>/tasks/ and merge_results.py writes the merged
+# per-template files to <base>/multi_runs_output/, then deletes the per-task
+# files. To override the config default for this run, uncomment and set:
 # export LPG_OUTPUT_DIR="/path/to/output"
 # If you export it here, ALSO export the same value in the shell where you run
 # merge_results.py, or the merge will look in the config.py default instead.
@@ -78,7 +81,7 @@ mkdir -p logs
 # ---------------------------------------------------------------------------
 echo "Starting task $SLURM_ARRAY_TASK_ID on $(hostname) at $(date)"
 
-python sweep/run_task.py --task-id "$SLURM_ARRAY_TASK_ID"
+python -m pylpg.sweep.run_task --task-id "$SLURM_ARRAY_TASK_ID"
 
 EXIT_CODE=$?
 FINISH_LINE="Task $SLURM_ARRAY_TASK_ID (job $SLURM_ARRAY_JOB_ID) finished with exit code $EXIT_CODE at $(date)"

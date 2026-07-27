@@ -62,30 +62,35 @@ lpg_binary_path=r"C:\Tools\LPG"
 
 The rest of the calculation flow stays the same: pyLPG still writes the calculation JSON, runs the LPG executable from the calculation directory, and reads the generated results back into a pandas dataframe.
 
-## Parallel parameter sweeps on SLURM (`sweep/`)
+## Parallel parameter sweeps on SLURM (`pylpg.sweep`)
 
-The [`sweep/`](sweep/) folder is a general-purpose fan-out/fan-in workflow for
+The [`pylpg/sweep/`](pylpg/sweep/) package is a general-purpose fan-out/fan-in workflow for
 running large numbers of LPG simulations in parallel on a SLURM cluster — parameter
 sweeps over household templates, climates, transport variants, and repeated runs.
 It builds one job per parameter combination, runs them as an independent SLURM array
 (one result file per task, so there are no concurrent-write conflicts), and merges
 the per-task outputs into per-template HDF5 files.
 
-All sweep parameters live in a single source of truth, `sweep/config.py`. The basic
-pipeline is three steps:
+All sweep parameters live in a single source of truth, `pylpg/sweep/config.py`. The
+basic pipeline is three steps:
 
 ```bash
-python sweep/generate_tasks.py                 # expand the config sweep into tasks.json
-sbatch --array=0-<N-1> sweep/submit_array.sh   # run the array (one task per combination)
-python sweep/merge_results.py                  # assemble the per-template .h5 files
+python -m pylpg.sweep.generate_tasks      # expand the config sweep into tasks.json
+sbatch --array=0-<N-1> submit_array.sh    # run the array (one task per combination)
+python -m pylpg.sweep.merge_results       # assemble the per-template .h5 files
 ```
 
-It also runs without a cluster: `python sweep/simulation.py` for a sequential run, or
-`python sweep/run_task.py --task-id 0` for a single task.
+It also runs without a cluster: `python -m pylpg.sweep.simulation` for a sequential run,
+or `python -m pylpg.sweep.run_task --task-id 0` for a single task.
 
-See **[`sweep/README.md`](sweep/README.md)** for the full pipeline, the configuration
-table, the output layout, and cluster setup (copying `submit_array.example.sh` to your
-own git-ignored `submit_array.sh`).
+To get started, [`examples/sweep_config_minimal.py`](examples/sweep_config_minimal.py) is the
+smallest config that still runs end to end (one template, one climate, one transport variant,
+one run) — copy it over `pylpg/sweep/config.py` and edit from there. The SLURM batch script
+is likewise a template: copy [`examples/submit_array.example.sh`](examples/submit_array.example.sh)
+to your own git-ignored `submit_array.sh`.
+
+See **[`pylpg/sweep/README.md`](pylpg/sweep/README.md)** for the full pipeline, the
+configuration table, and the output layout.
 
 ## Installation
 

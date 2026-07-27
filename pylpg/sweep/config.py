@@ -6,15 +6,19 @@ and the sequential runner all import from this single source of truth, so the
 SLURM task manifest and the local runner can never drift apart.
 
 To change what gets simulated, edit the values under ``# ---- CONFIG ----``.
+
+For a stripped-down starting point, copy ``examples/sweep_config_minimal.py``
+over this file: it defines the same names with the smallest sweep that still
+runs (one template, one climate, one transport variant, one run).
 """
 
 import os
 from pathlib import Path
-from dataclasses import dataclass
 import inspect
 from typing import Optional
 
 from pylpg import lpgdata
+from pylpg.sweep.keys import ClimateSetKey, TransportVariantKey
 
 
 # --- Output paths -------------------------------------------------------------
@@ -27,7 +31,7 @@ from pylpg import lpgdata
 # change to switch machines.
 RUN_ON_CLUSTER = True
 
-_REPO_ROOT = Path(__file__).resolve().parents[1]
+_REPO_ROOT = Path(__file__).resolve().parents[2]
 
 # Cluster: shared, fast project storage (outside the repo). Set this to your own
 # output location, or override it at runtime via the LPG_OUTPUT_DIR env var.
@@ -47,6 +51,8 @@ LOCAL_BASE_OUTPUT_DIR = _REPO_ROOT
 # script falls back to the default selected by RUN_ON_CLUSTER here.
 #
 # Layout created on demand under BASE_OUTPUT_DIR:
+#   tasks.json          the task manifest written by generate_tasks.py and read
+#                       by run_task.py + merge_results.py.
 #   tasks/              per-task task_<NNNNNN>.h5 files written by run_task.py.
 #                       These are temporary: merge_results.py folds them into the
 #                       merged files and then deletes them.
@@ -56,6 +62,13 @@ BASE_OUTPUT_DIR = Path(
     os.environ.get("LPG_OUTPUT_DIR")
     or (CLUSTER_BASE_OUTPUT_DIR if RUN_ON_CLUSTER else LOCAL_BASE_OUTPUT_DIR)
 )
+
+# The generated task manifest. It lives under BASE_OUTPUT_DIR like every other
+# sweep artefact rather than next to this module, because this module ships
+# inside the installed pylpg package -- a generated file has no business being
+# written there. Generator and both readers import this one name, so they can
+# never disagree about where the manifest is.
+TASKS_FILE = BASE_OUTPUT_DIR / "tasks.json"
 
 # Temporary per-task files: run_task.py writes one HDF5 per SLURM array task
 # here; merge_results.py reads them and deletes them after a successful merge.
@@ -73,54 +86,6 @@ MERGED_OUTPUT_DIR = BASE_OUTPUT_DIR / "multi_runs_output"
 # Output format options
 SAVE_CSV = False  # Save individual CSV files per run
 SAVE_HDF5 = True  # Save runs to HDF5 files (one file per household template)
-
-
-@dataclass(frozen=True)
-class TransportVariantKey:
-    """Configuration key for a transport variant.
-
-    Attributes:
-        simulate_transportation: Whether to enable transportation simulation.
-        charging_set_key: The ``.Name`` of a ``lpgdata.ChargingStationSets``
-            reference (or None).
-        transport_device_set_key: The ``.Name`` of a
-            ``lpgdata.TransportationDeviceSets`` reference (or None).
-        travel_route_set_key: The ``.Name`` of a ``lpgdata.TravelRouteSets``
-            reference (or None).
-        tag: Short, filesystem-safe identifier for this variant. Load-bearing
-            : it is the transport level of the HDF5 output
-            hierarchy (``/<climate_tag>/<transport_tag>/run_<N>/...``), the
-            substring key that ``RUNS_PER_COMBO_MAP`` / ``get_runs_for_combo()``
-            match against to decide the run count, and part of the ``combo_tag``
-            used for deterministic seeding.
-    """
-    simulate_transportation: bool
-    charging_set_key: str
-    transport_device_set_key: str
-    travel_route_set_key: str
-    tag: str
-
-
-@dataclass(frozen=True)
-class ClimateSetKey:
-    """Configuration key for a climate variant (location + temperature profile).
-
-    Attributes:
-        geographic_location_key: The ``.Name`` of a
-            ``lpgdata.GeographicLocations`` reference (e.g. ``"(Germany) Berlin"``).
-            The runner resolves it back to the full ``JsonReference`` (Name +
-            Guid) at runtime.
-        temperature_profile_key: The ``.Name`` of a
-            ``lpgdata.TemperatureProfiles`` reference, or None to fall back to the
-            location's own default profile.
-        tag: Short, filesystem-safe identifier for this variant. Load-bearing,
-            exactly like ``TransportVariantKey.tag``: it is the climate level of
-            the HDF5 output hierarchy (``/<climate_tag>/<transport_tag>/run_<N>/
-            ...``) and part of the ``combo_tag`` used for deterministic seeding.
-    """
-    geographic_location_key: str
-    temperature_profile_key: Optional[str]
-    tag: str
 
 
 # ---- CONFIG ------------------------------------------------------------------------------------------------------------------------------------------

@@ -8,7 +8,7 @@ it is a living description of the branch's final state, not an append-only relea
 
 The work falls into two parts:
 
-1. **Core library changes** to [../pylpg/lpg_execution.py](../pylpg/lpg_execution.py) that
+1. **Core library changes** to [../lpg_execution.py](../lpg_execution.py) that
    made the parallel workflow possible (a new execution primitive and a reworked
    `LPGExecutor`).
 2. **A new subsystem**, the entire `sweep/` folder — a fan-out/fan-in SLURM workflow for
@@ -21,7 +21,7 @@ behaviour-relevant changes are documented.
 
 ## 1. Core library changes — `pylpg/lpg_execution.py`
 
-All changes here live in [../pylpg/lpg_execution.py](../pylpg/lpg_execution.py). They are
+All changes here live in [../lpg_execution.py](../lpg_execution.py). They are
 the foundation the `sweep/` workflow is built on.
 
 ### 1.1 New execution primitive: `execute_lpg_with_householddata_enabled_flex_and_transport_custom()`
@@ -109,7 +109,7 @@ download:
 - `execute_grid_calc()`
 
 The user-facing behaviour (file vs directory path, platform-default lookup) is documented
-in the root [../README.md](../README.md) under *"Choosing The LPG Binary At Runtime"*.
+in the root [../../README.md](../../README.md) under *"Choosing The LPG Binary At Runtime"*.
 
 > Note: the root README's example uses the shorthand name
 > `execute_lpg_with_householddata_custom(...)`; the actual function is
@@ -153,7 +153,7 @@ group (see §2.2 / §2.4).
 ### 1.6 No per-calculation copy — run in place, share the read-only database
 
 `LPGExecutor` no longer copies the ~155 MB binary + database folder into each `C<idx>/`
-dir. Two changes in [../pylpg/lpg_execution.py](../pylpg/lpg_execution.py):
+dir. Two changes in [../lpg_execution.py](../lpg_execution.py):
 
 - **`__init__`** — the `shutil.copytree(src, C<idx>)` was replaced by an `os.makedirs()`
   of an **empty** `C<idx>/`. The engine was already invoked *in place* from the source
@@ -329,7 +329,7 @@ Key design points:
 ### 2.2 `simulation.py` — shared primitive + sequential runner
 
 [simulation.py](simulation.py) holds the shared execution primitive and a standalone
-sequential runner (`python sweep/simulation.py`).
+sequential runner (`python -m pylpg.sweep.simulation`).
 
 - **`run_lpg_simulation()`** — the one primitive called by *both* the sequential
   `execute_single_run()` and the SLURM worker [run_task.py](run_task.py). It builds a
@@ -427,7 +427,8 @@ It also:
 
 ### 2.6 `submit_array.sh` — self-resubmitting batch script
 
-[submit_array.sh](submit_array.sh) is a thin SLURM wrapper with several notable design
+[../../examples/submit_array.example.sh](../../examples/submit_array.example.sh) is a thin
+SLURM wrapper (copied to your own git-ignored `submit_array.sh`) with several notable design
 points:
 
 - **Auto-ranged array via a self-resubmit bootstrap.** `--array` is deliberately **not** a
@@ -458,18 +459,18 @@ points:
 
 - **`requirements.txt`** — added `tables` (PyTables). Required for the HDF5 output in
   `sweep/`; without it, `pd.HDFStore(...)` calls fail.
-- **`.gitignore`** — now ignores `pyLPG_env/`, `sweep/__pycache__/`, the generated
+- **`.gitignore`** — now ignores `pyLPG_env/`, any `submit_array.sh`, the generated
   `tasks.json`, the `multi_runs_output/` output directory, `/tasks/` (the local-mode
   temporary per-task files — normally deleted by the merge, but ignored in case a merge is
   interrupted), and `logs/` (the SLURM per-task `.out` files and the shared
   `completion.log` from §2.6).
 - **Tests**
-  - [../test/test_sweep.py](../test/test_sweep.py) — new **fast** tests that never
+  - [../../test/test_sweep.py](../../test/test_sweep.py) — new **fast** tests that never
     invoke LPG: `safe_name`, `split_dataframe_by_type`, `collect_lpg_members`,
     `select_by_keys`, `create_combo_tag`, `get_runs_for_combo`, deterministic-seed
     behaviour, and `build_task_list` coverage (sequential ids, key presence, run-index
     completeness, reproducibility, JSON-serialisability, climate/transport coverage).
-  - [../test/test_pylpg.py](../test/test_pylpg.py) — new `LPGExecutor` tests for the
+  - [../../test/test_pylpg.py](../../test/test_pylpg.py) — new `LPGExecutor` tests for the
     core changes: `test_lpg_executor_uses_custom_binary_path`,
     `test_lpg_executor_custom_working_directory`, and
     `test_lpg_binary_details_for_platform`.

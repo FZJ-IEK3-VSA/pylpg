@@ -1,14 +1,16 @@
 """SLURM array worker: execute one LPG simulation task.
 
 Usage (called automatically by the batch script):
-    python sweep/run_task.py --task-id $SLURM_ARRAY_TASK_ID
+    python -m pylpg.sweep.run_task --task-id $SLURM_ARRAY_TASK_ID
 
 Or for local testing of a single task:
-    python sweep/run_task.py --task-id 0
+    python -m pylpg.sweep.run_task --task-id 0
 
 Input
 -----
-sweep/tasks.json  -- task manifest created by generate_tasks.py.
+config.TASKS_FILE  -- task manifest created by generate_tasks.py
+                      (= BASE_OUTPUT_DIR / "tasks.json"; honours
+                      $LPG_OUTPUT_DIR).
 
 Output
 ------
@@ -31,15 +33,15 @@ import os
 import sys
 from pathlib import Path
 
-_REPO_ROOT = Path(__file__).resolve().parents[1]
+_REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_REPO_ROOT))
 
 import pandas as pd
 
 from pylpg import lpgdata
 
-from sweep.config import TASK_OUTPUT_DIR  # noqa: E402
-from sweep.simulation import (  # noqa: E402
+from pylpg.sweep.config import TASK_OUTPUT_DIR, TASKS_FILE  # noqa: E402
+from pylpg.sweep.simulation import (  # noqa: E402
     TransportVariant,
     attach_flexibility_events,
     check_lpg_binary_source,
@@ -65,18 +67,19 @@ def run_task(task: dict) -> None:
     """Execute one simulation task and write the result to a per-task HDF5 file.
 
     Resolves all string keys in *task* back to LPG objects, calls
-    :func:`~sweep.simulation.run_lpg_simulation`, and writes one
+    :func:`~pylpg.sweep.simulation.run_lpg_simulation`, and writes one
     ``task_<NNNNNN>.h5`` file containing:
 
     - ``/data/<data_type>`` — simulation result DataFrames (one per load type)
     - ``/metadata`` — single-row DataFrame with run metadata
 
-    The output directory is :data:`sweep.config.TASK_OUTPUT_DIR` — the single
-    source of truth that :mod:`sweep.merge_results` reads from too, so writer
-    and reader can never diverge. Override it for a one-off run by exporting
-    ``$LPG_OUTPUT_DIR`` (config resolves that consistently for both scripts).
+    The output directory is :data:`pylpg.sweep.config.TASK_OUTPUT_DIR` — the
+    single source of truth that :mod:`pylpg.sweep.merge_results` reads from too,
+    so writer and reader can never diverge. Override it for a one-off run by
+    exporting ``$LPG_OUTPUT_DIR`` (config resolves that consistently for both
+    scripts).
 
-    :param dict task: Task dictionary as produced by :func:`~sweep.generate_tasks.build_task_list`.
+    :param dict task: Task dictionary as produced by :func:`~pylpg.sweep.generate_tasks.build_task_list`.
     :return None: No return value.
     :raises NoResultsError: If the simulation returns no results (``None``) or an
         empty result frame (a silent exit-0 run with no profiles).
@@ -200,13 +203,14 @@ def main() -> None:
     """Parse CLI arguments and dispatch to :func:`run_task`.
 
     Reads ``--task-id`` (falls back to ``$SLURM_ARRAY_TASK_ID``, then 0),
-    validates the configured LPG binary source, loads ``sweep/tasks.json``, and
-    calls :func:`run_task` for the selected entry.
+    validates the configured LPG binary source, loads the manifest from
+    :data:`~pylpg.sweep.config.TASKS_FILE`, and calls :func:`run_task` for the
+    selected entry.
 
     :return None: No return value.
     :raises FileNotFoundError: If a custom ``LPG_BINARY_PATH`` is configured but
-        does not exist, or if ``tasks.json`` is missing.
-    :raises IndexError: If the task id is out of range for ``tasks.json``.
+        does not exist, or if the manifest is missing.
+    :raises IndexError: If the task id is out of range for the manifest.
     """
     parser = argparse.ArgumentParser(description="Run one LPG task from tasks.json")
     parser.add_argument(
@@ -225,7 +229,10 @@ def main() -> None:
     # FileNotFoundError into a clean exit 1 that SLURM records as a failed task.
     check_lpg_binary_source()
 
-    tasks_file = _REPO_ROOT / "sweep" / "tasks.json"
+    # config.TASKS_FILE (= BASE_OUTPUT_DIR / "tasks.json") is the same value
+    # generate_tasks.py wrote to and merge_results.py reads, so all three agree
+    # even when $LPG_OUTPUT_DIR moves the base.
+    tasks_file = TASKS_FILE
     if not tasks_file.exists():
         raise FileNotFoundError(
             f"tasks.json not found at {tasks_file}. Run generate_tasks.py first."
