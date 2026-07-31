@@ -14,7 +14,6 @@ runs (one template, one climate, one transport variant, one run).
 
 import os
 from pathlib import Path
-import inspect
 from typing import Optional
 
 from pylpg import lpgdata
@@ -98,35 +97,10 @@ YEAR = 2022
 START_DATE: Optional[str] = "2020-01-01"  # e.g. "2020-01-01"
 END_DATE: Optional[str] = "2020-12-31"    # e.g. "2020-01-31"
 
-# The first training set covered these 10 representative archetypes with the
-# full sweep (3 climates x 2 transport variants x multiple runs). Their merged
-# .h5 files already exist in the output dir, so the flat runs skip them.
-DONE_TEMPLATE_KEYS = [
-    "CHR01_Couple_both_at_Work",
-    "CHR05_Family_3_children_both_with_work",
-    "CHR07_Single_with_work",
-    "CHR08_Single_woman_2_children_with_work",
-    "CHR13_Student_with_Work",
-    "CHR15_Multigenerational_Home_working_couple_2_children_2_seniors",
-    "CHR16_Couple_over_65_years",
-    "CHR18_Family_2_children_parents_without_work",
-    "CHR23_Single_man_over_65_years",
-    "CHR27_Family_both_at_work_2_children",
-]
-
-# Flat runs: every REMAINING household template gets exactly ONE run with the
-# single fixed climate + transport below (Berlin, no-transport baseline).
-# Computed as "all templates minus the 10 already done" so it stays correct if
-# the catalog changes; inspect.getmembers is sorted by name, so the resulting
-# order (and hence task ids) is deterministic. Total tasks =
-# len(HOUSEHOLD_TEMPLATE_KEYS) x 1 climate x 1 transport x 1 run = 56.
+# Household templates to simulate. Values are lpgdata.HouseholdTemplates attribute names
 # Set to None to use all templates in lpgdata.HouseholdTemplates.
 HOUSEHOLD_TEMPLATE_KEYS = [
-    name
-    for name, value in inspect.getmembers(lpgdata.HouseholdTemplates)
-    if not name.startswith("_")
-    and isinstance(value, str)
-    and name not in DONE_TEMPLATE_KEYS
+    # e.g. "CHR01_Couple_both_at_Work",
 ]
 
 # Climate presets keep geographic location and temperature profile separate.
