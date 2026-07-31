@@ -33,17 +33,14 @@ import json
 import sys
 from pathlib import Path
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(_REPO_ROOT))
-
 import pandas as pd
 
-from pylpg.sweep.config import (  # noqa: E402
+from pylpg.sweep.config import (
     MERGED_OUTPUT_DIR,
     TASK_OUTPUT_DIR,
     TASKS_FILE,
 )
-from pylpg.sweep.simulation import safe_name  # noqa: E402
+from pylpg.sweep.simulation import safe_name
 
 
 # Fields that jointly identify which (template, climate, transport, run) a task

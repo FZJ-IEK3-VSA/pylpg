@@ -31,17 +31,13 @@ import argparse
 import json
 import os
 import sys
-from pathlib import Path
-
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(_REPO_ROOT))
 
 import pandas as pd
 
 from pylpg import lpgdata
 
-from pylpg.sweep.config import TASK_OUTPUT_DIR, TASKS_FILE  # noqa: E402
-from pylpg.sweep.simulation import (  # noqa: E402
+from pylpg.sweep.config import TASK_OUTPUT_DIR, TASKS_FILE
+from pylpg.sweep.simulation import (
     TransportVariant,
     attach_flexibility_events,
     check_lpg_binary_source,

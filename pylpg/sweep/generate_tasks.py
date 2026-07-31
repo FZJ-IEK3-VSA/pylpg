@@ -28,14 +28,6 @@ from __future__ import annotations
 
 import json
 import random
-import sys
-from pathlib import Path
-
-# Make the repo root importable so `from pylpg.sweep.config import ...` works when
-# this module is run directly as a script (python pylpg/sweep/generate_tasks.py),
-# matching run_task.py and merge_results.py.
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(_REPO_ROOT))
 
 from pylpg import lpgdata
 

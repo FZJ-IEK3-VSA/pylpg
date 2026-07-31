@@ -24,22 +24,26 @@ from pylpg.sweep.keys import ClimateSetKey, TransportVariantKey, require_non_emp
 # Flip ONE flag to move between cluster and local runs:
 #   RUN_ON_CLUSTER = True  -> results go to the shared project storage on the
 #                             cluster (CLUSTER_BASE_OUTPUT_DIR below).
-#   RUN_ON_CLUSTER = False -> local testing: results go into the repo's own
-#                             multi_runs_output/ folder (base = repo root).
+#   RUN_ON_CLUSTER = False -> local testing: results go into a
+#                             multi_runs_output/ folder under the directory you
+#                             launch from (the repo root in practice).
 # Everything else derives from the chosen base, so this single flag is all you
 # change to switch machines.
 RUN_ON_CLUSTER = True
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-
 # Cluster: shared, fast project storage (outside the repo). Set this to your own
 # output location, or override it at runtime via the LPG_OUTPUT_DIR env var.
 CLUSTER_BASE_OUTPUT_DIR = Path("/path/to/cluster/output")
-# Local testing: use the repo root as the base, so merged files land in
-# <repo>/multi_runs_output/ (exactly where local runs wrote before) and the
-# temporary <repo>/tasks/ dir sits alongside it (gitignored, and removed by
-# merge_results.py after each successful merge).
-LOCAL_BASE_OUTPUT_DIR = _REPO_ROOT
+# Local testing: the directory you launch from, which is the repo root in
+# practice -- every entry point is run as `python -m pylpg.sweep.<name>` from
+# there. So merged files land in <repo>/multi_runs_output/ (exactly where local
+# runs wrote before) with the temporary <repo>/tasks/ dir alongside it (both
+# gitignored; tasks/ is removed by merge_results.py after a successful merge).
+# Anchoring on the launch directory rather than on this file's location is what
+# keeps output out of the installed package: under a non-editable install this
+# module sits in site-packages, so deriving the base from __file__ would write
+# results in there.
+LOCAL_BASE_OUTPUT_DIR = Path.cwd()
 
 # BASE_OUTPUT_DIR is the single knob every script derives its subdirectories
 # from. LPG_OUTPUT_DIR overrides it (in either mode) for one-off runs -- applied

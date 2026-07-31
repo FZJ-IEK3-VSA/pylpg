@@ -186,7 +186,7 @@ Defined in `submit_array.sh` — adjust to your cluster limits:
 | `RUN_ON_CLUSTER` | `BASE_OUTPUT_DIR` becomes            | Where results go                                    |
 | ---------------- | ------------------------------------ | --------------------------------------------------- |
 | `True`           | `CLUSTER_BASE_OUTPUT_DIR` (`/fast/…`) | shared project storage on the cluster               |
-| `False`          | the repo root                        | the repo's own `multi_runs_output/` (local testing) |
+| `False`          | the current working directory        | `multi_runs_output/` under the dir you launch from — the repo root in practice (local testing) |
 
 Every result path derives from that one base, `BASE_OUTPUT_DIR`, and the scripts
 create these subdirectories inside it on demand:

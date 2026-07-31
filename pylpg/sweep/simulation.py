@@ -34,7 +34,6 @@ Run
 """
 
 import os
-import sys
 from pathlib import Path
 from dataclasses import dataclass
 import inspect
@@ -43,14 +42,6 @@ import traceback
 from typing import Any, Iterable, Optional
 
 import pandas as pd
-
-# Make the repo root importable so `from pylpg.sweep.config import ...` works both
-# when this module is imported as part of the package and when it is run
-# directly as a script (python pylpg/sweep/simulation.py), where sys.path[0] is
-# this folder rather than the repo root.
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-if str(_REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(_REPO_ROOT))
 
 from pylpg import lpg_execution, lpgdata
 from pylpg.lpgpythonbindings import EnergyIntensityType, JsonReference
