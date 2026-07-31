@@ -1,9 +1,54 @@
 """
-Structural key types used to declare a sweep configuration.
+Structural key types and validation helpers used to declare a sweep
+configuration.
+
+This module deliberately imports nothing else from the package, so a
+user-supplied config (copied from ``examples/sweep_config_minimal.py`` over
+``config.py``) can import from it without a circular import.
 """
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional, Sequence
+
+
+def require_non_empty(
+    value: Optional[Sequence[Any]],
+    name: str,
+    *,
+    allow_none: bool,
+    none_means: str = "",
+) -> None:
+    """Validate that a config key list actually selects something.
+
+    An empty list is never valid: it selects nothing, so the sweep expands to
+    zero tasks -- an editing mistake, not an intent. Rejecting it at import time
+    surfaces the problem immediately instead of as an empty ``tasks.json``.
+
+    ``None`` is a separate question and differs per knob, which is why callers
+    must state ``allow_none`` explicitly. Where it is allowed it means "all of
+    them"; where it is not, the consumers iterate the value directly and would
+    otherwise fail with an opaque ``TypeError``.
+
+    :param Optional[Sequence[Any]] value: The configured value to check.
+    :param str name: Name of the config knob, used in the error message.
+    :param bool allow_none: Whether None is valid, meaning "use all entries".
+    :param str none_means: What None expands to, quoted in the error message
+        when ``allow_none`` is True. Ignored otherwise.
+    :return None: No return value.
+    :raises ValueError: If value is empty, or None while allow_none is False.
+    """
+    if value is None:
+        if allow_none:
+            return
+        raise ValueError(
+            f"{name} must contain at least one entry; None is not accepted here."
+        )
+
+    if len(value) == 0:
+        message = f"{name} must contain at least one entry."
+        if allow_none:
+            message += f" Set it to None to {none_means or 'use all of them'}."
+        raise ValueError(message)
 
 
 @dataclass(frozen=True)

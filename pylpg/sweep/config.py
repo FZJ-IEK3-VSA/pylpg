@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Optional
 
 from pylpg import lpgdata
-from pylpg.sweep.keys import ClimateSetKey, TransportVariantKey
+from pylpg.sweep.keys import ClimateSetKey, TransportVariantKey, require_non_empty
 
 
 # --- Output paths -------------------------------------------------------------
@@ -100,8 +100,15 @@ END_DATE: Optional[str] = "2020-12-31"    # e.g. "2020-01-31"
 # Household templates to simulate. Values are lpgdata.HouseholdTemplates attribute names
 # Set to None to use all templates in lpgdata.HouseholdTemplates.
 HOUSEHOLD_TEMPLATE_KEYS = [
-    # e.g. "CHR01_Couple_both_at_Work",
+    "CHR01_Couple_both_at_Work"
 ]
+
+require_non_empty(
+    HOUSEHOLD_TEMPLATE_KEYS,
+    "HOUSEHOLD_TEMPLATE_KEYS",
+    allow_none=True,
+    none_means="use every template in lpgdata.HouseholdTemplates",
+)
 
 # Climate presets keep geographic location and temperature profile separate.
 # Flat runs use a SINGLE fixed climate (Berlin). The Hamburg and
@@ -117,6 +124,14 @@ CLIMATE_SET_KEYS = [
 ]
 # Set to None to generate all location/temperature-profile combinations.
 
+require_non_empty(
+    CLIMATE_SET_KEYS,
+    "CLIMATE_SET_KEYS",
+    allow_none=True,
+    none_means="generate all location/temperature-profile combinations",
+)
+
+
 # Key-based transport presets.
 # Flat runs use only the no-transport baseline (pure residential load), so each
 # template is a single run. The EV/home-charging variant from the first
@@ -128,6 +143,13 @@ CLIMATE_SET_KEYS = [
 TRANSPORT_VARIANT_KEYS = [
     TransportVariantKey(False, None, None, None, "no_transport"),
 ]
+
+# allow_none=False, unlike the two knobs above: build_task_list and
+# make_transport_variants both iterate this list directly, so None would be a
+# TypeError rather than "all variants". To sweep without transport, keep the
+# no_transport baseline entry above rather than emptying the list.
+require_non_empty(TRANSPORT_VARIANT_KEYS, "TRANSPORT_VARIANT_KEYS", allow_none=False)
+
 
 HOUSETYPE = lpgdata.HouseTypes.HT20_Single_Family_House_no_heating_cooling
 

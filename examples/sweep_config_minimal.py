@@ -39,7 +39,7 @@ from pathlib import Path
 from typing import Optional
 
 from pylpg import lpgdata
-from pylpg.sweep.keys import ClimateSetKey, TransportVariantKey
+from pylpg.sweep.keys import ClimateSetKey, TransportVariantKey, require_non_empty
 
 
 # --- Output paths -------------------------------------------------------------
@@ -99,6 +99,15 @@ CLIMATE_SET_KEYS = [
 TRANSPORT_VARIANT_KEYS = [
     TransportVariantKey(False, None, None, None, "no_transport"),
 ]
+
+# Reject selections that would expand to a zero-task sweep. None means "all of
+# them" for the first two, but is not an option for TRANSPORT_VARIANT_KEYS --
+# its consumers iterate the list directly.
+require_non_empty(HOUSEHOLD_TEMPLATE_KEYS, "HOUSEHOLD_TEMPLATE_KEYS",
+                  allow_none=True, none_means="sweep every template")
+require_non_empty(CLIMATE_SET_KEYS, "CLIMATE_SET_KEYS",
+                  allow_none=True, none_means="generate all climate combinations")
+require_non_empty(TRANSPORT_VARIANT_KEYS, "TRANSPORT_VARIANT_KEYS", allow_none=False)
 
 HOUSETYPE = lpgdata.HouseTypes.HT20_Single_Family_House_no_heating_cooling
 

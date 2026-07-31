@@ -30,6 +30,7 @@ from pylpg.sweep.simulation import (
     split_dataframe_by_type,
 )
 from pylpg.sweep.generate_tasks import build_task_list
+from pylpg.sweep.keys import require_non_empty
 
 
 # ---------------------------------------------------------------------------
@@ -151,6 +152,45 @@ def test_select_by_keys_unknown_key_raises() -> None:
     d = {"a": 1}
     with pytest.raises(KeyError, match="Unknown label key: x"):
         select_by_keys(d, ["x"], "label")
+
+
+# ---------------------------------------------------------------------------
+# require_non_empty
+# ---------------------------------------------------------------------------
+
+def test_require_non_empty_accepts_populated_list() -> None:
+    require_non_empty(["a"], "KNOB", allow_none=True)
+    require_non_empty(["a"], "KNOB", allow_none=False)
+
+
+def test_require_non_empty_rejects_empty_list() -> None:
+    with pytest.raises(ValueError, match="KNOB must contain at least one entry"):
+        require_non_empty([], "KNOB", allow_none=True)
+
+
+def test_require_non_empty_rejects_empty_list_when_none_disallowed() -> None:
+    with pytest.raises(ValueError, match="KNOB must contain at least one entry"):
+        require_non_empty([], "KNOB", allow_none=False)
+
+
+def test_require_non_empty_allows_none_when_permitted() -> None:
+    require_non_empty(None, "KNOB", allow_none=True)
+
+
+def test_require_non_empty_rejects_none_when_not_permitted() -> None:
+    with pytest.raises(ValueError, match="None is not accepted"):
+        require_non_empty(None, "KNOB", allow_none=False)
+
+
+def test_require_non_empty_empty_message_suggests_none_only_when_allowed() -> None:
+    """The "set it to None" hint must not appear where None is invalid."""
+    with pytest.raises(ValueError) as allowed:
+        require_non_empty([], "KNOB", allow_none=True, none_means="use all templates")
+    assert "Set it to None to use all templates." in str(allowed.value)
+
+    with pytest.raises(ValueError) as disallowed:
+        require_non_empty([], "KNOB", allow_none=False)
+    assert "None" not in str(disallowed.value)
 
 
 # ---------------------------------------------------------------------------
