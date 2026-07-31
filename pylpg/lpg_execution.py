@@ -1,5 +1,6 @@
 import glob
 import io
+import json
 import os
 import pathlib
 import random
@@ -11,13 +12,21 @@ import time
 import traceback
 import zipfile
 from pathlib import Path
-from typing import Any, List, Union, Optional
+from typing import List, Union, Optional
 
 import pandas as pd  # type: ignore
 import requests
 
 from pylpg.lpgdata import *
 from pylpg.lpgpythonbindings import *
+
+
+def _lpg_binary_details_for_platform(working_directory: Path) -> tuple[Path, str]:
+    if sys.platform == "linux" or sys.platform == "linux2":
+        return Path(working_directory, "LPG_linux"), "simengine2"
+    if sys.platform == "win32":
+        return Path(working_directory, "LPG_win"), "simengine2.exe"
+    raise Exception("unknown operating system detected: " + sys.platform)
 
 
 def execute_lpg_tsib(
@@ -28,8 +37,9 @@ def execute_lpg_tsib(
     enddate: str = None,
     transportation: bool = False,
     energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
+    lpg_binary_path: Optional[Union[Path, str]] = None,
 ) -> pd.DataFrame:
-    lpe: LPGExecutor = LPGExecutor(1, False)
+    lpe: LPGExecutor = LPGExecutor(1, False, lpg_binary_path)
     if number_of_households < 1:
         print("too few households")
         raise Exception("Need at least one household")
@@ -128,8 +138,9 @@ def execute_lpg_single_household(
     energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
     resolution: str = "00:01:00",
     calc_options: List[CalcOption] = None,
+    lpg_binary_path: Optional[Union[Path, str]] = None,
 ) -> pd.DataFrame:
-    lpe: LPGExecutor = LPGExecutor(1, False)
+    lpe: LPGExecutor = LPGExecutor(1, False, lpg_binary_path)
 
     # basic request
     request = lpe.make_default_lpg_settings(year)
@@ -188,6 +199,7 @@ def execute_lpg_with_householdata(
     clear_previous_calc: bool = False,
     random_seed: int = None,
     energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
+    lpg_binary_path: Optional[Union[Path, str]] = None,
 ):
     try:
         print(
@@ -196,7 +208,9 @@ def execute_lpg_with_householdata(
             + " for "
             + (householddata.Name or "nameless household")
         )
-        lpe: LPGExecutor = LPGExecutor(calculation_index, clear_previous_calc)
+        lpe: LPGExecutor = LPGExecutor(
+            calculation_index, clear_previous_calc, lpg_binary_path
+        )
 
         # basic request
         request = lpe.make_default_lpg_settings(year)
@@ -239,6 +253,138 @@ def execute_lpg_with_householdata(
         raise
 
 
+def execute_lpg_with_householddata_enabled_flex_and_transport_custom(
+    year: int,
+    householddata: HouseholdData,
+    housetype: str,
+    startdate: str = None,
+    enddate: str = None,
+    geographic_location: JsonReference = None,
+    temperature_profile: JsonReference = None,
+    enable_flexibility: bool = False,
+    enable_transportation: bool = False,
+    enable_idle_mode: bool = False,
+    target_heating_demand: Optional[float] = None,
+    target_cooling_demand: Optional[float] = None,
+    calculation_index: int = 1,
+    clear_previous_calc: bool = False,
+    random_seed: int = None,
+    energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
+    lpg_binary_path: Optional[Union[Path, str]] = None,
+    working_directory: Optional[Union[Path, str]] = None,
+):
+    """Run one LPG simulation from a fully-specified household.
+
+    Builds the default job spec, attaches ``householddata``, applies the
+    requested options (climate, flexibility, transportation, idle-mode), runs
+    the engine and returns the parsed minute-resolution profile DataFrame. When
+    flexibility is enabled the flattened flexibility event log is attached as
+    ``df.attrs['flexibility_events']``.
+
+    :param int year: Simulation year passed to :meth:`LPGExecutor.make_default_lpg_settings`.
+    :param HouseholdData householddata: The prepared household to simulate.
+    :param str housetype: House type code (a ``HouseTypes.*`` value).
+    :param str startdate: Start date ``"YYYY-MM-DD"`` (None = LPG default).
+    :param str enddate: End date ``"YYYY-MM-DD"`` (None = LPG default).
+    :param JsonReference geographic_location: Geographic location reference (or None).
+    :param JsonReference temperature_profile: Temperature profile reference (or None).
+    :param bool enable_flexibility: Emit the flexible / ``NoFlex`` profile pair and
+        the flexibility event log.
+    :param bool enable_transportation: Simulate transportation (requires the
+        household to carry charging / device / travel-route sets).
+    :param bool enable_idle_mode: Give each person a fallback "Idle" activity so the
+        engine never aborts when a household template leaves someone with no
+        available affordance at a timestep. Without it, the LPG raises a fatal
+        ``DataIntegrityException`` ("0 affordances were available for <person> ...
+        calculation can not continue"), writes no results directory, and this
+        function returns ``None``. That dead-end is stochastic and concentrated in
+        households with young children (children have few permissible affordances,
+        so a random schedule can leave them all simultaneously occupied), so
+        enabling idle-mode is what lets a large parameter sweep complete instead of
+        silently losing those runs. Trade-off: an otherwise-stuck person does
+        nothing for those steps rather than performing a real activity — a minor
+        behavioural artifact (no activity-driven appliance load during them).
+        Defaults to ``False`` to preserve the stricter, artifact-free behaviour for
+        callers that would rather have a broken template fail loudly.
+    :param Optional[float] target_heating_demand: Override the house target heat demand.
+    :param Optional[float] target_cooling_demand: Override the house target cooling demand.
+    :param int calculation_index: Unique index selecting the ``C<idx>`` working
+        directory; parallel callers MUST pass a unique value to avoid colliding.
+    :param bool clear_previous_calc: Wipe the working directory before running.
+    :param int random_seed: Random seed for reproducible results (None = engine default).
+    :param EnergyIntensityType energy_intensity: Device-selection energy intensity mode.
+    :param Optional[Union[Path, str]] lpg_binary_path: Custom LPG binary (file or
+        directory); None downloads / uses the bundled platform binary.
+    :param Optional[Union[Path, str]] working_directory: Base directory for the
+        ``C<idx>`` calc dirs (None = current directory).
+    :return Optional[pd.DataFrame]: Parsed profiles (one column per
+        ``<LoadType>_<HHKey>``), or ``None`` when the engine produced no results.
+    """
+    print(
+        "Starting calc with "
+        + str(calculation_index)
+        + " for "
+        + (householddata.Name or "nameless household")
+    )
+    lpe: LPGExecutor = LPGExecutor(
+        calculation_index, clear_previous_calc, lpg_binary_path, working_directory
+    )
+
+    request = lpe.make_default_lpg_settings(year)
+    assert request.House is not None, "Housedata was None"
+    request.House.HouseTypeCode = housetype
+    if random_seed is not None and request.CalcSpec is not None:
+        request.CalcSpec.RandomSeed = random_seed
+    if target_heating_demand is not None:
+        request.House.TargetHeatDemand = target_heating_demand
+    if target_cooling_demand is not None:
+        request.House.TargetCoolingDemand = target_cooling_demand
+    request.House.Households.append(householddata)
+    if request.CalcSpec is None:
+        raise Exception("Failed to initialize the calculation spec")
+    if startdate is not None:
+        request.CalcSpec.set_StartDate(startdate)
+    if enddate is not None:
+        request.CalcSpec.set_EndDate(enddate)
+    request.CalcSpec.GeographicLocation = geographic_location
+    request.CalcSpec.TemperatureProfile = temperature_profile
+    request.CalcSpec.EnergyIntensityType = energy_intensity
+    request.CalcSpec.set_EnableFlexibility(enable_flexibility)
+    request.CalcSpec.set_EnableTransportation(enable_transportation)
+    # When a household template boxes a person into a timestep with zero
+    # available affordances, the engine raises a fatal DataIntegrityException and
+    # writes no results (this function then returns None). Idle-mode injects a
+    # fallback "Idle" activity so the run completes instead. See the
+    # enable_idle_mode parameter docstring for the full rationale and trade-off.
+    request.CalcSpec.set_EnableIdlemode(enable_idle_mode)
+    calcspecfilename = Path(lpe.calculation_directory, "calcspec.json")
+    if enable_transportation:
+        request.CalcSpec.CalcOptions.append(CalcOption.TansportationDeviceJsons)
+    if enable_flexibility:
+        request.CalcSpec.CalcOptions.append(CalcOption.JsonHouseholdSumFiles)
+        request.CalcSpec.CalcOptions.append(CalcOption.JsonHouseholdSumFilesNoFlex)
+        request.CalcSpec.CalcOptions.append(CalcOption.FlexibilityEvents)
+
+    # Always enable bodily activity output
+    request.CalcSpec.CalcOptions.append(CalcOption.BodilyActivityStatistics)
+    with open(calcspecfilename, "w") as calcspecfile:
+        jsonrequest = request.to_json(indent=4)  # type: ignore
+        calcspecfile.write(jsonrequest)
+    lpe.execute_lpg_binaries()
+
+    df = lpe.read_all_json_results_in_directory()
+
+    # The flexibility event log lives outside the profile results and has a
+    # different shape, so it is attached as frame metadata rather than a
+    # column. Callers (e.g. the sweep workflow) store it as its own group.
+    if enable_flexibility and df is not None:
+        events_df = lpe.read_flexibility_events()
+        if events_df is not None:
+            df.attrs["flexibility_events"] = events_df
+
+    return df
+
+
 def execute_lpg_with_many_householdata(
     year: int,
     householddata: List[HouseholdData],
@@ -252,6 +398,7 @@ def execute_lpg_with_many_householdata(
     clear_previous_calc: bool = False,
     random_seed: int = None,
     energy_intensity: EnergyIntensityType = EnergyIntensityType.Random,
+    lpg_binary_path: Optional[Union[Path, str]] = None,
 ):
     try:
         print(
@@ -261,7 +408,9 @@ def execute_lpg_with_many_householdata(
             + str(len(householddata))
             + " households"
         )
-        lpe: LPGExecutor = LPGExecutor(calculation_index, clear_previous_calc)
+        lpe: LPGExecutor = LPGExecutor(
+            calculation_index, clear_previous_calc, lpg_binary_path
+        )
 
         # basic request
         request = lpe.make_default_lpg_settings(year)
@@ -314,6 +463,7 @@ def execute_lpg_with_householdata_with_csv_save(
     target_heating_demand: Optional[float] = None,
     target_cooling_demand: Optional[float] = None,
     calculation_index: int = 1,
+    lpg_binary_path: Optional[Union[Path, str]] = None,
 ):
     try:
         df = execute_lpg_with_householdata(
@@ -327,6 +477,9 @@ def execute_lpg_with_householdata_with_csv_save(
             target_cooling_demand,
             calculation_index,
             True,
+            None,
+            EnergyIntensityType.Random,
+            lpg_binary_path,
         )
         df_electricity = df["Electricity_HH1"]
         df_electricity.to_csv("R" + str(calculation_index) + ".csv")
@@ -356,8 +509,9 @@ def execute_grid_calc(
     chargingset: JsonReference = None,
     transportation_device_set: JsonReference = None,
     travel_route_set: JsonReference = None,
+    lpg_binary_path: Optional[Union[Path, str]] = None,
 ) -> pd.DataFrame:
-    lpe: LPGExecutor = LPGExecutor(1, True)
+    lpe: LPGExecutor = LPGExecutor(1, True, lpg_binary_path)
 
     # basic request
     request = lpe.make_default_lpg_settings(year)
@@ -455,24 +609,59 @@ class LPGExecutor:
         """checks if the LPG executable is available"""
         return os.path.isfile(self.lpg_simengine_filepath())
 
-    def __init__(self, calcidx: int, clear_previous_calc: bool):
-        self.working_directory = pathlib.Path(__file__).parent.absolute()
-        # get LPG binary directory and executable name depending on platform
-        if sys.platform == "linux" or sys.platform == "linux2":
-            self.calculation_src_directory = Path(self.working_directory, "LPG_linux")
-            self.simengine_src_filename = "simengine2"
-        elif sys.platform == "win32":
-            self.calculation_src_directory = Path(self.working_directory, "LPG_win")
-            self.simengine_src_filename = "simengine2.exe"
+    def __init__(
+        self,
+        calcidx: int,
+        clear_previous_calc: bool,
+        lpg_binary_path: Optional[Union[Path, str]] = None,
+        working_directory: Optional[Union[Path, str]] = None,
+    ):
+        # The package directory is where the bundled LPG binaries live (and are
+        # downloaded to on first use).  The working directory is where the
+        # per-calculation C<idx> folders are created; each holds only this run's
+        # calcspec.json and its results/ output.  The engine itself runs from the
+        # read-only source binary directory, so the ~155 MB binaries+database are
+        # no longer copied per calc.  By default the working directory is the
+        # current directory, but it can be pointed at fast node-local scratch
+        # (e.g. $TMPDIR) to keep result I/O off shared storage.
+        self.package_directory = pathlib.Path(__file__).parent.absolute()
+        if working_directory is not None:
+            self.working_directory = Path(working_directory)
         else:
-            raise Exception("unknown operating system detected: " + sys.platform)
+            self.working_directory = Path()
+        self.working_directory.mkdir(parents=True, exist_ok=True)
+        
+        if lpg_binary_path is not None:
+            # if a custom binary path is provided, use it instead of the default one
+            custom_binary_path = Path(lpg_binary_path)
+            if custom_binary_path.is_file():
+                self.calculation_src_directory = custom_binary_path.parent
+                self.simengine_src_filename = custom_binary_path.name
+            elif custom_binary_path.is_dir():
+                self.calculation_src_directory = custom_binary_path
+                _, self.simengine_src_filename = _lpg_binary_details_for_platform(
+                    self.package_directory
+                )
+            else:
+                raise FileNotFoundError(
+                    f"Specified LPG binary path does not exist: {custom_binary_path}"
+                )
+        else:
+            # get LPG binary directory and executable name depending on platform.
+            # Binaries always live in the package directory (downloaded once),
+            # never in a custom working directory.
+            (
+                self.calculation_src_directory,
+                self.simengine_src_filename,
+            ) = _lpg_binary_details_for_platform(self.package_directory)
 
-        # check if the executable exists
-        if not self.are_lpg_binaries_available():
-            # download the binaries for this system
-            LPGExecutor.retrieve_lpg_binaries(self.working_directory)
+            # check if the executable exists
             if not self.are_lpg_binaries_available():
-                raise Exception("Could not install the LPG binaries.")
+                # download the binaries for this system
+                LPGExecutor.retrieve_lpg_binaries(self.package_directory)
+
+        if not self.are_lpg_binaries_available():
+            raise Exception("Could not install the LPG binaries.")
 
         self.calculation_directory = Path(self.working_directory, "C" + str(calcidx))
         print("Working in directory: " + str(self.calculation_directory))
@@ -481,19 +670,28 @@ class LPGExecutor:
             print("Removing " + str(self.calculation_directory))
             shutil.rmtree(self.calculation_directory)
             time.sleep(1)
+        # Create just an empty working directory. The binaries and (read-only)
+        # profilegenerator.db3 are used in place from the source directory
+        # (make_default_lpg_settings points PathToDatabase at the shared source
+        # db3 by absolute path), so nothing needs to be copied here — the engine
+        # only writes calcspec.json and its results/ subtree into this dir.
         if not os.path.exists(self.calculation_directory):
-            print(
-                "copying from  "
-                + str(self.calculation_src_directory)
-                + " to "
-                + str(self.calculation_directory)
-            )
-            shutil.copytree(self.calculation_src_directory, self.calculation_directory)
-            print("copied to: " + str(self.calculation_directory))
+            print("creating working directory: " + str(self.calculation_directory))
+            os.makedirs(self.calculation_directory)
 
     def error_tolerating_directory_clean(self, path: Union[Path, str]):
-        mypath = str(path)
-        if len(str(mypath)) < 10:
+        """Delete the top-level files in ``path`` as a pre-clean before rmtree.
+
+        The length guard is a safety net against accidentally wiping a
+        dangerously broad location (e.g. ``/`` or ``C:\\``). It is checked on
+        the *resolved absolute* path: the per-calculation directory is a short
+        relative path like ``C1`` (working_directory defaults to the current
+        dir), so resolving it first keeps the guard meaningful — a genuinely
+        short path such as the filesystem root still trips it, while a normal
+        relative calc dir no longer does.
+        """
+        mypath = str(Path(path).resolve())
+        if len(mypath) < 10:
             raise Exception(
                 "Path too short. This is suspicious. Trying to delete more than you meant to?"
             )
@@ -504,14 +702,32 @@ class LPGExecutor:
                 print("Removing " + file)
                 os.remove(file)
 
-    def execute_lpg_binaries(self) -> Any:
-        # execute LPG
+    def execute_lpg_binaries(self) -> None:
+        """Run the LPG engine on ``calcspec.json`` in the calculation directory.
+
+        Invokes ``simengine2 processhousejob -j calcspec.json`` as a subprocess
+        with the calculation directory as its working directory.
+
+        The engine's exit code is checked: a non-zero status means the engine
+        aborted (for example a ``DataIntegrityException`` when a person is left
+        with zero available affordances at a timestep) and wrote no usable
+        results. Rather than let that surface later as a confusing "no results
+        returned", it is raised immediately as a :class:`RuntimeError` naming the
+        exit code and the calculation directory, whose logs hold the details.
+        """
         pathname = self.lpg_simengine_filepath()
         print("executing in " + str(self.calculation_directory))
-        subprocess.run(
+        completed = subprocess.run(
             [pathname, "processhousejob", "-j", "calcspec.json"],
             cwd=str(self.calculation_directory),
         )
+        if completed.returncode != 0:
+            raise RuntimeError(
+                f"LPG engine exited with non-zero status {completed.returncode} "
+                f"in {self.calculation_directory}. The run produced no usable "
+                f"results; see the Log.*.txt files in that directory for the "
+                f"cause (e.g. a DataIntegrityException)."
+            )
 
     def make_default_lpg_settings(self, year: int) -> HouseCreationAndCalculationJob:
         print("Creating")
@@ -539,8 +755,12 @@ class LPGExecutor:
         ]
         cs.EnergyIntensityType = EnergyIntensityType.Random
         cs.OutputDirectory = "results"
+        # Point at the shared source database by absolute path. The engine only
+        # reads profilegenerator.db3 (verified byte-identical before/after a run
+        # and safe for concurrent readers), so every calc can share the single
+        # source db3 instead of copying it into each C<idx> working directory.
         hj.PathToDatabase = str(
-            Path(self.calculation_directory, "profilegenerator.db3")
+            Path(self.calculation_src_directory, "profilegenerator.db3").resolve()
         )
         return hj
 
@@ -562,10 +782,32 @@ class LPGExecutor:
         return profile
 
     def read_all_json_results_in_directory(self) -> Optional[pd.DataFrame]:
+        """Parse every minute-resolution profile JSON into one DataFrame.
+
+        Each column is keyed ``<LoadTypeName>_<HHKey>`` and the index is a
+        minute-resolution ``DatetimeIndex``.
+
+        When flexibility is enabled, the LPG additionally writes
+        ``Sum.NoFlexDevices.<LoadType>.<HHKey>.json`` files: the *same* load
+        profiles as they would look **without** the flexible-device shifting
+        applied. These carry an identical ``LoadTypeName``/``HHKey`` to their
+        flexible counterparts, so they are keyed ``<LoadTypeName>_NoFlex_<HHKey>``
+        to keep them as their own columns/data types instead of overwriting the
+        flexible profiles. Comparing ``<LoadType>`` against ``<LoadType>_NoFlex``
+        is how the effect of flexibility is read out. The raw flexibility event
+        log is exposed separately via :meth:`read_flexibility_events`.
+
+        :return Optional[pd.DataFrame]: Combined profiles, or None if the results
+            directory does not exist.
+        """
         df: pd.DataFrame = pd.DataFrame()
         results_directory = Path(self.calculation_directory, "results", "Results")
         if not os.path.exists(str(results_directory)):
             return None
+        # ``Sum.*.json`` already matches the ``Sum.NoFlexDevices.*.json`` files,
+        # so they must NOT be globbed a second time (that duplicated them and,
+        # combined with the shared key, let the NoFlex profile silently overwrite
+        # the flexible one). NoFlex files are told apart by filename below.
         potential_sum_files = glob.glob(str(results_directory) + "/Sum.*.json")
 
         bodilyActivity_files = glob.glob(
@@ -584,6 +826,7 @@ class LPGExecutor:
 
         soc = glob.glob(str(results_directory) + "/Soc.*.json")
         potential_sum_files.extend(soc)
+
         isFirst = True
         for file in potential_sum_files:
             profile = self.parse_json_profile(file)
@@ -595,7 +838,12 @@ class LPGExecutor:
                 or profile.HouseKey.HHKey is None
             ):
                 raise Exception("empty housekey")
-            key: str = profile.LoadTypeName + "_" + str(profile.HouseKey.HHKey.Key)
+            # NoFlex profiles share LoadTypeName/HHKey with the flexible profile;
+            # mark them so they land in a distinct column instead of colliding.
+            load_type_name = profile.LoadTypeName
+            if "NoFlex" in Path(file).name:
+                load_type_name = load_type_name + "_NoFlex"
+            key: str = load_type_name + "_" + str(profile.HouseKey.HHKey.Key)
             df[key] = profile.Values
             if isFirst:
                 isFirst = False
@@ -603,3 +851,49 @@ class LPGExecutor:
                 timestamps = pd.date_range(ts, periods=len(profile.Values), freq="min")
                 df.index = timestamps
         return df
+
+    def read_flexibility_events(self) -> Optional[pd.DataFrame]:
+        """Read the flexibility event log written under ``results/Reports/``.
+
+        When flexibility is enabled the LPG writes one
+        ``FlexibilityEvents.<HHKey>.json`` file per household into the
+        ``Reports`` directory (not ``Results``, which is why the profile reader
+        never picked it up). Each file is a JSON list of load-shifting events
+        (flexible device, its loads, timing) — an event log, not a minute
+        profile, so it cannot be a column in the profile DataFrame.
+
+        The events from every household file are flattened with
+        :func:`pandas.json_normalize` into one row per event, tagged with the
+        originating ``HHKey``. Any remaining nested (list/dict) cells are
+        JSON-encoded to strings so the frame is safe to store in HDF5
+        ``fixed`` format.
+
+        :return Optional[pd.DataFrame]: One row per flexibility event, or None
+            when no (non-empty) event file exists.
+        """
+        reports_directory = Path(self.calculation_directory, "results", "Reports")
+        if not reports_directory.exists():
+            return None
+
+        frames: List[pd.DataFrame] = []
+        for event_file in sorted(reports_directory.glob("FlexibilityEvents.*.json")):
+            with open(event_file) as fh:
+                events = json.load(fh)
+            if not events:
+                continue
+            frame = pd.json_normalize(events)
+            # Filename is FlexibilityEvents.<HHKey>.json -> recover the HHKey.
+            frame.insert(0, "HHKey", event_file.name.split(".")[1])
+            frames.append(frame)
+
+        if not frames:
+            return None
+
+        events_df = pd.concat(frames, ignore_index=True)
+        # HDF5 fixed format cannot store list/dict cells; JSON-encode them.
+        for col in events_df.columns:
+            if events_df[col].map(lambda v: isinstance(v, (list, dict))).any():
+                events_df[col] = events_df[col].map(
+                    lambda v: json.dumps(v) if isinstance(v, (list, dict)) else v
+                )
+        return events_df

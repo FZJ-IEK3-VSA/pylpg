@@ -1,10 +1,23 @@
 from datetime import datetime, time, timedelta
+import inspect
 
 import numpy as np
 import pandas as pd  # type: ignore
 from matplotlib import dates as mdates  # type: ignore
 from matplotlib import pyplot as plt
 from matplotlib import ticker
+
+
+def print_lpg_binary_source(lpg_binary_path):
+    if lpg_binary_path is None:
+        print("LPG binary source: official release downloaded automatically.")
+    else:
+        print(f"LPG binary source: custom binary path {lpg_binary_path}")
+
+
+def supports_lpg_binary_path(function) -> bool:
+    signature = inspect.signature(function)
+    return "lpg_binary_path" in signature.parameters
 
 
 def carpet_plot(data: pd.DataFrame | pd.Series, title: str = "", vmin=None, vmax=None):

@@ -1,4 +1,7 @@
+import shutil
 import random
+from pathlib import Path
+
 import pandas  # type: ignore
 from pylpg import lpg_execution
 from pylpg.lpgdata import *
@@ -167,6 +170,74 @@ def test_family_maker() -> None:
     print_persons_list(persons4)
     persons5: List[PersonData] = lpg_execution.make_reasonable_family(5)
     print_persons_list(persons5)
+
+
+def test_lpg_executor_uses_custom_binary_path(tmp_path) -> None:
+    custom_dir = tmp_path / "custom_lpg"
+    custom_dir.mkdir()
+    custom_binary = custom_dir / "my-simengine.exe"
+    custom_binary.write_text("dummy", encoding="utf-8")
+
+    original_retrieve = lpg_execution.LPGExecutor.retrieve_lpg_binaries
+
+    def fail_if_called(path: Path) -> None:
+        raise AssertionError("retrieve_lpg_binaries should not be called for custom binaries")
+
+    lpg_execution.LPGExecutor.retrieve_lpg_binaries = staticmethod(fail_if_called)
+    executor = None
+    try:
+        executor = lpg_execution.LPGExecutor(98765, True, custom_binary)
+        assert executor.lpg_simengine_filepath() == str(custom_binary)
+        assert executor.calculation_src_directory == custom_dir
+        assert executor.simengine_src_filename == custom_binary.name
+    finally:
+        lpg_execution.LPGExecutor.retrieve_lpg_binaries = original_retrieve
+        if executor is not None and executor.calculation_directory.exists():
+            shutil.rmtree(executor.calculation_directory)
+
+
+def test_lpg_executor_custom_working_directory(tmp_path) -> None:
+    # A custom binary keeps the test offline (no download). A custom working
+    # directory should relocate the C<idx> calc dir there, while the binary
+    # source stays at the provided binary's location (package dir untouched).
+    custom_dir = tmp_path / "custom_lpg"
+    custom_dir.mkdir()
+    custom_binary = custom_dir / "my-simengine.exe"
+    custom_binary.write_text("dummy", encoding="utf-8")
+
+    work_dir = tmp_path / "scratch"
+
+    executor = None
+    try:
+        executor = lpg_execution.LPGExecutor(
+            123, False, custom_binary, working_directory=work_dir
+        )
+        # Calc dir is relocated under the custom working directory ...
+        assert executor.working_directory == work_dir
+        assert executor.calculation_directory == work_dir / "C123"
+        assert executor.calculation_directory.exists()
+        # ... but the binary source and package dir are unchanged.
+        assert executor.calculation_src_directory == custom_dir
+        assert executor.package_directory == Path(lpg_execution.__file__).parent.absolute()
+    finally:
+        if executor is not None and executor.calculation_directory.exists():
+            shutil.rmtree(executor.calculation_directory)
+
+
+def test_lpg_binary_details_for_platform(monkeypatch, tmp_path) -> None:
+    monkeypatch.setattr(lpg_execution.sys, "platform", "linux")
+    linux_directory, linux_filename = lpg_execution._lpg_binary_details_for_platform(
+        tmp_path
+    )
+    assert linux_directory == tmp_path / "LPG_linux"
+    assert linux_filename == "simengine2"
+
+    monkeypatch.setattr(lpg_execution.sys, "platform", "win32")
+    windows_directory, windows_filename = lpg_execution._lpg_binary_details_for_platform(
+        tmp_path
+    )
+    assert windows_directory == tmp_path / "LPG_win"
+    assert windows_filename == "simengine2.exe"
 
 
 def print_persons_list(persons: List[PersonData]):

@@ -28,6 +28,25 @@ __pycache__/
 *.docs/build/
 build/
 dist/
+pyLPG_env/
+logs/
 
-# generated result files
+# user-specific SLURM submit script (copy of examples/submit_array.example.sh);
+# ignored wherever you keep your copy
+submit_array.sh
+
+# generated SLURM task manifest. generate_tasks.py writes it to
+# BASE_OUTPUT_DIR/tasks.json, which normally sits outside the repo -- this only
+# catches the case where BASE_OUTPUT_DIR is pointed at the repo for local testing.
+tasks.json
+
+# user-specific instruction files
+CLAUDE.md
+
+# generated result files and output directories
 *.csv
+multi_runs_output/
+# local-mode (RUN_ON_CLUSTER = False) per-task files: <repo>/tasks/ holds the
+# temporary task_<NNNNNN>.h5; merge_results.py deletes them, but ignore in case a
+# merge is interrupted.
+/tasks/
