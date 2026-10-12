@@ -10,7 +10,7 @@ with open(os.path.join(dir_path, "README.md"), "r") as fh:
 
 setuptools.setup(
     name="pyloadprofilegenerator",
-    version="0.1.15",
+    version="0.2.0",
     author="Noah Pflugradt",
     author_email="n.pflugradt@fz-juelich.de",
     description="Python Bindings for the LoadProfileGenerator",
