@@ -53,9 +53,7 @@ def execute_lpg_tsib(
         hhd.HouseholdDataSpecification = HouseholdDataSpecificationType.ByPersons
         hhd.HouseholdDataPersonSpec = HouseholdDataPersonSpecification()
         hhd.HouseholdDataPersonSpec.Persons = []
-        hhd.ChargingStationSet = (
-            ChargingStationSets.Charging_At_Home_with_03_7_kW_output_results_to_Car_Electricity
-        )
+        hhd.ChargingStationSet = ChargingStationSets.Charging_At_Home_with_03_7_kW_output_results_to_Car_Electricity
         hhd.TravelRouteSet = (
             TravelRouteSets.Travel_Route_Set_for_30km_Commuting_Distance
         )
@@ -96,7 +94,6 @@ def make_reasonable_family(person_count: int):
     persons = []
     g = 0
     for person_idx in range(person_count):
-
         if person_idx == 0:  # first is an adult
             age = random.randint(18, 100)
             previousage = age
@@ -572,10 +569,10 @@ class LPGExecutor:
         """
         # determine correct link and destination folder depending on the platform
         if sys.platform == "linux" or sys.platform == "linux2":
-            url = "https://www.loadprofilegenerator.de/setup/LPG10.10.0_linux.zip"
+            url = "https://github.com/FZJ-IEK3-VSA/LoadProfileGenerator/releases/download/v11.0.0/LPG11.0.0_linux_simengine.zip"
             folder_name = "LPG_linux"
         elif sys.platform == "win32":
-            url = "https://www.loadprofilegenerator.de/setup/LPG10.10.0_core.zip"
+            url = "https://github.com/FZJ-IEK3-VSA/LoadProfileGenerator/releases/download/v11.0.0/LPG11.0.0_windows_simengine.zip"
             folder_name = "LPG_win"
         else:
             raise Exception("Operating system not supported: " + sys.platform)
@@ -630,7 +627,7 @@ class LPGExecutor:
         else:
             self.working_directory = Path()
         self.working_directory.mkdir(parents=True, exist_ok=True)
-        
+
         if lpg_binary_path is not None:
             # if a custom binary path is provided, use it instead of the default one
             custom_binary_path = Path(lpg_binary_path)
@@ -737,9 +734,7 @@ class LPGExecutor:
         hj.House = hd
         hd.Name = "House"
         hd.HouseGuid = StrGuid("houseguid")
-        hd.HouseTypeCode = (
-            HouseTypes.HT01_House_with_a_10kWh_Battery_and_a_fuel_cell_battery_charger_5_MWh_yearly_space_heating_gas_heating
-        )
+        hd.HouseTypeCode = HouseTypes.HT01_House_with_a_10kWh_Battery_and_a_fuel_cell_battery_charger_5_MWh_yearly_space_heating_gas_heating
         hd.TargetCoolingDemand = 10000
         hd.TargetHeatDemand = 0
         hd.Households = []
