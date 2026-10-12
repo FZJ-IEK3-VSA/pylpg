@@ -349,7 +349,7 @@ TRANSPORT_VARIANT_KEYS = [
     TransportVariantKey(False, None, None, None, "no_transport"),
     TransportVariantKey(
         True,
-        get_attr_key(lpgdata.ChargingStationSets, lpgdata.ChargingStationSets.Charging_At_Home_with_03_7_kW_output_results_to_Car_Electricity),
+        get_attr_key(lpgdata.ChargingStationSets, lpgdata.ChargingStationSets.Charging_At_Home_with_03_7_kW),
         get_attr_key(lpgdata.TransportationDeviceSets, lpgdata.TransportationDeviceSets.Bus_and_two_30_km_h_Cars),
         get_attr_key(lpgdata.TravelRouteSets, lpgdata.TravelRouteSets.Travel_Route_Set_for_30km_Commuting_Distance),
         "home_charge_bus_cars_30km",

@@ -53,7 +53,7 @@ def execute_lpg_tsib(
         hhd.HouseholdDataSpecification = HouseholdDataSpecificationType.ByPersons
         hhd.HouseholdDataPersonSpec = HouseholdDataPersonSpecification()
         hhd.HouseholdDataPersonSpec.Persons = []
-        hhd.ChargingStationSet = ChargingStationSets.Charging_At_Home_with_03_7_kW_output_results_to_Car_Electricity
+        hhd.ChargingStationSet = ChargingStationSets.Charging_At_Home_with_03_7_kW
         hhd.TravelRouteSet = (
             TravelRouteSets.Travel_Route_Set_for_30km_Commuting_Distance
         )
