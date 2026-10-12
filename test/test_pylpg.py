@@ -230,14 +230,14 @@ def test_lpg_binary_details_for_platform(monkeypatch, tmp_path) -> None:
         tmp_path
     )
     assert linux_directory == tmp_path / "LPG_linux"
-    assert linux_filename == "simengine2"
+    assert linux_filename == "SimEngine2"
 
     monkeypatch.setattr(lpg_execution.sys, "platform", "win32")
     windows_directory, windows_filename = lpg_execution._lpg_binary_details_for_platform(
         tmp_path
     )
     assert windows_directory == tmp_path / "LPG_win"
-    assert windows_filename == "simengine2.exe"
+    assert windows_filename == "SimEngine2.exe"
 
 
 def print_persons_list(persons: List[PersonData]):

@@ -79,7 +79,7 @@ only the run's own inputs/outputs.)
 
 The platform → (binary path, executable name) logic was extracted into a module-level
 helper, `_lpg_binary_details_for_platform(working_directory)`, returning e.g.
-`(<dir>/LPG_win, "simengine2.exe")` on Windows or `(<dir>/LPG_linux, "simengine2")` on
+`(<dir>/LPG_win, "SimEngine2.exe")` on Windows or `(<dir>/LPG_linux, "SimEngine2")` on
 Linux (and raising on unknown platforms).
 
 `__init__` now resolves the binary in one of two ways:
@@ -219,7 +219,7 @@ runs.
 
 ### 1.9 Engine exit code is now checked — non-zero raises instead of "no results"
 
-`execute_lpg_binaries()` previously fired the `simengine2 processhousejob` subprocess and
+`execute_lpg_binaries()` previously fired the `SimEngine2 processhousejob` subprocess and
 ignored its exit code (its return type was `Any`, effectively `None`). A run that the engine
 aborted (e.g. the `DataIntegrityException` above, or any other fatal error) therefore surfaced
 only much later as a confusing "no results returned" far from the real cause.

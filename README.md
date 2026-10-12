@@ -37,7 +37,7 @@ You can pass either:
 - a direct path to the executable file, for example `C:\Tools\LPG\SimulationEngine.exe`
 - a directory that contains the executable, for example `C:\Tools\LPG`
 
-If you pass a file path, pyLPG uses that file directly. If you pass a folder, pyLPG looks for the platform-default executable name inside that folder (`simengine2.exe` on Windows, `simengine2` on Linux).
+If you pass a file path, pyLPG uses that file directly. If you pass a folder, pyLPG looks for the platform-default executable name inside that folder (`SimEngine2.exe` on Windows, `SimEngine2` on Linux).
 
 ### Example
 
@@ -50,7 +50,7 @@ data = lpg_execution.execute_lpg_with_householddata_custom(
     lpgdata.HouseTypes.HT20_Single_Family_House_no_heating_cooling,
     enable_flexibility=True,
     enable_transportation=True,
-    lpg_binary_path=r"C:\Tools\LPG\simengine2.exe",
+    lpg_binary_path=r"C:\Tools\LPG\SimEngine2.exe",
 )
 ```
 

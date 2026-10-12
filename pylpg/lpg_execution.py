@@ -23,9 +23,9 @@ from pylpg.lpgpythonbindings import *
 
 def _lpg_binary_details_for_platform(working_directory: Path) -> tuple[Path, str]:
     if sys.platform == "linux" or sys.platform == "linux2":
-        return Path(working_directory, "LPG_linux"), "simengine2"
+        return Path(working_directory, "LPG_linux"), "SimEngine2"
     if sys.platform == "win32":
-        return Path(working_directory, "LPG_win"), "simengine2.exe"
+        return Path(working_directory, "LPG_win"), "SimEngine2.exe"
     raise Exception("unknown operating system detected: " + sys.platform)
 
 
@@ -591,10 +591,10 @@ class LPGExecutor:
 
         if sys.platform == "linux":
             # on linux, make the file executable
-            fullname = os.path.join(destination_folder, "simengine2")
+            fullname = os.path.join(destination_folder, "SimEngine2")
             os.chmod(str(fullname), stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
             print(
-                "Permissions set for simengine2:"
+                "Permissions set for SimEngine2:"
                 + str(oct(os.stat(str(fullname))[stat.ST_MODE])[-3:])
             )
 
@@ -702,7 +702,7 @@ class LPGExecutor:
     def execute_lpg_binaries(self) -> None:
         """Run the LPG engine on ``calcspec.json`` in the calculation directory.
 
-        Invokes ``simengine2 processhousejob -j calcspec.json`` as a subprocess
+        Invokes ``SimEngine2 processhousejob -j calcspec.json`` as a subprocess
         with the calculation directory as its working directory.
 
         The engine's exit code is checked: a non-zero status means the engine
