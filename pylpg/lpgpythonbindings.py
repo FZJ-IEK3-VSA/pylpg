@@ -299,8 +299,7 @@ class JsonCalcSpecification:
         light bulbs, then you can set up a device selection to ensure that this
         type of device will always be selected.
     :type DeviceSelection: JsonReference
-    :param EndDate: End date of the simulation. Defaults to the 31.12. of the
-        current year if not set. One year maximum.
+    :param EndDate: End date of the simulation.
     :type EndDate: str
     :param EnergyIntensityType: How devices are picked for the households, for
         example if the household gets an old fridge or a new fridge.
@@ -340,15 +339,14 @@ class JsonCalcSpecification:
         simulation artifacts in the beginning. Default=3
     :type SettlingDays: int
     :param EnableFlexibility: Flexibility modelling seperates the electric
-        devices out that can time shifted. The LPG then generates two distinct
-        profiles.
+        devices out that can be time shifted. The LPG then generates two
+        distinct profiles.
     :type EnableFlexibility: bool
     :param SkipExisting: If you enable this, the LPG will check in the result
         directory if this household/house was already calculated and if so, will
         quit quietly. Defaults to true.
     :type SkipExisting: bool
-    :param StartDate: Start date of the simulation. Defaults to the 01.01. of
-        the current year if not set.
+    :param StartDate: Start date of the simulation.
     :type StartDate: str
     :param TemperatureProfile: Reference of the temperature profile to use.
         Defaults to the first temperature profile in the database if not set,

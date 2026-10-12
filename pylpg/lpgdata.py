@@ -511,8 +511,15 @@ class TransportationDeviceSets:
     Bus_and_three_30_km_h_Cars: JsonReference = JsonReference(
         "Bus and three 30 km/h Cars", StrGuid("92fbdffe-b247-4c9c-b69a-bdf28ec073aa")
     )
+    Bus_and_three_Gasoline_Cars: JsonReference = JsonReference(
+        "Bus and three Gasoline Cars", StrGuid("4c8f15c7-cc28-4ed2-b2cc-b653bdd64c83")
+    )
     Bus_and_two_30_km_h_Cars: JsonReference = JsonReference(
         "Bus and two 30 km/h Cars", StrGuid("f90fece2-901a-4419-8a6b-a0ed4ed6ceff")
+    )
+    Bus_and_two_30_km_h_Gasoline_Cars: JsonReference = JsonReference(
+        "Bus and two 30 km/h Gasoline Cars",
+        StrGuid("9e6fabd2-28f3-4467-aa18-012bb7bb1a07"),
     )
     Bus_and_two_60_km_h_Cars: JsonReference = JsonReference(
         "Bus and two 60 km/h Cars", StrGuid("4bbcd8b8-ddd9-4592-8f4e-f1cf5579eb37")
@@ -526,12 +533,6 @@ class ChargingStationSets:
     )
     Charging_At_Home_with_03_7_kW: JsonReference = JsonReference(
         "Charging At Home with 03.7 kW", StrGuid("38e3a15d-d6f5-4f51-a16a-da287d14608f")
-    )
-    Charging_At_Home_with_03_7_kW_output_results_to_Car_Electricity: JsonReference = (
-        JsonReference(
-            "Charging At Home with 03.7 kW, output results to Car Electricity",
-            StrGuid("223f0577-9249-4293-a849-ea12e2033377"),
-        )
     )
     Charging_At_Home_with_11_kW: JsonReference = JsonReference(
         "Charging At Home with 11 kW", StrGuid("78dae308-24c4-45cc-8bdf-b001d61f45c2")
@@ -784,8 +785,14 @@ class LivingPatternTags:
     Living_Pattern_Office_Job_Medium_7_9am = (
         "Living Pattern / Office Job / Medium (7-9am)"
     )
+    Living_Pattern_Office_Job_Work_From_Home = (
+        "Living Pattern / Office Job / Work From Home"
+    )
     Living_Pattern_Office_Worker = "Living Pattern / Office Worker"
     Living_Pattern_Part_Time_Job = "Living Pattern / Part Time Job"
+    Living_Pattern_Part_Time_Job_Work_From_Home = (
+        "Living Pattern / Part Time Job / Work From Home"
+    )
     Living_Pattern_Retiree = "Living Pattern / Retiree"
     Living_Pattern_School = "Living Pattern / School"
     Living_Pattern_School_Medium_7_9am = "Living Pattern / School / Medium (7-9am)"
@@ -802,10 +809,6 @@ class LivingPatternTags:
     )
     Living_Pattern_University_Student_Living_at_Home = (
         "Living Pattern / University / Student Living at Home"
-    )
-    Living_Pattern_Work_From_Home = "Living Pattern / Work From Home"
-    Living_Pattern_Work_From_Home_Part_Time = (
-        "Living Pattern / Work From Home Part Time"
     )
 
 
@@ -1017,6 +1020,7 @@ class TraitTags:
     Spare_Time_Outside_Evening_Entertainment = (
         "Spare Time / Outside Evening Entertainment"
     )
+    Spare_Time_Walk = "Spare Time / Walk"
     Spare_Time_Weekend_Activity = "Spare Time / Weekend Activity"
     Special_Alarm = "Special / Alarm"
     Special_Child_Care = "Special / Child Care"
@@ -1027,6 +1031,7 @@ class TraitTags:
     Special_Maid_Service = "Special / Maid Service"
     Special_Napping = "Special / Napping"
     Special_Pharmacy_Visit = "Special / Pharmacy Visit"
+    Special_Quick_Shopping = "Special / Quick Shopping"
     Special_Shovel_Snow = "Special / Shovel Snow"
     Special_Sickness_Activities = "Special / Sickness Activities"
     Special_Sickness_Activities_Children = "Special / Sickness Activities Children"
@@ -1443,7 +1448,7 @@ class TemplatePersons:
         Name="CHR20_1_40F",
         Age=40,
         Gender=Gender.Female,
-        LivingPattern="Living Pattern / Work From Home Part Time",
+        LivingPattern="Living Pattern / Part Time Job / Work From Home",
         TemplateName="CHR20 one at work, one work home, 3 children",
         PersonName="CHR20 Cassie",
     )
@@ -2251,7 +2256,7 @@ class TemplatePersons:
         Name="CHR62_0_25M",
         Age=25,
         Gender=Gender.Male,
-        LivingPattern="Living Pattern / Work From Home",
+        LivingPattern="Living Pattern / Office Job / Work From Home",
         TemplateName="CHR62 Couple both Working from Home",
         PersonName="CHR62 Lucas",
     )
@@ -2259,7 +2264,7 @@ class TemplatePersons:
         Name="CHR62_1_23F",
         Age=23,
         Gender=Gender.Female,
-        LivingPattern="Living Pattern / Work From Home",
+        LivingPattern="Living Pattern / Office Job / Work From Home",
         TemplateName="CHR62 Couple both Working from Home",
         PersonName="CHR62 Sophie",
     )
