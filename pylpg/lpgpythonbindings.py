@@ -211,9 +211,7 @@ class PersonData:
         self.PersonName = value
         return self
 
-    TransportationPreferences: List[TransportationPreference] = field(
-        default_factory=list
-    )
+    TransportationPreferences: Optional[List[TransportationPreference]] = None
 
     def set_TransportationPreferences(
         self, value: List[TransportationPreference]
@@ -681,9 +679,7 @@ class HouseholdData:
         self.HouseholdDataSpecification = value
         return self
 
-    PointOfInterestPreferences: Dict[str, PersonPoiPreferences] = field(
-        default_factory=dict
-    )
+    PointOfInterestPreferences: Optional[Dict[str, PersonPoiPreferences]] = None
 
     def set_PointOfInterestPreferences(
         self, value: Dict[str, PersonPoiPreferences]
