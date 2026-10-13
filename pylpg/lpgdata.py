@@ -313,9 +313,9 @@ class Households:
             StrGuid("e7cb1be5-caac-4087-83e8-c181911a68e2"),
         )
     )
-    CHR62_Couple_30_64_years_vacation_home_1_month_presence_only: JsonReference = (
+    CHR63_Couple_30_64_years_vacation_home_1_month_presence_only: JsonReference = (
         JsonReference(
-            "CHR62 Couple, 30 - 64 years, vacation home (1 month presence only)",
+            "CHR63 Couple, 30 - 64 years, vacation home (1 month presence only)",
             StrGuid("e641e89e-41b3-4ee0-8df2-b0bb185f09ed"),
         )
     )
@@ -365,6 +365,9 @@ class GeographicLocations:
     )
     Germany_Hamburg: JsonReference = JsonReference(
         "(Germany) Hamburg", StrGuid("4535a43c-b165-4ca8-9aa5-8ccaf42bac36")
+    )
+    Germany_Juelich: JsonReference = JsonReference(
+        "(Germany) Jülich", StrGuid("4fa8f573-3bba-4012-8573-c1b760a8cb74")
     )
     Germany_Kassel: JsonReference = JsonReference(
         "(Germany) Kassel", StrGuid("5f665a7f-4edd-4166-8427-bbf3d537cf59")
@@ -424,10 +427,77 @@ class TemperatureProfiles:
             StrGuid("5cee108e-4126-41c2-9601-e867d597a96b"),
         )
     )
+    Juelich_Germany_Test_Reference_Year_normal_year_2015_from_Deutscher_Wetterdienst_DWD_www_dwd_de: JsonReference = JsonReference(
+        "Jülich, Germany, Test Reference Year, normal year, 2015 from Deutscher Wetterdienst DWD (www.dwd.de)",
+        StrGuid("56493e5a-a9f8-4902-b894-b7bd5ae0237d"),
+    )
+
+
+# noinspection PyPep8,PyUnusedLocal
+class TransportationDevices:
+    Bicycle_1: JsonReference = JsonReference(
+        "Bicycle 1", StrGuid("c27beb7a-4d0b-448e-9252-477d2e6bd792")
+    )
+    Bicycle_2: JsonReference = JsonReference(
+        "Bicycle 2", StrGuid("85c3d829-9425-43a0-89c2-90d9efea675b")
+    )
+    Bicycle_3: JsonReference = JsonReference(
+        "Bicycle 3", StrGuid("fb5e3387-4c34-44bd-9c96-94f6a1fd54e7")
+    )
+    Bus: JsonReference = JsonReference(
+        "Bus", StrGuid("5afbd166-9b10-4267-923d-6a81d3fd3c23")
+    )
+    Car_1_22kW_Charging_Power_avg_Speed_30_km_h: JsonReference = JsonReference(
+        "Car 1, 22kW Charging Power, avg. Speed 30 km/h",
+        StrGuid("1bf273c8-ceee-4db5-bbef-f5a819c60389"),
+    )
+    Car_2_22kW_Charging_Power_avg_Speed_30_km_h: JsonReference = JsonReference(
+        "Car 2, 22kW Charging Power, avg. Speed 30 km/h",
+        StrGuid("2acc7301-29bf-45c6-8209-257469910f6f"),
+    )
+    Car_3_22kW_Charging_Power_avg_Speed_60_km_h: JsonReference = JsonReference(
+        "Car 3, 22kW Charging Power, avg. Speed 60 km/h",
+        StrGuid("ce17f288-e0bc-46ef-bbfe-4d254987f96e"),
+    )
+    Car_4_22kW_Charging_Power_avg_Speed_60_km_h: JsonReference = JsonReference(
+        "Car 4, 22kW Charging Power, avg. Speed 60 km/h",
+        StrGuid("febd2ad9-4428-4e63-89a0-42d792303011"),
+    )
+    Car_5_gasoline_Fuel_Consumption_5_8_l_avg_Speed_30_km_h: JsonReference = (
+        JsonReference(
+            "Car 5 (gasoline), Fuel Consumption 5.8 l, avg. Speed 30 km/h",
+            StrGuid("abe47f12-4f87-4dce-bdd1-4eecf5ae8d32"),
+        )
+    )
+    Car_6_gasoline_Fuel_Consumption_6_2_l_avg_Speed_60_km_h: JsonReference = (
+        JsonReference(
+            "Car 6 (gasoline), Fuel Consumption 6.2 l, avg. Speed 60 km/h",
+            StrGuid("3c39da9a-c63c-4a0f-9e54-c72f36e518b2"),
+        )
+    )
+    Car_7_gasoline_Fuel_Consumption_9_l_avg_Speed_30_km_h: JsonReference = (
+        JsonReference(
+            "Car 7 (gasoline), Fuel Consumption 9 l, avg. Speed 30 km/h",
+            StrGuid("ff39ab67-c465-4cbd-9de9-b2afaa7453f7"),
+        )
+    )
+    Car_8_22kW_Charging_Power_avg_Speed_30_km_h: JsonReference = JsonReference(
+        "Car 8, 22kW Charging Power, avg. Speed 30 km/h",
+        StrGuid("ba1984ab-0ee9-44de-a4d2-1fc69954822a"),
+    )
+    Elevator: JsonReference = JsonReference(
+        "Elevator", StrGuid("5f7344c9-54fd-497f-96e4-8b8b122fc06f")
+    )
+    Feet: JsonReference = JsonReference(
+        "Feet", StrGuid("cf6ae18f-ee93-4647-9bbb-5251534fb7b2")
+    )
 
 
 # noinspection PyPep8,PyUnusedLocal
 class TransportationDeviceSets:
+    Bus_and_Bicycles_no_Car: JsonReference = JsonReference(
+        "Bus and Bicycles, no Car", StrGuid("7a73e278-6f1b-48bb-b0ab-95049df977fe")
+    )
     Bus_and_one_30_km_h_Car: JsonReference = JsonReference(
         "Bus and one 30 km/h Car", StrGuid("6ac74bd0-bacd-4b39-b84a-dc7ae16702c9")
     )
@@ -438,8 +508,18 @@ class TransportationDeviceSets:
     Bus_and_one_60_km_h_Car: JsonReference = JsonReference(
         "Bus and one 60 km/h Car", StrGuid("b7b80c60-3292-4d35-9ec2-81ecf1199ce9")
     )
+    Bus_and_three_30_km_h_Cars: JsonReference = JsonReference(
+        "Bus and three 30 km/h Cars", StrGuid("92fbdffe-b247-4c9c-b69a-bdf28ec073aa")
+    )
+    Bus_and_three_Gasoline_Cars: JsonReference = JsonReference(
+        "Bus and three Gasoline Cars", StrGuid("4c8f15c7-cc28-4ed2-b2cc-b653bdd64c83")
+    )
     Bus_and_two_30_km_h_Cars: JsonReference = JsonReference(
         "Bus and two 30 km/h Cars", StrGuid("f90fece2-901a-4419-8a6b-a0ed4ed6ceff")
+    )
+    Bus_and_two_30_km_h_Gasoline_Cars: JsonReference = JsonReference(
+        "Bus and two 30 km/h Gasoline Cars",
+        StrGuid("9e6fabd2-28f3-4467-aa18-012bb7bb1a07"),
     )
     Bus_and_two_60_km_h_Cars: JsonReference = JsonReference(
         "Bus and two 60 km/h Cars", StrGuid("4bbcd8b8-ddd9-4592-8f4e-f1cf5579eb37")
@@ -453,12 +533,6 @@ class ChargingStationSets:
     )
     Charging_At_Home_with_03_7_kW: JsonReference = JsonReference(
         "Charging At Home with 03.7 kW", StrGuid("38e3a15d-d6f5-4f51-a16a-da287d14608f")
-    )
-    Charging_At_Home_with_03_7_kW_output_results_to_Car_Electricity: JsonReference = (
-        JsonReference(
-            "Charging At Home with 03.7 kW, output results to Car Electricity",
-            StrGuid("223f0577-9249-4293-a849-ea12e2033377"),
-        )
     )
     Charging_At_Home_with_11_kW: JsonReference = JsonReference(
         "Charging At Home with 11 kW", StrGuid("78dae308-24c4-45cc-8bdf-b001d61f45c2")
@@ -656,6 +730,9 @@ class Sites:
 
 # noinspection PyPep8,PyUnusedLocal
 class TransportationDeviceCategories:
+    Bicycle_Category: JsonReference = JsonReference(
+        "Bicycle Category", StrGuid("a44c52ec-dee0-4357-814e-8369274b099d")
+    )
     Bus_Category: JsonReference = JsonReference(
         "Bus Category", StrGuid("db747dbe-5260-4dd8-8a1d-dd0fc00e975e")
     )
@@ -708,8 +785,14 @@ class LivingPatternTags:
     Living_Pattern_Office_Job_Medium_7_9am = (
         "Living Pattern / Office Job / Medium (7-9am)"
     )
+    Living_Pattern_Office_Job_Work_From_Home = (
+        "Living Pattern / Office Job / Work From Home"
+    )
     Living_Pattern_Office_Worker = "Living Pattern / Office Worker"
     Living_Pattern_Part_Time_Job = "Living Pattern / Part Time Job"
+    Living_Pattern_Part_Time_Job_Work_From_Home = (
+        "Living Pattern / Part Time Job / Work From Home"
+    )
     Living_Pattern_Retiree = "Living Pattern / Retiree"
     Living_Pattern_School = "Living Pattern / School"
     Living_Pattern_School_Medium_7_9am = "Living Pattern / School / Medium (7-9am)"
@@ -726,13 +809,6 @@ class LivingPatternTags:
     )
     Living_Pattern_University_Student_Living_at_Home = (
         "Living Pattern / University / Student Living at Home"
-    )
-    Living_Pattern_Work_From_Home = "Living Pattern / Work From Home"
-    Living_Pattern_Work_From_Home_Full_Time_5_days = (
-        "Living Pattern / Work From Home / Full Time 5 days"
-    )
-    Living_Pattern_Work_From_Home_Part_Time = (
-        "Living Pattern / Work From Home / Part Time"
     )
 
 
@@ -934,6 +1010,7 @@ class TraitTags:
     Sleep_Sleep_Shiftworker_2 = "Sleep / Sleep Shiftworker 2"
     Spare_Time_Car_Activities = "Spare Time / Car Activities"
     Spare_Time_Exercise = "Spare Time / Exercise"
+    Spare_Time_Friends = "Spare Time / Friends"
     Spare_Time_Garden_Activities = "Spare Time / Garden Activities"
     Spare_Time_Hobby = "Spare Time / Hobby"
     Spare_Time_Indoor_Entertainment = "Spare Time / Indoor Entertainment"
@@ -943,6 +1020,7 @@ class TraitTags:
     Spare_Time_Outside_Evening_Entertainment = (
         "Spare Time / Outside Evening Entertainment"
     )
+    Spare_Time_Walk = "Spare Time / Walk"
     Spare_Time_Weekend_Activity = "Spare Time / Weekend Activity"
     Special_Alarm = "Special / Alarm"
     Special_Child_Care = "Special / Child Care"
@@ -952,10 +1030,14 @@ class TraitTags:
     Special_Food_Shopping = "Special / Food Shopping"
     Special_Maid_Service = "Special / Maid Service"
     Special_Napping = "Special / Napping"
+    Special_Pharmacy_Visit = "Special / Pharmacy Visit"
+    Special_Quick_Shopping = "Special / Quick Shopping"
     Special_Shovel_Snow = "Special / Shovel Snow"
     Special_Sickness_Activities = "Special / Sickness Activities"
     Special_Sickness_Activities_Children = "Special / Sickness Activities Children"
     Special_Summer_Camp = "Special / Summer Camp"
+    Special_Various_Errands = "Special / Various Errands"
+    Special_Various_Item_Shopping = "Special / Various Item Shopping"
     Special_Various_small_Activities = "Special / Various small Activities"
     Technical_Equipment_Cell_Phone = "Technical Equipment / Cell Phone"
     Technical_Equipment_Deep_Freezer = "Technical Equipment / Deep Freezer"
@@ -995,8 +1077,7 @@ class TraitTags:
     Work_Home_Office = "Work / Home Office"
     Work_University = "Work / University"
     Work_University_related = "Work / University related"
-    Work_Work_1 = "Work / Work 1"
-    Work_Work_2 = "Work / Work 2"
+    Work_Work = "Work / Work"
     Work_Work_in_Shifts_1 = "Work / Work in Shifts 1"
     Work_Work_in_Shifts_2 = "Work / Work in Shifts 2"
 
@@ -1367,7 +1448,7 @@ class TemplatePersons:
         Name="CHR20_1_40F",
         Age=40,
         Gender=Gender.Female,
-        LivingPattern="Living Pattern / Work From Home / Part Time",
+        LivingPattern="Living Pattern / Part Time Job / Work From Home",
         TemplateName="CHR20 one at work, one work home, 3 children",
         PersonName="CHR20 Cassie",
     )
@@ -1915,21 +1996,21 @@ class TemplatePersons:
         TemplateName="CHR51 Couple over 65 years II",
         PersonName="CHR51 Maren",
     )
-    CHR52_0_22M: TemplatePersonEntry = TemplatePersonEntry(
-        Name="CHR52_0_22M",
-        Age=22,
-        Gender=Gender.Male,
-        LivingPattern="Living Pattern / University / Student Independent",
-        TemplateName="CHR52 Student Flatsharing",
-        PersonName="CHR52 Chris",
-    )
-    CHR52_1_22F: TemplatePersonEntry = TemplatePersonEntry(
-        Name="CHR52_1_22F",
+    CHR52_0_22F: TemplatePersonEntry = TemplatePersonEntry(
+        Name="CHR52_0_22F",
         Age=22,
         Gender=Gender.Female,
         LivingPattern="Living Pattern / University / Student Independent",
         TemplateName="CHR52 Student Flatsharing",
-        PersonName="CHR52 Iris",
+        PersonName="CHR52 Ashley",
+    )
+    CHR52_1_22M: TemplatePersonEntry = TemplatePersonEntry(
+        Name="CHR52_1_22M",
+        Age=22,
+        Gender=Gender.Male,
+        LivingPattern="Living Pattern / University / Student Independent",
+        TemplateName="CHR52 Student Flatsharing",
+        PersonName="CHR52 Matthew",
     )
     CHR52_2_23F: TemplatePersonEntry = TemplatePersonEntry(
         Name="CHR52_2_23F",
@@ -1937,7 +2018,7 @@ class TemplatePersons:
         Gender=Gender.Female,
         LivingPattern="Living Pattern / University / Student Independent",
         TemplateName="CHR52 Student Flatsharing",
-        PersonName="CHR52 Maddy",
+        PersonName="CHR52 Mia",
     )
     CHR53_0_45M: TemplatePersonEntry = TemplatePersonEntry(
         Name="CHR53_0_45M",
@@ -2123,29 +2204,29 @@ class TemplatePersons:
         TemplateName="CHR59 Family, 3 children, parents without work",
         PersonName="CHR59 Sorra",
     )
-    CHR60_0_32M: TemplatePersonEntry = TemplatePersonEntry(
-        Name="CHR60_0_32M",
-        Age=32,
-        Gender=Gender.Male,
-        LivingPattern="Living Pattern / Office Job / Medium (7-9am)",
-        TemplateName="CHR60 Family, 1 toddler, one at work, one at home",
-        PersonName="CHR60 Alexander",
-    )
-    CHR60_1_30F: TemplatePersonEntry = TemplatePersonEntry(
-        Name="CHR60_1_30F",
+    CHR60_0_30F: TemplatePersonEntry = TemplatePersonEntry(
+        Name="CHR60_0_30F",
         Age=30,
         Gender=Gender.Female,
         LivingPattern="Living Pattern / Stay at Home / Regular",
         TemplateName="CHR60 Family, 1 toddler, one at work, one at home",
-        PersonName="CHR60 Julia",
+        PersonName="CHR60 Amelia",
     )
-    CHR60_2_2F: TemplatePersonEntry = TemplatePersonEntry(
-        Name="CHR60_2_2F",
+    CHR60_1_2F: TemplatePersonEntry = TemplatePersonEntry(
+        Name="CHR60_1_2F",
         Age=2,
         Gender=Gender.Female,
         LivingPattern="Living Pattern / Kindergarden",
         TemplateName="CHR60 Family, 1 toddler, one at work, one at home",
         PersonName="CHR60 Lea",
+    )
+    CHR60_2_32M: TemplatePersonEntry = TemplatePersonEntry(
+        Name="CHR60_2_32M",
+        Age=32,
+        Gender=Gender.Male,
+        LivingPattern="Living Pattern / Office Job / Medium (7-9am)",
+        TemplateName="CHR60 Family, 1 toddler, one at work, one at home",
+        PersonName="CHR60 Oliver",
     )
     CHR61_0_40F: TemplatePersonEntry = TemplatePersonEntry(
         Name="CHR61_0_40F",
@@ -2171,21 +2252,21 @@ class TemplatePersons:
         TemplateName="CHR61 Family, 1 child, both at work, early living pattern",
         PersonName="CHR61 Lukas",
     )
-    CHR62_0_23F: TemplatePersonEntry = TemplatePersonEntry(
-        Name="CHR62_0_23F",
-        Age=23,
-        Gender=Gender.Female,
-        LivingPattern="Living Pattern / Work From Home / Full Time 5 days",
-        TemplateName="CHR62 Couple both Working from Home",
-        PersonName="CHR01 Rubi",
-    )
-    CHR62_1_25M: TemplatePersonEntry = TemplatePersonEntry(
-        Name="CHR62_1_25M",
+    CHR62_0_25M: TemplatePersonEntry = TemplatePersonEntry(
+        Name="CHR62_0_25M",
         Age=25,
         Gender=Gender.Male,
-        LivingPattern="Living Pattern / Work From Home / Full Time 5 days",
+        LivingPattern="Living Pattern / Office Job / Work From Home",
         TemplateName="CHR62 Couple both Working from Home",
-        PersonName="CHR01 Sami",
+        PersonName="CHR62 Lucas",
+    )
+    CHR62_1_23F: TemplatePersonEntry = TemplatePersonEntry(
+        Name="CHR62_1_23F",
+        Age=23,
+        Gender=Gender.Female,
+        LivingPattern="Living Pattern / Office Job / Work From Home",
+        TemplateName="CHR62 Couple both Working from Home",
+        PersonName="CHR62 Sophie",
     )
     CHS01_0_45M: TemplatePersonEntry = TemplatePersonEntry(
         Name="CHS01_0_45M",

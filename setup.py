@@ -10,7 +10,7 @@ with open(os.path.join(dir_path, "README.md"), "r") as fh:
 
 setuptools.setup(
     name="pyloadprofilegenerator",
-    version="0.1.1",
+    version="0.2.0",
     author="Noah Pflugradt",
     author_email="n.pflugradt@fz-juelich.de",
     description="Python Bindings for the LoadProfileGenerator",
@@ -19,6 +19,7 @@ setuptools.setup(
     url="https://github.com/FZJ-IEK3-VSA/pylpg",
     include_package_data=True,
     packages=setuptools.find_packages(),
+    package_data={"pylpg": ["py.typed"]},
     install_requires=required_packages,
     setup_requires=["setuptools-git"],
     classifiers=[

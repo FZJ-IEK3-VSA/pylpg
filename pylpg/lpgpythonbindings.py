@@ -99,6 +99,8 @@ class CalcOption(str, Enum):
     HouseholdSumProfilesCsvNoFlex = "HouseholdSumProfilesCsvNoFlex"
     FlexibilityEvents = "FlexibilityEvents"
     DeleteDatFiles = "DeleteDatFiles"
+    TransportationDefinitions = "TransportationDefinitions"
+    TransportationDeviceChoices = "TransportationDeviceChoices"
 
 
 class HouseDefinitionType(str, Enum):
@@ -123,6 +125,16 @@ class HouseholdKeyType(str, Enum):
     House = "House"
 
 
+class DayOfWeek(str, Enum):
+    Sunday = "Sunday"
+    Monday = "Monday"
+    Tuesday = "Tuesday"
+    Wednesday = "Wednesday"
+    Thursday = "Thursday"
+    Friday = "Friday"
+    Saturday = "Saturday"
+
+
 # noinspection PyPep8Naming, PyUnusedLocal
 @dataclass_json
 @dataclass
@@ -138,7 +150,7 @@ class StrGuid:
 @dataclass_json
 @dataclass
 class TransportationPreference:
-    DestinationSite: Optional[JsonReference] = None
+    DestinationSite: Optional[JsonReference | str] = None
 
     def set_DestinationSite(self, value: JsonReference) -> TransportationPreference:
         self.DestinationSite = value
@@ -199,9 +211,7 @@ class PersonData:
         self.PersonName = value
         return self
 
-    TransportationPreferences: List[TransportationPreference] = field(
-        default_factory=list
-    )
+    TransportationPreferences: Optional[List[TransportationPreference]] = None
 
     def set_TransportationPreferences(
         self, value: List[TransportationPreference]
@@ -287,8 +297,7 @@ class JsonCalcSpecification:
         light bulbs, then you can set up a device selection to ensure that this
         type of device will always be selected.
     :type DeviceSelection: JsonReference
-    :param EndDate: End date of the simulation. Defaults to the 31.12. of the
-        current year if not set. One year maximum.
+    :param EndDate: End date of the simulation.
     :type EndDate: str
     :param EnergyIntensityType: How devices are picked for the households, for
         example if the household gets an old fridge or a new fridge.
@@ -323,16 +332,19 @@ class JsonCalcSpecification:
         start to initialize the people. For debugging purposes it is possible to
         include this in the result files. Defaults to false.
     :type ShowSettlingPeriod: bool
+    :param SettlingDays: Determines the number of settling days that are
+        simulated before the actual start date. These days help to avoid
+        simulation artifacts in the beginning. Default=3
+    :type SettlingDays: int
     :param EnableFlexibility: Flexibility modelling seperates the electric
-        devices out that can time shifted. The LPG then generates two distinct
-        profiles.
+        devices out that can be time shifted. The LPG then generates two
+        distinct profiles.
     :type EnableFlexibility: bool
     :param SkipExisting: If you enable this, the LPG will check in the result
         directory if this household/house was already calculated and if so, will
         quit quietly. Defaults to true.
     :type SkipExisting: bool
-    :param StartDate: Start date of the simulation. Defaults to the 01.01. of
-        the current year if not set.
+    :param StartDate: Start date of the simulation.
     :type StartDate: str
     :param TemperatureProfile: Reference of the temperature profile to use.
         Defaults to the first temperature profile in the database if not set,
@@ -389,7 +401,7 @@ class JsonCalcSpecification:
         self.DeleteAllButPDF = value
         return self
 
-    DeviceSelection: Optional[JsonReference] = None
+    DeviceSelection: Optional[JsonReference | str] = None
 
     def set_DeviceSelection(self, value: JsonReference) -> JsonCalcSpecification:
         self.DeviceSelection = value
@@ -421,7 +433,7 @@ class JsonCalcSpecification:
         self.InternalTimeResolution = value
         return self
 
-    GeographicLocation: Optional[JsonReference] = None
+    GeographicLocation: Optional[JsonReference | str] = None
 
     def set_GeographicLocation(self, value: JsonReference) -> JsonCalcSpecification:
         self.GeographicLocation = value
@@ -451,6 +463,12 @@ class JsonCalcSpecification:
         self.ShowSettlingPeriod = value
         return self
 
+    SettlingDays: int = 3
+
+    def set_SettlingDays(self, value: int) -> JsonCalcSpecification:
+        self.SettlingDays = value
+        return self
+
     EnableFlexibility: bool = False
 
     def set_EnableFlexibility(self, value: bool) -> JsonCalcSpecification:
@@ -469,7 +487,7 @@ class JsonCalcSpecification:
         self.StartDate = value
         return self
 
-    TemperatureProfile: Optional[JsonReference] = None
+    TemperatureProfile: Optional[JsonReference | str] = None
 
     def set_TemperatureProfile(self, value: JsonReference) -> JsonCalcSpecification:
         self.TemperatureProfile = value
@@ -506,7 +524,7 @@ class JsonCalcSpecification:
 @dataclass_json
 @dataclass
 class HouseReference:
-    House: Optional[JsonReference] = None
+    House: Optional[JsonReference | str] = None
 
     def set_House(self, value: JsonReference) -> HouseReference:
         self.House = value
@@ -578,7 +596,7 @@ class HouseholdTemplateSpecification:
 @dataclass_json
 @dataclass
 class HouseholdNameSpecification:
-    HouseholdReference: Optional[JsonReference] = None
+    HouseholdReference: Optional[JsonReference | str] = None
 
     def set_HouseholdReference(
         self, value: JsonReference
@@ -625,19 +643,19 @@ class HouseholdData:
         self.Name = value
         return self
 
-    ChargingStationSet: Optional[JsonReference] = None
+    ChargingStationSet: Optional[JsonReference | str] = None
 
     def set_ChargingStationSet(self, value: JsonReference) -> HouseholdData:
         self.ChargingStationSet = value
         return self
 
-    TransportationDeviceSet: Optional[JsonReference] = None
+    TransportationDeviceSet: Optional[JsonReference | str] = None
 
     def set_TransportationDeviceSet(self, value: JsonReference) -> HouseholdData:
         self.TransportationDeviceSet = value
         return self
 
-    TravelRouteSet: Optional[JsonReference] = None
+    TravelRouteSet: Optional[JsonReference | str] = None
 
     def set_TravelRouteSet(self, value: JsonReference) -> HouseholdData:
         self.TravelRouteSet = value
@@ -661,6 +679,14 @@ class HouseholdData:
         self.HouseholdDataSpecification = value
         return self
 
+    PointOfInterestPreferences: Optional[Dict[str, PersonPoiPreferences]] = None
+
+    def set_PointOfInterestPreferences(
+        self, value: Dict[str, PersonPoiPreferences]
+    ) -> HouseholdData:
+        self.PointOfInterestPreferences = value
+        return self
+
 
 # noinspection PyPep8Naming, PyUnusedLocal
 @dataclass_json
@@ -676,6 +702,12 @@ class HouseData:
 
     def set_HouseGuid(self, value: StrGuid) -> HouseData:
         self.HouseGuid = value
+        return self
+
+    Coordinates: Optional[Coordinates] = None
+
+    def set_Coordinates(self, value: Coordinates) -> HouseData:
+        self.Coordinates = value
         return self
 
     Households: List[HouseholdData] = field(default_factory=list)
@@ -717,6 +749,12 @@ class HouseCreationAndCalculationJob:
 
     def set_House(self, value: HouseData) -> HouseCreationAndCalculationJob:
         self.House = value
+        return self
+
+    City: Optional[CityData] = None
+
+    def set_City(self, value: CityData) -> HouseCreationAndCalculationJob:
+        self.City = value
         return self
 
     CalcSpec: Optional[JsonCalcSpecification] = None
@@ -1082,3 +1120,240 @@ class JsonDeviceProfiles:
     def set_Unit(self, value: str) -> JsonDeviceProfiles:
         self.Unit = value
         return self
+
+
+# noinspection PyPep8Naming, PyUnusedLocal
+@dataclass_json
+@dataclass
+class PersonPoiPreferences:
+    PoiWeights: Dict[str, float] = field(default_factory=dict)
+
+    def set_PoiWeights(self, value: Dict[str, float]) -> PersonPoiPreferences:
+        self.PoiWeights = value
+        return self
+
+
+# noinspection PyPep8Naming, PyUnusedLocal
+@dataclass_json
+@dataclass
+class TimeSlot:
+    Start: int = 0
+
+    def set_Start(self, value: int) -> TimeSlot:
+        self.Start = value
+        return self
+
+    End: int = 0
+
+    def set_End(self, value: int) -> TimeSlot:
+        self.End = value
+        return self
+
+    WeekDays: set[DayOfWeek] = field(default_factory=set)
+
+    def set_WeekDays(self, value: set[DayOfWeek]) -> TimeSlot:
+        self.WeekDays = value
+        return self
+
+
+# noinspection PyPep8Naming, PyUnusedLocal
+@dataclass_json
+@dataclass
+class RoutesForTimeSlot:
+    TimeSlot: Optional[TimeSlot] = None
+
+    def set_TimeSlot(self, value: TimeSlot) -> RoutesForTimeSlot:
+        self.TimeSlot = value
+        return self
+
+    Routes: List[RouteData] = field(default_factory=list)
+
+    def set_Routes(self, value: List[RouteData]) -> RoutesForTimeSlot:
+        self.Routes = value
+        return self
+
+
+# noinspection PyPep8Naming, PyUnusedLocal
+@dataclass_json
+@dataclass
+class TravelDefinition:
+    TimeSlotRouteLists: List[RoutesForTimeSlot] = field(default_factory=list)
+
+    def set_TimeSlotRouteLists(
+        self, value: List[RoutesForTimeSlot]
+    ) -> TravelDefinition:
+        self.TimeSlotRouteLists = value
+        return self
+
+    PoiClusterMapping: Dict[str, str] = field(default_factory=dict)
+
+    def set_PoiClusterMapping(self, value: Dict[str, str]) -> TravelDefinition:
+        self.PoiClusterMapping = value
+        return self
+
+    MirrorRoutes: bool = False
+
+    def set_MirrorRoutes(self, value: bool) -> TravelDefinition:
+        self.MirrorRoutes = value
+        return self
+
+    MinimumDrivingAge: int = 0
+
+    def set_MinimumDrivingAge(self, value: int) -> TravelDefinition:
+        self.MinimumDrivingAge = value
+        return self
+
+
+# noinspection PyPep8Naming, PyUnusedLocal
+@dataclass_json
+@dataclass
+class CityData:
+    PointsOfInterest: Dict[str, PointOfInterestData] = field(default_factory=dict)
+
+    def set_PointsOfInterest(self, value: Dict[str, PointOfInterestData]) -> CityData:
+        self.PointsOfInterest = value
+        return self
+
+    TravelDefinition: Optional[TravelDefinition] = None
+
+    def set_TravelDefinition(self, value: TravelDefinition) -> CityData:
+        self.TravelDefinition = value
+        return self
+
+
+# noinspection PyPep8Naming, PyUnusedLocal
+@dataclass_json
+@dataclass
+class RouteData:
+    origin_id: Optional[str] = ""
+
+    def set_origin_id(self, value: str) -> RouteData:
+        self.origin_id = value
+        return self
+
+    destination_id: Optional[str] = ""
+
+    def set_destination_id(self, value: str) -> RouteData:
+        self.destination_id = value
+        return self
+
+    mode_times: Dict[str, float] = field(default_factory=dict)
+
+    def set_mode_times(self, value: Dict[str, float]) -> RouteData:
+        self.mode_times = value
+        return self
+
+    mode_distances: Dict[str, float] = field(default_factory=dict)
+
+    def set_mode_distances(self, value: Dict[str, float]) -> RouteData:
+        self.mode_distances = value
+        return self
+
+    prob_all: Dict[str, float] = field(default_factory=dict)
+
+    def set_prob_all(self, value: Dict[str, float]) -> RouteData:
+        self.prob_all = value
+        return self
+
+    prob_with_car_hh: Dict[str, float] = field(default_factory=dict)
+
+    def set_prob_with_car_hh(self, value: Dict[str, float]) -> RouteData:
+        self.prob_with_car_hh = value
+        return self
+
+    prob_no_car_hh: Dict[str, float] = field(default_factory=dict)
+
+    def set_prob_no_car_hh(self, value: Dict[str, float]) -> RouteData:
+        self.prob_no_car_hh = value
+        return self
+
+    prob_with_car_hh_pt_abo: Dict[str, float] = field(default_factory=dict)
+
+    def set_prob_with_car_hh_pt_abo(self, value: Dict[str, float]) -> RouteData:
+        self.prob_with_car_hh_pt_abo = value
+        return self
+
+    prob_no_car_hh_pt_abo: Dict[str, float] = field(default_factory=dict)
+
+    def set_prob_no_car_hh_pt_abo(self, value: Dict[str, float]) -> RouteData:
+        self.prob_no_car_hh_pt_abo = value
+        return self
+
+    prob_with_car_hh_no_pt_abo: Dict[str, float] = field(default_factory=dict)
+
+    def set_prob_with_car_hh_no_pt_abo(self, value: Dict[str, float]) -> RouteData:
+        self.prob_with_car_hh_no_pt_abo = value
+        return self
+
+    prob_no_car_hh_no_pt_abo: Dict[str, float] = field(default_factory=dict)
+
+    def set_prob_no_car_hh_no_pt_abo(self, value: Dict[str, float]) -> RouteData:
+        self.prob_no_car_hh_no_pt_abo = value
+        return self
+
+    index: int = 0
+
+    def set_index(self, value: int) -> RouteData:
+        self.index = value
+        return self
+
+    logsum_util_all: float = 0
+
+    def set_logsum_util_all(self, value: float) -> RouteData:
+        self.logsum_util_all = value
+        return self
+
+    logsum_util_no_car_hh: float = 0
+
+    def set_logsum_util_no_car_hh(self, value: float) -> RouteData:
+        self.logsum_util_no_car_hh = value
+        return self
+
+    logsum_util_with_car_hh: float = 0
+
+    def set_logsum_util_with_car_hh(self, value: float) -> RouteData:
+        self.logsum_util_with_car_hh = value
+        return self
+
+    logsum_time: float = 0
+
+    def set_logsum_time(self, value: float) -> RouteData:
+        self.logsum_time = value
+        return self
+
+
+# noinspection PyPep8Naming, PyUnusedLocal
+@dataclass_json
+@dataclass
+class PointOfInterestData:
+    LocationType: Optional[JsonReference | str] = None
+
+    def set_LocationType(self, value: JsonReference) -> PointOfInterestData:
+        self.LocationType = value
+        return self
+
+    Coordinates: Optional[Coordinates] = None
+
+    def set_Coordinates(self, value: Coordinates) -> PointOfInterestData:
+        self.Coordinates = value
+        return self
+
+    TimeLimit: Optional[JsonReference | str] = None
+
+    def set_TimeLimit(self, value: JsonReference) -> PointOfInterestData:
+        self.TimeLimit = value
+        return self
+
+    QueueCapacity: int = 0
+
+    def set_QueueCapacity(self, value: int) -> PointOfInterestData:
+        self.QueueCapacity = value
+        return self
+
+
+# noinspection PyPep8Naming, PyUnusedLocal
+@dataclass_json
+@dataclass(frozen=True)
+class Coordinates:
+    Latitude: float = 0
+    Longitude: float = 0
